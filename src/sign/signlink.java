@@ -8,6 +8,8 @@ package sign;
 import javax.sound.midi.MidiSystem;
 import javax.sound.midi.Sequence;
 import javax.sound.midi.Sequencer;
+import javax.sound.sampled.AudioFormat;
+import javax.sound.sampled.AudioInputStream;
 import javax.sound.sampled.AudioSystem;
 import javax.sound.sampled.Clip;
 import java.applet.Applet;
@@ -101,8 +103,12 @@ public class signlink implements Runnable {
 						File sound = new File(wave);
 
 						if (sound.exists()) {
+							// The cache stores 8-bit unsigned PCM, which Java Sound on Linux cannot open directly.
+							AudioInputStream in = AudioSystem.getAudioInputStream(sound);
+							AudioFormat src = in.getFormat();
+							AudioFormat pcm16 = new AudioFormat(src.getSampleRate(), 16, src.getChannels(), true, false);
 							Clip clip = AudioSystem.getClip();
-							clip.open(AudioSystem.getAudioInputStream(sound));
+							clip.open(AudioSystem.getAudioInputStream(pcm16, in));
 							clip.start();
 						}
 					} catch (Exception ex) {
