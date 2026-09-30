@@ -200,8 +200,8 @@ public class JagApplet extends Applet implements Runnable, MouseListener, MouseM
 		int i = mouseevent.getX();
 		int j = mouseevent.getY();
 		if (frame != null) {
-			i -= 4;
-			j -= 22;
+			i = frame.toGameX(i);
+			j = frame.toGameY(j);
 		}
 		anInt20 = 0;
 		anInt25 = i;
@@ -239,8 +239,8 @@ public class JagApplet extends Applet implements Runnable, MouseListener, MouseM
 		int i = mouseevent.getX();
 		int j = mouseevent.getY();
 		if (frame != null) {
-			i -= 4;
-			j -= 22;
+			i = frame.toGameX(i);
+			j = frame.toGameY(j);
 		}
 		anInt20 = 0;
 		mouseX = i;
@@ -251,8 +251,8 @@ public class JagApplet extends Applet implements Runnable, MouseListener, MouseM
 		int i = mouseevent.getX();
 		int j = mouseevent.getY();
 		if (frame != null) {
-			i -= 4;
-			j -= 22;
+			i = frame.toGameX(i);
+			j = frame.toGameY(j);
 		}
 		anInt20 = 0;
 		mouseX = i;
