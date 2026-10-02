@@ -21,6 +21,7 @@ import java.util.Calendar;
 import java.util.Date;
 import java.util.zip.CRC32;
 
+import idlers.ChatMessages;
 import idlers.StatusOverlay;
 import luna.Constants;
 import luna.RsaParser;
@@ -1760,6 +1761,8 @@ public class client extends JagApplet {
                         String s8 = message.substring(message.indexOf(":") + 1, message.length() - 9);
                         pushMessage(s5, (byte) -123, s8, 8);
                     }
+                } else if (ChatMessages.isDebug(message)) {
+                    pushMessage("", (byte) -123, ChatMessages.withoutDebugSuffix(message), 0, false);
                 } else {
                     pushMessage("", (byte) -123, message, 0);
                 }
@@ -3363,7 +3366,12 @@ public class client extends JagApplet {
     }
 
     public void pushMessage(String s, byte byte0, String s1, int i) {
-        if (i == 0 && anInt1191 != -1) {
+        pushMessage(s, byte0, s1, i, true);
+    }
+
+    /** {@code coversHelpBox}: whether a game message replaces the tutorial's help box until the next click. */
+    public void pushMessage(String s, byte byte0, String s1, int i, boolean coversHelpBox) {
+        if (coversHelpBox && i == 0 && anInt1191 != -1) {
             aString1058 = s1;
             super.anInt28 = 0;
         }
