@@ -21,6 +21,7 @@ import java.util.Calendar;
 import java.util.Date;
 import java.util.zip.CRC32;
 
+import idlers.StatusOverlay;
 import luna.Constants;
 import luna.RsaParser;
 import sign.signlink;
@@ -2519,6 +2520,11 @@ public class client extends JagApplet {
                         aBoolean1181 = true;
                     }
 
+                opcode = -1;
+                return true;
+            }
+            if (opcode == 100) { // IdleRS: autopilot status lines over the game view
+                statusOverlay.set(buffer.getString());
                 opcode = -1;
                 return true;
             }
@@ -5423,6 +5429,9 @@ public class client extends JagApplet {
                     aClass50_Sub1_Sub1_Sub3Array976[11].method490(2, 201, -488);
                 if (anIntArray1081[13] != -1 && (anInt1213 != 13 || pulseCycle % 20 < 10))
                     aClass50_Sub1_Sub1_Sub3Array976[12].method490(2, 226, -488);
+                // IdleRS: tab 7 has no icon in the sprite sheet, label it while a tab interface is set (IdleWidgets).
+                if (anIntArray1081[7] != -1)
+                    aClass50_Sub1_Sub1_Sub2_1059.method478(0xff981f, 47, 25, true, "Idle", -39629);
             }
             aClass18_1109.method231(496, 466, super.graphics);
             aClass18_1158.method230();
@@ -5749,6 +5758,7 @@ public class client extends JagApplet {
                 anInt1089 = -1;
                 method44(aBoolean1190, walkableInterfaceId);
                 walkableInterfaceId = -1;
+                statusOverlay.clear();
                 aBoolean1239 = false;
                 tabId = 3;
                 chatboxInterfaceType = 0;
@@ -7723,6 +7733,11 @@ public class client extends JagApplet {
                 i1 = 0xff0000;
             aClass50_Sub1_Sub1_Sub2_1060.method469(true, "Mem:" + j1 + "k", 0xffff00, c, k);
             k += 15;
+        }
+        for (int line = 0; line < statusOverlay.lines().size(); line++) {
+            String text = statusOverlay.lines().get(line);
+            int x = StatusOverlay.RIGHT - aClass50_Sub1_Sub1_Sub2_1060.method472((byte) 35, text);
+            aClass50_Sub1_Sub1_Sub2_1060.method478(0xffff00, x, StatusOverlay.lineY(line), true, text, -39629);
         }
         if (anInt1057 != 0) {
             int j = anInt1057 / 50;
@@ -11749,6 +11764,8 @@ public class client extends JagApplet {
     public boolean aBoolean1277;
     public RgbSprite aClass50_Sub1_Sub1_Sub1Array1278[];
     public int walkableInterfaceId;
+    // IdleRS: autopilot status drawn over the game view, fed by packet 100 (see StatusOverlay).
+    public final StatusOverlay statusOverlay = new StatusOverlay();
     public int anInt1280;
     public int anInt1281;
     public LinkedList projectileQueue;

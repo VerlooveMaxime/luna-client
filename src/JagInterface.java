@@ -24,6 +24,8 @@ public class JagInterface {
 
 	public static JagInterface forId(int id) {
 		if (interfaces[id] == null) {
+			if (data[id] == null) // IdleRS: no cache data, a widget defined in code
+				return interfaces[id] = IdleWidgets.build(id);
 			JagBuffer buf = new JagBuffer(data[id]);
 			int j = buf.getShort();
 			interfaces[id] = parse(j, buf, id);
@@ -268,7 +270,7 @@ public class JagInterface {
 		aClass50_Sub1_Sub1_Sub2Array223 = aclass50_sub1_sub1_sub2;
 		int j = -1;
 		JagBuffer buf = new JagBuffer(archive.get("data"));
-		int count = buf.getShort();
+		int count = Math.max(buf.getShort(), IdleWidgets.CAPACITY); // IdleRS: room for the widgets defined in code
 		interfaces = new JagInterface[count];
 		data = new byte[count][];
 		while (buf.position < buf.buffer.length) {
