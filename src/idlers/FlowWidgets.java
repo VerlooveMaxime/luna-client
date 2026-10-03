@@ -39,8 +39,9 @@ public final class FlowWidgets {
 
     public static final int DRAFT_LABEL = 30200;
     public static final int DRAFT_KIND = 30201;
-    public static final int DRAFT_RESOURCE = 30202;
-    public static final int DRAFT_LOCATION = 30203;
+    public static final int DRAFT_FIELD_1 = 30202;
+    public static final int DRAFT_FIELD_2 = 30203;
+    public static final int DRAFT_FIELD_3 = 30204;
     public static final int DRAFT_ADD = 30207;
     public static final int DRAFT_NEW = 30208;
 
@@ -49,6 +50,10 @@ public final class FlowWidgets {
     public static final int STOP = 30212;
     public static final int CLEAR = 30213;
     public static final int MESSAGE = 30214;
+    public static final int DRAFT_KIND_LABEL = 30220;
+    public static final int DRAFT_FIELD_1_LABEL = 30221;
+    public static final int DRAFT_FIELD_2_LABEL = 30222;
+    public static final int DRAFT_FIELD_3_LABEL = 30223;
 
     static final int ORANGE = 0xff981f;
     static final int WHITE = 0xffffff;
@@ -140,12 +145,15 @@ public final class FlowWidgets {
         int labels = 182;
         int fields = 196;
         add(specs, children, WidgetSpec.text(DRAFT_LABEL, BUILDER, 10, 168, 300, LINE, "", YELLOW, FONT_PLAIN));
-        add(specs, children, WidgetSpec.text(30220, BUILDER, 10, labels, 100, LINE, "step", GREY, FONT_SMALL));
-        add(specs, children, WidgetSpec.text(30221, BUILDER, 130, labels, 100, LINE, "resource", GREY, FONT_SMALL));
-        add(specs, children, WidgetSpec.text(30222, BUILDER, 250, labels, 200, LINE, "location", GREY, FONT_SMALL));
+        // The field labels come from the server with the fields: each kind of step names its own.
+        add(specs, children, WidgetSpec.text(DRAFT_KIND_LABEL, BUILDER, 10, labels, 110, LINE, "step", GREY, FONT_SMALL));
+        add(specs, children, WidgetSpec.text(DRAFT_FIELD_1_LABEL, BUILDER, 130, labels, 120, LINE, "", GREY, FONT_SMALL));
+        add(specs, children, WidgetSpec.text(DRAFT_FIELD_2_LABEL, BUILDER, 260, labels, 120, LINE, "", GREY, FONT_SMALL));
+        add(specs, children, WidgetSpec.text(DRAFT_FIELD_3_LABEL, BUILDER, 390, labels, 110, LINE, "", GREY, FONT_SMALL));
         add(specs, children, button(DRAFT_KIND, BUILDER, 10, fields, 110, LINE, "", "Change"));
-        add(specs, children, button(DRAFT_RESOURCE, BUILDER, 130, fields, 110, LINE, "", "Change"));
-        add(specs, children, button(DRAFT_LOCATION, BUILDER, 250, fields, 200, LINE, "", "Change"));
+        add(specs, children, button(DRAFT_FIELD_1, BUILDER, 130, fields, 120, LINE, "", "Change"));
+        add(specs, children, button(DRAFT_FIELD_2, BUILDER, 260, fields, 120, LINE, "", "Change"));
+        add(specs, children, button(DRAFT_FIELD_3, BUILDER, 390, fields, 110, LINE, "", "Change"));
         add(specs, children, button(DRAFT_ADD, BUILDER, 10, 218, 90, LINE, "", "Add or save"));
         add(specs, children, button(DRAFT_NEW, BUILDER, 110, 218, 70, LINE, "New step", "Start a new step"));
         add(specs, children, WidgetSpec.text(STATUS, BUILDER, 10, 262, 370, LINE, "", WHITE, FONT_PLAIN));
