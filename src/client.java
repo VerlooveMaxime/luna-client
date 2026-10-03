@@ -22,6 +22,7 @@ import java.util.Date;
 import java.util.zip.CRC32;
 
 import idlers.ChatMessages;
+import idlers.CompassMenu;
 import idlers.StatusOverlay;
 import luna.Constants;
 import luna.RsaParser;
@@ -862,6 +863,9 @@ public class client extends JagApplet {
             aBoolean1240 = true;
             super.anInt28 = 0;
         }
+        if (anInt1053 == -1 && worldMap.press(super.anInt28, super.anInt29, super.anInt30))
+            super.anInt28 = 0;
+        worldMap.tick(super.mouseX, super.mouseY, super.anInt21 == 1);
         method54(0);
         if (anInt1053 == -1) {
             method146((byte) 4);
@@ -3616,6 +3620,10 @@ public class client extends JagApplet {
                     k -= 17;
                     j1 -= 357;
                 }
+                if (anInt1304 == CompassMenu.MENU_AREA) {
+                    k -= CompassMenu.AREA_X;
+                    j1 -= CompassMenu.AREA_Y;
+                }
                 if (k < anInt1305 - 10 || k > anInt1305 + anInt1307 + 10 || j1 < anInt1306 - 10
                         || j1 > anInt1306 + anInt1308 + 10) {
                     aBoolean1065 = false;
@@ -3643,6 +3651,10 @@ public class client extends JagApplet {
                     k2 -= 17;
                     l2 -= 357;
                 }
+                if (anInt1304 == CompassMenu.MENU_AREA) {
+                    k2 -= CompassMenu.AREA_X;
+                    l2 -= CompassMenu.AREA_Y;
+                }
                 int i3 = -1;
                 for (int j3 = 0; j3 < anInt1183; j3++) {
                     int k3 = k1 + 31 + (anInt1183 - 1 - j3) * 15;
@@ -3652,6 +3664,8 @@ public class client extends JagApplet {
 
                 if (i3 != -1)
                     sendOutgoingPackets(i3, 8);
+                if (anInt1304 == CompassMenu.MENU_AREA)
+                    super.anInt28 = 0;
                 aBoolean1065 = false;
                 if (anInt1304 == 1)
                     aBoolean1181 = true;
@@ -4344,6 +4358,7 @@ public class client extends JagApplet {
             aClass50_Sub1_Sub1_Sub2_1060 = new JagFont(false, titleArchive, -914, "p12_full");
             aClass50_Sub1_Sub1_Sub2_1061 = new JagFont(false, titleArchive, -914, "b12_full");
             aClass50_Sub1_Sub1_Sub2_1062 = new JagFont(true, titleArchive, -914, "q8_full");
+            worldMap = new IdleWorldMap(aClass50_Sub1_Sub1_Sub2_1061);
             method139(aBoolean1207);
             method52(false);
             Archive configArchive = method61(14076, archiveHashes[2], "config", 30, 2, "config");
@@ -5767,6 +5782,8 @@ public class client extends JagApplet {
                 method44(aBoolean1190, walkableInterfaceId);
                 walkableInterfaceId = -1;
                 statusOverlay.clear();
+                if (worldMap != null)
+                    worldMap.close();
                 aBoolean1239 = false;
                 tabId = 3;
                 chatboxInterfaceType = 0;
@@ -6550,6 +6567,8 @@ public class client extends JagApplet {
             method130(i5, true, aClass50_Sub1_Sub1_Sub1_1036, k2);
         }
         Drawable.method449(3, 78, 0xffffff, (byte) -24, 3, 97);
+        if (aBoolean1065 && anInt1304 == CompassMenu.MENU_AREA)
+            method128(false);
         aClass18_1158.method230();
         ThreeDimensionalCanvas.anIntArray1538 = anIntArray1002;
     }
@@ -6693,7 +6712,7 @@ public class client extends JagApplet {
         method111(anInt1178);
         anInt915 = 0;
         anInt1315 = 0;
-        if (super.mouseX > 4 && super.mouseY > 4 && super.mouseX < 516 && super.mouseY < 338)
+        if (super.mouseX > 4 && super.mouseY > 4 && super.mouseX < 516 && super.mouseY < 338 && !worldMap.isOpen())
             if (anInt1169 != -1)
                 method66(4, JagInterface.forId(anInt1169), 0, 0, 4, super.mouseX, 23658, super.mouseY);
             else
@@ -6734,6 +6753,14 @@ public class client extends JagApplet {
         if ((anInt988 != -1 || anInt1191 != -1) && anInt1315 != anInt1284) {
             aBoolean1240 = true;
             anInt1284 = anInt1315;
+        }
+        if (CompassMenu.contains(super.mouseX, super.mouseY)) {
+            aStringArray1184[anInt1183] = CompassMenu.WORLD_MAP;
+            anIntArray981[anInt1183] = CompassMenu.WORLD_MAP_ACTION;
+            anInt1183++;
+            aStringArray1184[anInt1183] = CompassMenu.FACE_NORTH;
+            anIntArray981[anInt1183] = CompassMenu.FACE_NORTH_ACTION;
+            anInt1183++;
         }
         for (boolean flag = false; !flag; ) {
             flag = true;
@@ -7696,6 +7723,14 @@ public class client extends JagApplet {
             anInt1307 = j;
             anInt1308 = 15 * anInt1183 + 22;
         }
+        if (CompassMenu.contains(super.anInt29, super.anInt30)) {
+            aBoolean1065 = true;
+            anInt1304 = CompassMenu.MENU_AREA;
+            anInt1305 = CompassMenu.menuX(super.anInt29, j);
+            anInt1306 = CompassMenu.menuY(super.anInt30, i1);
+            anInt1307 = j;
+            anInt1308 = 15 * anInt1183 + 22;
+        }
     }
 
     public void method109(int i) {
@@ -7762,6 +7797,7 @@ public class client extends JagApplet {
                 outBuffer.putInt(0);
             }
         }
+        worldMap.draw(Drawable.anIntArray1424, Drawable.width, Drawable.height, nextTopLeftTileX + (((Actor) (thisPlayer)).unitX >> 7), nextTopLeftTileY + (((Actor) (thisPlayer)).unitY >> 7));
     }
 
     public void run() {
@@ -8260,6 +8296,12 @@ public class client extends JagApplet {
             opcode = buffer.getByte();
         if (i1 >= 2000)
             i1 -= 2000;
+        if (i1 == CompassMenu.FACE_NORTH_ACTION) {
+            anInt1252 = 0;
+            anInt1253 = 0;
+        }
+        if (i1 == CompassMenu.WORLD_MAP_ACTION)
+            worldMap.open(nextTopLeftTileX + (((Actor) (thisPlayer)).unitX >> 7), nextTopLeftTileY + (((Actor) (thisPlayer)).unitY >> 7));
         if (chatboxInterfaceType != 0 && i1 != 1016) {
             chatboxInterfaceType = 0;
             aBoolean1240 = true;
@@ -9500,6 +9542,10 @@ public class client extends JagApplet {
             j1 -= 17;
             k1 -= 357;
         }
+        if (anInt1304 == CompassMenu.MENU_AREA) {
+            j1 -= CompassMenu.AREA_X;
+            k1 -= CompassMenu.AREA_Y;
+        }
         for (int l1 = 0; l1 < anInt1183; l1++) {
             int i2 = j + 31 + (anInt1183 - 1 - l1) * 15;
             int j2 = 0xffffff;
@@ -10709,7 +10755,7 @@ public class client extends JagApplet {
         if (super.anInt28 == 1) {
             int i = super.anInt29 - 25 - 550;
             int j = super.anInt30 - 5 - 4;
-            if (i >= 0 && j >= 0 && i < 146 && j < 151) {
+            if (i >= 0 && j >= 0 && i < 146 && j < 151 && !CompassMenu.contains(super.anInt29, super.anInt30)) {
                 i -= 73;
                 j -= 75;
                 int k = anInt1252 + anInt916 & 0x7ff;
@@ -11773,6 +11819,7 @@ public class client extends JagApplet {
     public RgbSprite aClass50_Sub1_Sub1_Sub1Array1278[];
     public int walkableInterfaceId;
     // IdleRS: autopilot status drawn over the game view, fed by packet 100 (see StatusOverlay).
+    public IdleWorldMap worldMap;
     public final StatusOverlay statusOverlay = new StatusOverlay();
     public int anInt1280;
     public int anInt1281;
