@@ -2,6 +2,8 @@ package idlers;
 
 import org.junit.jupiter.api.Test;
 
+import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.HashSet;
 import java.util.Map;
 import java.util.Set;
@@ -10,6 +12,7 @@ import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertFalse;
 import static org.junit.jupiter.api.Assertions.assertNotNull;
 import static org.junit.jupiter.api.Assertions.assertNull;
+import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 
 class FlowWidgetsTest {
@@ -102,5 +105,14 @@ class FlowWidgetsTest {
         assertEquals(WidgetSpec.Kind.LAYER, specs.get(FlowWidgets.BUILDER).kind());
         assertEquals(-1, specs.get(FlowWidgets.TAB).parent());
         assertEquals(-1, specs.get(FlowWidgets.BUILDER).parent());
+    }
+
+    @Test
+    void definingAnIdTwiceFailsLoudly() {
+        Map<Integer, WidgetSpec> specs = new HashMap<>();
+        WidgetSpec spec = WidgetSpec.text(30001, 30000, 0, 0, 10, 10, "", 0, 0);
+        FlowWidgets.add(specs, new ArrayList<>(), spec);
+
+        assertThrows(IllegalStateException.class, () -> FlowWidgets.add(specs, new ArrayList<>(), spec));
     }
 }

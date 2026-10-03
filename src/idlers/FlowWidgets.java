@@ -160,7 +160,7 @@ public final class FlowWidgets {
         return WidgetSpec.button(id, parent, x, y, width, height, text, ORANGE, YELLOW, FONT_PLAIN, tooltip);
     }
 
-    private static void add(Map<Integer, WidgetSpec> specs, List<Integer> children, WidgetSpec spec) {
+    static void add(Map<Integer, WidgetSpec> specs, List<Integer> children, WidgetSpec spec) {
         if (specs.put(spec.id(), spec) != null) {
             throw new IllegalStateException("Widget id " + spec.id() + " defined twice");
         }

@@ -50,6 +50,15 @@ tasks.test {
     useJUnitPlatform()
 }
 
+// Line and branch coverage of our own code, the idlers packages, with the server's ratchet tasks and summary. The
+// default-package glue (IdleWidgets, IdleWorldMap) only wires the obfuscated client to them and is not counted.
+extra["idlersCoverageName"] = "client"
+extra["idlersCoverageClasses"] = sourceSets["main"].output.classesDirs.asFileTree.matching { include("idlers/**/*.class") }
+extra["maxMissedLines"] = 0
+extra["maxMissedBranches"] = 0
+extra["idlersRatchetFile"] = "luna-client/build.gradle.kts"
+apply(from = rootDir.resolve("luna/idlers-coverage.gradle.kts"))
+
 tasks.named<JavaExec>("run") {
     workingDir = projectDir
 }
