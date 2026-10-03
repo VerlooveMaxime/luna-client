@@ -4,6 +4,7 @@ import idlers.worldmap.LoadedMap;
 import idlers.worldmap.MapData;
 import idlers.worldmap.MapDataDecoder;
 import idlers.worldmap.MediaSprites;
+import idlers.worldmap.PickedTile;
 import idlers.worldmap.Raster;
 import idlers.worldmap.WorldMapAssets;
 import idlers.worldmap.WorldMapWindow;
@@ -40,13 +41,28 @@ final class IdleWorldMap {
     }
 
     void open(int worldX, int worldY) {
+        startLoading();
+        window.open(worldX, worldY);
+    }
+
+    /** Opened by the server for the flow builder: the next still click on the map picks a tile. */
+    void openToPick(int worldX, int worldY) {
+        startLoading();
+        window.openToPick(worldX, worldY);
+    }
+
+    /** The tile picked since the last call, or null; the client sends it to the server. */
+    PickedTile takePicked() {
+        return window.takePicked();
+    }
+
+    private void startLoading() {
         if (!loading) {
             loading = true;
             Thread loader = new Thread(this::load, "world-map-loader");
             loader.setDaemon(true);
             loader.start();
         }
-        window.open(worldX, worldY);
     }
 
     void close() {

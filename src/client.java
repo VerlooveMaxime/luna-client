@@ -24,6 +24,7 @@ import java.util.zip.CRC32;
 import idlers.ChatMessages;
 import idlers.CompassMenu;
 import idlers.StatusOverlay;
+import idlers.worldmap.PickedTile;
 import luna.Constants;
 import luna.RsaParser;
 import sign.signlink;
@@ -866,6 +867,12 @@ public class client extends JagApplet {
         if (anInt1053 == -1 && worldMap.press(super.anInt28, super.anInt29, super.anInt30))
             super.anInt28 = 0;
         worldMap.tick(super.mouseX, super.mouseY, super.anInt21 == 1);
+        PickedTile picked = worldMap.takePicked();
+        if (picked != null) { // IdleRS: the tile picked on the world map, for the flow builder
+            outBuffer.putOpcode(101);
+            outBuffer.putShort(picked.x());
+            outBuffer.putShort(picked.y());
+        }
         method54(0);
         if (anInt1053 == -1) {
             method146((byte) 4);
@@ -2532,6 +2539,13 @@ public class client extends JagApplet {
             }
             if (opcode == 100) { // IdleRS: autopilot status lines over the game view
                 statusOverlay.set(buffer.getString());
+                opcode = -1;
+                return true;
+            }
+            if (opcode == 101) { // IdleRS: the flow builder asks for a tile picked on the world map
+                int worldX = buffer.getShort();
+                int worldY = buffer.getShort();
+                worldMap.openToPick(worldX, worldY);
                 opcode = -1;
                 return true;
             }

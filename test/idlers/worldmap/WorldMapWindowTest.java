@@ -554,6 +554,166 @@ class WorldMapWindowTest {
         assertNull(window.hoveredTileText());
     }
 
+    private static WorldMapWindow openedToPick() {
+        WorldMapWindow window = window();
+        window.loaded(loadedMap());
+        window.openToPick(CENTRE_X, CENTRE_Y);
+        return window;
+    }
+
+    private static void click(WorldMapWindow window, int pressX, int pressY, int releaseX, int releaseY) {
+        window.press(pressX, pressY, true);
+        window.mouse(releaseX, releaseY, false);
+    }
+
+    @Test
+    void aStillClickWhilePickingPicksTheTileAndCloses() {
+        WorldMapWindow window = openedToPick();
+
+        click(window, 256, 167, 256, 167);
+
+        assertEquals(new PickedTile(CENTRE_X, CENTRE_Y), window.takePicked());
+        assertFalse(window.isOpen());
+    }
+
+    @Test
+    void aClickThatWobblesAFewPixelsPicksTheTileItWasPressedOn() {
+        WorldMapWindow window = openedToPick();
+
+        click(window, 256, 167, 259, 164);
+
+        assertEquals(new PickedTile(CENTRE_X, CENTRE_Y), window.takePicked());
+    }
+
+    @Test
+    void movingFourPixelsAcrossIsADragAndPicksNothing() {
+        WorldMapWindow window = openedToPick();
+
+        click(window, 256, 167, 260, 167);
+
+        assertNull(window.takePicked());
+        assertTrue(window.isOpen());
+    }
+
+    @Test
+    void movingFourPixelsDownIsADragAndPicksNothing() {
+        WorldMapWindow window = openedToPick();
+
+        click(window, 256, 167, 256, 171);
+
+        assertNull(window.takePicked());
+    }
+
+    @Test
+    void aPickIsHandedOverOnce() {
+        WorldMapWindow window = openedToPick();
+        click(window, 256, 167, 256, 167);
+        window.takePicked();
+
+        assertNull(window.takePicked());
+    }
+
+    @Test
+    void aClickOnAButtonWhilePickingPicksNothing() {
+        WorldMapWindow window = openedToPick();
+
+        click(window, 470, 10, 470, 10);
+
+        assertNull(window.takePicked());
+    }
+
+    @Test
+    void openedToLookAClickPicksNothing() {
+        WorldMapWindow window = opened();
+
+        click(window, 256, 167, 256, 167);
+
+        assertNull(window.takePicked());
+        assertTrue(window.isOpen());
+    }
+
+    @Test
+    void reopenedToLookAfterBeingOpenedToPickAClickPicksNothing() {
+        WorldMapWindow window = openedToPick();
+        window.open(CENTRE_X, CENTRE_Y);
+
+        click(window, 256, 167, 256, 167);
+
+        assertNull(window.takePicked());
+    }
+
+    @Test
+    void closingBetweenPressAndReleaseCancelsThePick() {
+        WorldMapWindow window = openedToPick();
+        window.press(256, 167, true);
+        window.close();
+
+        window.mouse(256, 167, false);
+
+        assertNull(window.takePicked());
+    }
+
+    @Test
+    void aClickOffTheEdgeOfASmallMapPicksNothing() {
+        WorldMapWindow window = window();
+        window.loaded(LoadedMap.build(TestMaps.map(100, 100).build(), new WorldMapAssets(new MapSprite[0],
+                new MapSprite[0], TestMaps.blockLabelFonts())));
+        window.openToPick(1050, 2050);
+
+        click(window, 200, 30, 200, 30);
+
+        assertNull(window.takePicked());
+        assertTrue(window.isOpen());
+    }
+
+    @Test
+    void whilePickingTheHintTakesTheTopLine() {
+        WorldMapWindow window = dotFontWindow();
+        window.openToPick(CENTRE_X, CENTRE_Y);
+        window.mouse(-1, -1, false);
+
+        Raster raster = drawn(window, CENTRE_X, CENTRE_Y);
+
+        assertEquals(List.of(true, false), List.of(textOnRow(raster, 15), textOnRow(raster, 19)));
+    }
+
+    @Test
+    void whilePickingTheHoveredTileMovesBelowTheHint() {
+        WorldMapWindow window = dotFontWindow();
+        window.openToPick(CENTRE_X, CENTRE_Y);
+        window.mouse(256, 167, false);
+
+        assertTrue(textOnRow(drawn(window, CENTRE_X, CENTRE_Y), 19));
+    }
+
+    @Test
+    void openedToLookNoHintIsShown() {
+        WorldMapWindow window = dotFontWindow();
+        window.open(CENTRE_X, CENTRE_Y);
+        window.mouse(-1, -1, false);
+
+        assertFalse(textOnRow(drawn(window, CENTRE_X, CENTRE_Y), 15));
+    }
+
+    /** A loaded window whose font draws every character as a one-pixel dot just above the baseline. */
+    private static WorldMapWindow dotFontWindow() {
+        BitmapFont.Glyph[] glyphs = new BitmapFont.Glyph[128];
+        java.util.Arrays.fill(glyphs, new BitmapFont.Glyph(new byte[]{1}, 1, 1, 0, -1, 2));
+        WorldMapWindow window = new WorldMapWindow(512, 334, new BitmapFont(glyphs, 3, 4));
+        window.loaded(loadedMap());
+        return window;
+    }
+
+    /** Whether text is drawn on a row of the middle of the view, clear of the buttons. */
+    private static boolean textOnRow(Raster raster, int row) {
+        for (int x = 150; x < 362; x++) {
+            if (raster.pixel(x, row) == WorldMapWindow.TEXT_RGB) {
+                return true;
+            }
+        }
+        return false;
+    }
+
     private static String hovered(WorldMapWindow window, int x, int y) {
         window.mouse(x, y, false);
         return window.hoveredTileText();

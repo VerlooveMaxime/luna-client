@@ -4,12 +4,14 @@ import java.util.List;
 
 /**
  * The world map window over the game view: open or closed, the loaded map once the loader thread hands it over, the
- * view, the Key and the Overview, mouse handling and drawing. Coordinates are view pixels, (0, 0) top left.
+ * view, the Key and the Overview, mouse handling and drawing. Opened to pick a tile, a click on the map that does not
+ * drag it picks the tile under the mouse and closes the window. Coordinates are view pixels, (0, 0) top left.
  */
 public final class WorldMapWindow {
 
     static final ZoomLevel FIRST_ZOOM = ZoomLevel.P50;
     static final String LOADING_TEXT = "Please wait... Rendering Map";
+    static final String PICK_HINT = "Click a tile to pick it";
 
     static final int BACKGROUND_RGB = 0;
     static final int TEXT_RGB = 0xffffff;
@@ -33,6 +35,8 @@ public final class WorldMapWindow {
     private static final int KEY_NAME_BASELINE = 13;
     private static final int OVERVIEW_DOT_RADIUS = 2;
     private static final int SOLID = 256;
+    /** How far the mouse may move between press and release for a pick, so a drag never picks. */
+    private static final int CLICK_SLOP = 3;
 
     private final int viewWidth;
     private final int viewHeight;
@@ -51,6 +55,10 @@ public final class WorldMapWindow {
     private boolean overviewShown;
     private boolean overviewDragging;
     private boolean centreRequested;
+    private boolean picking;
+    private int pickPressX = -1;
+    private int pickPressY;
+    private PickedTile picked;
     private int requestedX;
     private int requestedY;
     private int mouseX = -1;
@@ -72,7 +80,25 @@ public final class WorldMapWindow {
 
     /** Opens the window centred on the given tile; before the map has loaded, it is centred once it arrives. */
     public void open(int worldX, int worldY) {
+        openOn(worldX, worldY, false);
+    }
+
+    /** Opens the window like {@link #open} to pick a tile; {@link #takePicked} hands the pick over. */
+    public void openToPick(int worldX, int worldY) {
+        openOn(worldX, worldY, true);
+    }
+
+    /** The tile picked since the last call, or null. */
+    public PickedTile takePicked() {
+        PickedTile tile = picked;
+        picked = null;
+        return tile;
+    }
+
+    private void openOn(int worldX, int worldY, boolean pick) {
         open = true;
+        picking = pick;
+        pickPressX = -1;
         requestedX = worldX;
         requestedY = worldY;
         centreRequested = true;
@@ -81,6 +107,8 @@ public final class WorldMapWindow {
 
     public void close() {
         open = false;
+        picking = false;
+        pickPressX = -1;
         overviewDragging = false;
         if (view != null) {
             view.endDrag();
@@ -150,6 +178,10 @@ public final class WorldMapWindow {
             jumpToOverview(x, y);
         } else {
             view.startDrag(x, y);
+            if (picking) {
+                pickPressX = x;
+                pickPressY = y;
+            }
         }
     }
 
@@ -189,12 +221,27 @@ public final class WorldMapWindow {
             return;
         }
         if (!held) {
+            if (pickPressX >= 0) {
+                release(x, y);
+            }
             view.endDrag();
             overviewDragging = false;
         } else if (overviewDragging && layout.overview().contains(x, y)) {
             jumpToOverview(x, y);
         } else {
             view.dragTo(x, y);
+        }
+    }
+
+    /** A release after a press on the map while picking: a still click picks the tile it was pressed on. */
+    private void release(int x, int y) {
+        boolean still = Math.abs(x - pickPressX) <= CLICK_SLOP && Math.abs(y - pickPressY) <= CLICK_SLOP;
+        int column = view.columnAt(pickPressX);
+        int row = view.rowAt(pickPressY);
+        pickPressX = -1;
+        if (still && map.data().contains(column, row)) {
+            picked = new PickedTile(map.data().worldX(column), map.data().worldY(row));
+            close();
         }
     }
 
@@ -365,10 +412,16 @@ public final class WorldMapWindow {
         font.drawCentred(target, text, x + width / 2, y + height / 2 + 4, TEXT_RGB, true);
     }
 
+    /** While picking, the hint takes the top line and the coordinates go below it. */
     private void drawHoveredTile(Raster target) {
+        int baseline = COORDINATES_BASELINE;
+        if (picking) {
+            font.drawCentred(target, PICK_HINT, viewWidth / 2, baseline, TEXT_RGB, true);
+            baseline += font.lineHeight();
+        }
         String text = hoveredTileText();
         if (text != null) {
-            font.drawCentred(target, text, viewWidth / 2, COORDINATES_BASELINE, TEXT_RGB, true);
+            font.drawCentred(target, text, viewWidth / 2, baseline, TEXT_RGB, true);
         }
     }
 
