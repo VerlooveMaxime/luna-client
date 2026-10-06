@@ -1,19 +1,24 @@
 import idlers.FlowWidgets;
+import idlers.QuestJournal;
 import idlers.WidgetSpec;
 
 /**
- * IdleRS: builds the {@link JagInterface} of a widget defined in code ({@link FlowWidgets}) when the client asks for
- * an id the cache has no data for. Rebuilt on demand, so closing an interface can drop them like cache widgets.
+ * IdleRS: builds the {@link JagInterface} of a widget defined in code ({@link FlowWidgets}, {@link QuestJournal}) when
+ * the client asks for an id the cache has no data for. Rebuilt on demand, so closing an interface can drop them like
+ * cache widgets.
  */
 final class IdleWidgets {
 
-    static final int CAPACITY = FlowWidgets.ID_LIMIT;
+    /** The journal's ids follow the flow widgets', so its limit covers both. */
+    static final int CAPACITY = QuestJournal.ID_LIMIT;
 
     private IdleWidgets() {
     }
 
     static JagInterface build(int id) {
         WidgetSpec spec = FlowWidgets.spec(id);
+        if (spec == null)
+            spec = QuestJournal.spec(id);
         if (spec == null)
             return null;
         JagInterface inter = new JagInterface();
@@ -54,6 +59,15 @@ final class IdleWidgets {
             inter.tooltip = spec.tooltip();
         }
         return inter;
+    }
+
+    /** Puts the stages on top of the quest journal's list, as {@link QuestJournal} lays them out. */
+    static void addStages(JagInterface list) {
+        QuestJournal.Layout layout = QuestJournal.withStages(list.anIntArray258, list.anIntArray232, list.anIntArray276, list.anInt285);
+        list.anIntArray258 = layout.ids();
+        list.anIntArray232 = layout.xs();
+        list.anIntArray276 = layout.ys();
+        list.anInt285 = layout.scrollHeight();
     }
 
     /** The Idle tab's icon ({@link idlers.IdleTabIcon}) as a client sprite. */

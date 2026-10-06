@@ -29,6 +29,8 @@ public class JagInterface {
 			JagBuffer buf = new JagBuffer(data[id]);
 			int j = buf.getShort();
 			interfaces[id] = parse(j, buf, id);
+			if (id == idlers.QuestJournal.LIST) // IdleRS: the stages on top of the quest list
+				IdleWidgets.addStages(interfaces[id]);
 		}
 		return interfaces[id];
 	}
