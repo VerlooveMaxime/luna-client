@@ -23,6 +23,7 @@ import java.util.zip.CRC32;
 
 import idlers.ChatMessages;
 import idlers.CompassMenu;
+import idlers.IdleTabIcon;
 import idlers.StatusOverlay;
 import idlers.worldmap.PickedTile;
 import luna.Constants;
@@ -4522,6 +4523,7 @@ public class client extends JagApplet {
             aClass50_Sub1_Sub1_Sub3_967 = new IndexedSprite(mediaArchive, "backhmid1", 0);
             for (int k3 = 0; k3 < 13; k3++)
                 aClass50_Sub1_Sub1_Sub3Array976[k3] = new IndexedSprite(mediaArchive, "sideicons", k3);
+            idleTabIcon = IdleWidgets.tabIcon();
 
             aClass50_Sub1_Sub1_Sub1_1116 = new RgbSprite(mediaArchive, "compass", 0);
             aClass50_Sub1_Sub1_Sub1_1247 = new RgbSprite(mediaArchive, "mapedge", 0);
@@ -5466,9 +5468,10 @@ public class client extends JagApplet {
                     aClass50_Sub1_Sub1_Sub3Array976[11].method490(2, 201, -488);
                 if (anIntArray1081[13] != -1 && (anInt1213 != 13 || pulseCycle % 20 < 10))
                     aClass50_Sub1_Sub1_Sub3Array976[12].method490(2, 226, -488);
-                // IdleRS: tab 7 has no icon in the sprite sheet, label it while a tab interface is set (IdleWidgets).
-                if (anIntArray1081[7] != -1)
-                    aClass50_Sub1_Sub1_Sub2_1059.method478(0xff981f, 47, 25, true, "Idle", -39629);
+                // IdleRS: tab 7 has no icon in the sprite sheet; draw ours while a tab interface is set, blinking like
+                // the others while the tab flashes (IdleTabIcon).
+                if (anIntArray1081[7] != -1 && (anInt1213 != 7 || pulseCycle % 20 < 10))
+                    idleTabIcon.method461(IdleTabIcon.Y, IdleTabIcon.X, -488);
             }
             aClass18_1109.method231(496, 466, super.graphics);
             aClass18_1158.method230();
@@ -11834,6 +11837,7 @@ public class client extends JagApplet {
     public int walkableInterfaceId;
     // IdleRS: autopilot status drawn over the game view, fed by packet 100 (see StatusOverlay).
     public IdleWorldMap worldMap;
+    public RgbSprite idleTabIcon;
     public final StatusOverlay statusOverlay = new StatusOverlay();
     public int anInt1280;
     public int anInt1281;

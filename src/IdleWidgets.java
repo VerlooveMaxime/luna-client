@@ -55,4 +55,12 @@ final class IdleWidgets {
         }
         return inter;
     }
+
+    /** The Idle tab's icon ({@link idlers.IdleTabIcon}) as a client sprite. */
+    static RgbSprite tabIcon() {
+        RgbSprite sprite = new RgbSprite(idlers.IdleTabIcon.WIDTH, idlers.IdleTabIcon.HEIGHT);
+        int[] pixels = idlers.IdleTabIcon.pixels();
+        System.arraycopy(pixels, 0, sprite.anIntArray1489, 0, pixels.length);
+        return sprite;
+    }
 }
