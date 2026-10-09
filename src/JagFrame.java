@@ -3,6 +3,7 @@
 // Decompiler options: packimports(3)
 
 import idlers.GameViewport;
+import idlers.WindowSize;
 
 import java.awt.Color;
 import java.awt.Dimension;
@@ -15,6 +16,7 @@ import java.awt.Rectangle;
 import java.awt.RenderingHints;
 import java.awt.event.ComponentAdapter;
 import java.awt.event.ComponentEvent;
+import java.nio.file.Path;
 
 // IdleRS: the window is resizable and the game screen is scaled to fill it (see idlers.GameViewport). Every draw goes
 // through getGraphics(), so scaling that Graphics scales the whole client; mouse events are mapped back by the applet.
@@ -31,14 +33,15 @@ public class JagFrame extends Frame {
 		Insets insets = getInsets();
 		int borderWidth = insets.left + insets.right;
 		int borderHeight = insets.top + insets.bottom;
-		double scale = initialScale(borderWidth, borderHeight);
+		WindowSize size = initialSize(borderWidth, borderHeight);
 		setMinimumSize(new Dimension(width + borderWidth, height + borderHeight));
-		setSize((int) Math.round(width * scale) + borderWidth, (int) Math.round(height * scale) + borderHeight);
+		setSize(size.width(), size.height());
 		viewport = fitViewport();
 		addComponentListener(new ComponentAdapter() {
 			@Override
 			public void componentResized(ComponentEvent event) {
 				refreshViewport();
+				new WindowSize(getWidth(), getHeight()).write(SIZE_FILE); // IdleRS: reopened at this size
 			}
 		});
 		setVisible(true);
@@ -77,16 +80,15 @@ public class JagFrame extends Frame {
 		applet.paint(g);
 	}
 
-	private double initialScale(int borderWidth, int borderHeight) {
+	private WindowSize initialSize(int borderWidth, int borderHeight) {
 		Rectangle screen = GraphicsEnvironment.getLocalGraphicsEnvironment().getMaximumWindowBounds();
-		int maxWidth = screen.width - borderWidth;
-		int maxHeight = screen.height - borderHeight;
+		WindowSize saved = WindowSize.read(SIZE_FILE).orElse(null);
 		try {
-			return GameViewport.initialScale(System.getenv(GameViewport.SCALE_VARIABLE), gameWidth, gameHeight,
-					maxWidth, maxHeight);
+			return WindowSize.initial(System.getenv(GameViewport.SCALE_VARIABLE), saved, gameWidth, gameHeight,
+					borderWidth, borderHeight, screen.width, screen.height);
 		} catch (IllegalArgumentException e) {
 			System.err.println(e.getMessage() + ", opening at the auto scale instead");
-			return GameViewport.initialScale("auto", gameWidth, gameHeight, maxWidth, maxHeight);
+			return WindowSize.initial("auto", null, gameWidth, gameHeight, borderWidth, borderHeight, screen.width, screen.height);
 		}
 	}
 
@@ -111,6 +113,8 @@ public class JagFrame extends Frame {
 		applet.graphics = getGraphics();
 		applet.update(applet.graphics);
 	}
+
+	private static final Path SIZE_FILE = Path.of(WindowSize.FILE);
 
 	public JagApplet applet;
 	private final int gameWidth;
