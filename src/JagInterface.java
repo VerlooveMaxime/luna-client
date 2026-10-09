@@ -188,7 +188,7 @@ public class JagInterface {
 			String s = buf.getString();
 			if (s.length() > 0) {
 				int l3 = s.lastIndexOf(",");
-				inter.aClass50_Sub1_Sub1_Sub1_212 = method194(Integer.parseInt(s.substring(l3 + 1)), s.substring(0,
+				inter.sprite = method194(Integer.parseInt(s.substring(l3 + 1)), s.substring(0,
 						l3), 373);
 			}
 			s = buf.getString();
@@ -358,7 +358,7 @@ public class JagInterface {
 
 	public static int anInt210;
 	public String aString211;
-	public RgbSprite aClass50_Sub1_Sub1_Sub1_212;
+	public RgbSprite sprite;
 	public int anIntArray213[];
 	public static Archive aClass2_214;
 	public int id;

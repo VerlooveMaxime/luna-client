@@ -7437,27 +7437,27 @@ public class client extends JagApplet {
         }
         if (i == 324) {
             if (aClass50_Sub1_Sub1_Sub1_1102 == null) {
-                aClass50_Sub1_Sub1_Sub1_1102 = class13.aClass50_Sub1_Sub1_Sub1_212;
+                aClass50_Sub1_Sub1_Sub1_1102 = class13.sprite;
                 aClass50_Sub1_Sub1_Sub1_1103 = class13.aClass50_Sub1_Sub1_Sub1_245;
             }
             if (aBoolean1144) {
-                class13.aClass50_Sub1_Sub1_Sub1_212 = aClass50_Sub1_Sub1_Sub1_1103;
+                class13.sprite = aClass50_Sub1_Sub1_Sub1_1103;
                 return;
             } else {
-                class13.aClass50_Sub1_Sub1_Sub1_212 = aClass50_Sub1_Sub1_Sub1_1102;
+                class13.sprite = aClass50_Sub1_Sub1_Sub1_1102;
                 return;
             }
         }
         if (i == 325) {
             if (aClass50_Sub1_Sub1_Sub1_1102 == null) {
-                aClass50_Sub1_Sub1_Sub1_1102 = class13.aClass50_Sub1_Sub1_Sub1_212;
+                aClass50_Sub1_Sub1_Sub1_1102 = class13.sprite;
                 aClass50_Sub1_Sub1_Sub1_1103 = class13.aClass50_Sub1_Sub1_Sub1_245;
             }
             if (aBoolean1144) {
-                class13.aClass50_Sub1_Sub1_Sub1_212 = aClass50_Sub1_Sub1_Sub1_1102;
+                class13.sprite = aClass50_Sub1_Sub1_Sub1_1102;
                 return;
             } else {
-                class13.aClass50_Sub1_Sub1_Sub1_212 = aClass50_Sub1_Sub1_Sub1_1103;
+                class13.sprite = aClass50_Sub1_Sub1_Sub1_1103;
                 return;
             }
         }
@@ -10569,7 +10569,7 @@ public class client extends JagApplet {
                     if (method95(class13_1, -693))
                         class50_sub1_sub1_sub1 = class13_1.aClass50_Sub1_Sub1_Sub1_245;
                     else
-                        class50_sub1_sub1_sub1 = class13_1.aClass50_Sub1_Sub1_Sub1_212;
+                        class50_sub1_sub1_sub1 = class13_1.sprite;
                     if (class50_sub1_sub1_sub1 != null)
                         class50_sub1_sub1_sub1.method461(l2, k2, -488);
                 } else if (class13_1.anInt236 == 6) {
