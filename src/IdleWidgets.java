@@ -117,7 +117,12 @@ final class IdleWidgets {
     /** Packet 102: what a picture widget shows ({@link WidgetPicture}). */
     static void picture(JagBuffer buffer) {
         JagInterface inter = JagInterface.forId(buffer.getShort());
-        WidgetPicture picture = WidgetPicture.read(new WidgetPicture.Reader() {
+        show(inter, WidgetPicture.read(reader(buffer)));
+    }
+
+    /** The parts of an incoming packet our readers take: unsigned bytes and shorts, newline-ended strings. */
+    static WidgetPicture.Reader reader(JagBuffer buffer) {
+        return new WidgetPicture.Reader() {
             public int u8() {
                 return buffer.getByte();
             }
@@ -129,7 +134,11 @@ final class IdleWidgets {
             public String string() {
                 return buffer.getString();
             }
-        });
+        };
+    }
+
+    /** Makes picture widget {@code inter} show {@code picture}, from the next draw on. */
+    static void show(JagInterface inter, WidgetPicture picture) {
         inter.anInt236 = 5;
         inter.sprite = null;
         inter.mediaType = 0;
@@ -143,14 +152,11 @@ final class IdleWidgets {
                 inter.mediaId = item.id();
             }
             case WidgetPicture.NpcBody npc -> {
-                NpcDefinition shown = NpcDefinition.forId(npc.id());
-                if (shown.morphIds != null)
-                    shown = shown.morph(false);
                 inter.anInt236 = 6;
                 inter.mediaType = NPC_BODY;
                 inter.mediaId = npc.id();
                 inter.modelZoom = 0;
-                inter.modelAnimation = shown == null ? -1 : shown.standAnimation;
+                inter.modelAnimation = standAnimation(npc.id());
                 inter.activeModelAnimation = -1;
                 inter.modelAnimationFrame = 0;
             }
@@ -174,9 +180,11 @@ final class IdleWidgets {
      */
     static void frameNpcBody(JagInterface inter) {
         Model body = npcBodyModel(inter.mediaId);
-        if (body != null && inter.modelZoom == 0)
-            inter.modelZoom = ModelFit.zoom(body.verticesX, body.verticesY, body.verticesZ, body.verticesCount,
-                    inter.modelPitch, inter.modelYaw, inter.anInt241, inter.anInt238);
+        if (body == null || inter.modelZoom != 0)
+            return;
+        ModelFit.Vertices framed = framed(posed(body, inter.mediaId));
+        inter.modelZoom = ModelFit.zoom(framed.xs(), framed.ys(), framed.zs(), framed.count(), inter.modelPitch, inter.modelYaw,
+                inter.anInt241, inter.anInt238);
     }
 
     /** {@code JagInterface.method197}'s model for an npc body, centred; null until its models arrive. */
@@ -187,10 +195,39 @@ final class IdleWidgets {
         body = NpcDefinition.forId(npcId).getBodyModel();
         if (body == null)
             return null;
-        ModelFit.Centre centre = ModelFit.centre(body.verticesX, body.verticesY, body.verticesZ, body.verticesCount);
+        ModelFit.Vertices framed = framed(posed(body, npcId));
+        ModelFit.Centre centre = ModelFit.centre(framed.xs(), framed.ys(), framed.zs(), framed.count());
         body.translate(centre.dx(), centre.dy(), centre.dz());
         NPC_BODIES.put(npcId, body);
         return body;
+    }
+
+    /**
+     * The body as its widget first draws it, in the first frame of its stand animation, which moves or shrinks some
+     * bodies a lot (a giant frog unposed is four times its drawn size). A copy whose vertices sit in the client's
+     * shared buffers: use it at once.
+     */
+    private static Model posed(Model body, int npcId) {
+        int animation = standAnimation(npcId);
+        if (animation == -1 || Animation.animations[animation] == null)
+            return body;
+        Model posed = new Model(false, false, true, body, false);
+        posed.groupIndicesByTransform();
+        posed.applyAnimation(Animation.animations[animation].frameIds[0], (byte) 6);
+        return posed;
+    }
+
+    /** The stand animation of the npc as the player sees it, -1 for none. */
+    private static int standAnimation(int npcId) {
+        NpcDefinition shown = NpcDefinition.forId(npcId);
+        if (shown.morphIds != null)
+            shown = shown.morph(false);
+        return shown == null ? -1 : shown.standAnimation;
+    }
+
+    private static ModelFit.Vertices framed(Model body) {
+        return ModelFit.framed(body.verticesX, body.verticesY, body.verticesZ, body.verticesCount, body.faceIndicesX,
+                body.faceIndicesY, body.faceIndicesZ, body.faceTransparency, body.faceCount);
     }
 
     /** A press on {@code widgetId}: true when it starts dragging a tile, drawn above its neighbours from now on. */

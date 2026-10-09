@@ -15,7 +15,8 @@ import static idlers.WidgetSpecs.add;
  * A developer screen showing every kind of code-defined widget at work (`::widgets` on the server, which mirrors
  * these ids in {@code game.idle.ui.GalleryWidgets} and fills the pictures and the tiles' texts): draggable hover tiles
  * in a scrolling layer, nested layers, a tooltip, greyed and struck text, the step icons at the sizes the builder may
- * use, item icons, npc bodies, and a layer the server hides and shows.
+ * use, item icons, npc bodies, a layer the server hides and shows, and buttons that open the chatbox search over
+ * real option lists.
  */
 public final class WidgetGallery {
 
@@ -59,6 +60,11 @@ public final class WidgetGallery {
     /** The item icons at full size, then shrunk. */
     public static final List<Integer> ITEM_SIZES = List.of(32, 18);
     public static final int ITEM_KINDS = 2;
+
+    private static final int SEARCH_BASE = 30591;
+    /** The searches the server opens, in its order, with each button's width: its text in the plain font. */
+    public static final List<String> SEARCHES = List.of("Trees", "Fish", "Skills", "Banks", "Fight", "Items");
+    private static final List<Integer> SEARCH_WIDTHS = List.of(31, 23, 29, 34, 28, 31);
 
     private static final int NPC_BASE = 30581;
     private static final int NPC_NAME_BASE = 30585;
@@ -111,6 +117,10 @@ public final class WidgetGallery {
         return NPC_NAME_BASE + npc;
     }
 
+    public static int search(int search) {
+        return SEARCH_BASE + search;
+    }
+
     public static int tile(int tile) {
         return TILE_BASE + tile * TILE_STRIDE;
     }
@@ -153,9 +163,10 @@ public final class WidgetGallery {
         add(specs, children, hideable(specs));
         add(specs, children, button(HIDE, RIGHT, 282, 36, "Hide", "Hide the nested layer"));
         add(specs, children, button(SHOW, RIGHT + 44, 282, 40, "Show", "Show the nested layer"));
-        add(specs, children, WidgetSpec.text(OPENED_LINE, GALLERY, 8, 296, 496, LINE, "", FlowWidgets.YELLOW, FONT_PLAIN));
+        add(specs, children, WidgetSpec.text(OPENED_LINE, GALLERY, 8, 296, RIGHT - 16, LINE, "", FlowWidgets.YELLOW, FONT_PLAIN));
+        searches(specs, children);
         add(specs, children, WidgetSpec.text(LEGEND, GALLERY, 8, 314, 496, LINE,
-                "Click or drag a tile; tiles and buttons answer in the chat box. Close and open: the gallery comes back fresh.",
+                "Click or drag a tile, open a search; answers come in the chat box. Reopened, the gallery is fresh.",
                 FlowWidgets.GREY, FONT_SMALL));
         // Last, so the box the client draws under the hovered area covers the widgets below it.
         add(specs, children, WidgetSpec.text(TOOLTIP_TEXT, GALLERY, RIGHT + 96, 166, 140, LINE, "Hover here for 2 s", FlowWidgets.WHITE, FONT_PLAIN));
@@ -218,6 +229,16 @@ public final class WidgetGallery {
                     25, 25, 0, 0));
             add(specs, children, new WidgetSpec.Picture(icon(1, kind), GALLERY, RIGHT + kind * 19, 102, 18, 18, 0, 0));
             add(specs, children, new WidgetSpec.Picture(icon(2, kind), GALLERY, RIGHT + kind * 19, 124, 13, 13, 0, 0));
+        }
+    }
+
+    /** The search buttons in a row, 6 px apart. */
+    private static void searches(Map<Integer, WidgetSpec> specs, List<Integer> children) {
+        int x = RIGHT;
+        for (int search = 0; search < SEARCHES.size(); search++) {
+            add(specs, children, button(search(search), x, 296, SEARCH_WIDTHS.get(search), SEARCHES.get(search),
+                    "Search " + SEARCHES.get(search).toLowerCase()));
+            x += SEARCH_WIDTHS.get(search) + 6;
         }
     }
 

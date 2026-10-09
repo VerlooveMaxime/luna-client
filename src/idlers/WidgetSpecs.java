@@ -6,13 +6,17 @@ import java.util.List;
 import java.util.Map;
 import java.util.Optional;
 
-/** Every widget IdleRS defines in code: the flow widgets, the quest journal's stages and the widget gallery. */
+/**
+ * Every widget IdleRS defines in code: the flow widgets, the quest journal's stages, the widget gallery and the search
+ * prompt's icons.
+ */
 public final class WidgetSpecs {
 
-    /** Room the client makes for widget ids; the gallery's ids come last. */
-    public static final int CAPACITY = WidgetGallery.ID_LIMIT;
+    /** Room the client makes for widget ids; the search prompt's ids come last. */
+    public static final int CAPACITY = SearchWidgets.ID_LIMIT;
 
-    private static final Map<Integer, WidgetSpec> ALL = merge(List.of(FlowWidgets.specs(), QuestJournal.specs(), WidgetGallery.specs()));
+    private static final Map<Integer, WidgetSpec> ALL = merge(List.of(FlowWidgets.specs(), QuestJournal.specs(), WidgetGallery.specs(),
+            SearchWidgets.specs()));
 
     private WidgetSpecs() {
     }

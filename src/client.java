@@ -24,6 +24,7 @@ import java.util.zip.CRC32;
 import idlers.ChatMessages;
 import idlers.CompassMenu;
 import idlers.IdleTabIcon;
+import idlers.SearchGrid;
 import idlers.StatusOverlay;
 import idlers.worldmap.PickedTile;
 import luna.Constants;
@@ -1170,6 +1171,11 @@ public class client extends JagApplet {
                 }
                 if (key == 8 && chatboxInput.length() > 0) {
                     chatboxInput = chatboxInput.substring(0, chatboxInput.length() - 1);
+                    aBoolean1240 = true;
+                }
+                if (key == 27) { // IdleRS: Escape closes the search and tells the server
+                    IdleSearch.sendClosed(outBuffer);
+                    chatboxInterfaceType = 0;
                     aBoolean1240 = true;
                 }
             } else if (anInt988 == -1 && anInt1053 == -1) {
@@ -2555,6 +2561,23 @@ public class client extends JagApplet {
             }
             if (opcode == 102) { // IdleRS: a picture on a widget defined in code
                 IdleWidgets.picture(buffer);
+                opcode = -1;
+                return true;
+            }
+            if (opcode == IdleSearch.OPEN) { // IdleRS: the server opens the chatbox search in the dead item search's slot
+                IdleSearch.open(buffer);
+                aBoolean866 = false;
+                chatboxInterfaceType = 3;
+                chatboxInput = "";
+                anInt865 = 0;
+                aBoolean1240 = true;
+                opcode = -1;
+                return true;
+            }
+            if (opcode == IdleSearch.ROWS) { // IdleRS: a page of the chatbox search's rows
+                if (IdleSearch.fill(buffer))
+                    anInt865 = 0;
+                aBoolean1240 = true;
                 opcode = -1;
                 return true;
             }
@@ -4397,6 +4420,7 @@ public class client extends JagApplet {
             aClass50_Sub1_Sub1_Sub2_1060 = new JagFont(false, titleArchive, -914, "p12_full");
             aClass50_Sub1_Sub1_Sub2_1061 = new JagFont(false, titleArchive, -914, "b12_full");
             aClass50_Sub1_Sub1_Sub2_1062 = new JagFont(true, titleArchive, -914, "q8_full");
+            IdleSearch.fonts(aClass50_Sub1_Sub1_Sub2_1059, aClass50_Sub1_Sub1_Sub2_1060, aClass50_Sub1_Sub1_Sub2_1061);
             worldMap = new IdleWorldMap(aClass50_Sub1_Sub1_Sub2_1061);
             method139(aBoolean1207);
             method52(false);
@@ -5381,20 +5405,17 @@ public class client extends JagApplet {
                 aBoolean1240 = true;
             }
         }
-        if (anInt988 == -1 && chatboxInterfaceType == 3) {
-            int k = anInt862 * 14 + 7;
+        if (anInt988 == -1 && chatboxInterfaceType == 3) { // IdleRS: the search's rows scroll under its title
             aClass13_1249.anInt231 = anInt865;
-            if (super.mouseX > 448 && super.mouseX < 560 && super.mouseY > 332)
-                method42(k, 0, aClass13_1249, (byte) 102, super.mouseY - 357, -1, super.mouseX - 17, 77, 463);
-            int i1 = aClass13_1249.anInt231;
-            if (i1 < 0)
-                i1 = 0;
-            if (i1 > k - 77)
-                i1 = k - 77;
+            if (super.mouseX > 448 && super.mouseX < 560 && super.mouseY > 332 && IdleSearch.scrolls())
+                method42(IdleSearch.contentHeight(), SearchGrid.TOP, aClass13_1249, (byte) 102,
+                        super.mouseY - 357, -1, super.mouseX - 17, SearchGrid.HEIGHT, 463);
+            int i1 = IdleSearch.clampScroll(aClass13_1249.anInt231);
             if (anInt865 != i1) {
                 anInt865 = i1;
                 aBoolean1240 = true;
             }
+            IdleSearch.update(outBuffer, chatboxInput, anInt865, System.currentTimeMillis());
         }
         if (anInt988 != -1) {
             boolean flag1 = method88(anInt951, anInt988, (byte) 5);
@@ -5637,7 +5658,7 @@ public class client extends JagApplet {
                     Model.unpackModelHeader(class50_sub1_sub3.buf, class50_sub1_sub3.id, (byte) 7);
                     if ((fileFetcher.method325(class50_sub1_sub3.id, -493) & 0x62) != 0) {
                         aBoolean1181 = true;
-                        if (anInt988 != -1 || anInt1191 != -1)
+                        if (anInt988 != -1 || anInt1191 != -1 || chatboxInterfaceType == 3) // IdleRS: the search's icons
                             aBoolean1240 = true;
                     }
                 }
@@ -6259,28 +6280,14 @@ public class client extends JagApplet {
         } else if (chatboxInterfaceType == 2) {
             aClass50_Sub1_Sub1_Sub2_1061.method470(239, 452, 40, 0, "Enter name:");
             aClass50_Sub1_Sub1_Sub2_1061.method470(239, 452, 60, 128, chatboxInput + "*");
-        } else if (chatboxInterfaceType == 3) {
-            if (chatboxInput != aString861) {
-                method14(chatboxInput, 2);
-                aString861 = chatboxInput;
-            }
-            JagFont class50_sub1_sub1_sub2 = aClass50_Sub1_Sub1_Sub2_1060;
-            Drawable.method446(0, 0, 77, 463, true);
-            for (int j = 0; j < anInt862; j++) {
-                int l = (18 + j * 14) - anInt865;
-                if (l > 0 && l < 110)
-                    class50_sub1_sub1_sub2.method470(239, 452, l, 0, aStringArray863[j]);
-            }
-
+        } else if (chatboxInterfaceType == 3) { // IdleRS: the search prompt, the dead item search revived
+            method142(SearchGrid.TOP, 0, IdleSearch.draw(chatboxInput, anInt865), 0, 8);
+            Drawable.method446(0, 0, SearchGrid.TOP, 479, true); // models ignore a clip's top: the title band is painted again
+            aClass50_Sub1_Sub1_Sub3_1187.method490(0, 0, -488);
+            IdleSearch.drawTitle();
             Drawable.method445();
-            if (anInt862 > 5)
-                method56(true, anInt865, 463, 77, anInt862 * 14 + 7, 0);
-            if (chatboxInput.length() == 0)
-                aClass50_Sub1_Sub1_Sub2_1061.method470(239, 452, 40, 255, "Enter object name");
-            else if (anInt862 == 0)
-                aClass50_Sub1_Sub1_Sub2_1061.method470(239, 452, 40, 0,
-                        "No matching objects found, please shorten search");
-            class50_sub1_sub1_sub2.method470(239, 452, 90, 0, chatboxInput + "*");
+            if (IdleSearch.scrolls())
+                method56(true, anInt865, 463, SearchGrid.HEIGHT, IdleSearch.contentHeight(), SearchGrid.TOP);
             Drawable.method452(0, 0, 77, 479, true);
         } else if (aString1058 != null) {
             aClass50_Sub1_Sub1_Sub2_1061.method470(239, 452, 40, 0, aString1058);
@@ -6780,6 +6787,17 @@ public class client extends JagApplet {
         }
         anInt915 = 0;
         anInt1315 = 0;
+        if (chatboxInterfaceType == 3) { // IdleRS: the search row under the mouse can be picked
+            int hoveredBefore = IdleSearch.hovered();
+            IdleSearch.hover(super.mouseX - 17, super.mouseY - 357, anInt865).ifPresent(row -> {
+                aStringArray1184[anInt1183] = "Pick @lre@" + row.label();
+                anIntArray981[anInt1183] = IdleSearch.PICK_ACTION;
+                anIntArray979[anInt1183] = row.index();
+                anInt1183++;
+            });
+            if (IdleSearch.hovered() != hoveredBefore)
+                aBoolean1240 = true;
+        }
         if (super.mouseX > 17 && super.mouseY > 357 && super.mouseX < 496 && super.mouseY < 453)
             if (anInt988 != -1)
                 method66(357, JagInterface.forId(anInt988), 2, 0, 17, super.mouseX, 23658, super.mouseY);
@@ -8343,6 +8361,10 @@ public class client extends JagApplet {
         }
         if (i1 == CompassMenu.WORLD_MAP_ACTION)
             worldMap.open(nextTopLeftTileX + (((Actor) (thisPlayer)).unitX >> 7), nextTopLeftTileY + (((Actor) (thisPlayer)).unitY >> 7));
+        if (i1 == IdleSearch.PICK_ACTION) // IdleRS: a search row picked; the prompt closes below
+            IdleSearch.sendPick(outBuffer, slot);
+        else if (chatboxInterfaceType == 3 && i1 != 1016) // IdleRS: another action closes the search: tell the server first
+            IdleSearch.sendClosed(outBuffer);
         if (chatboxInterfaceType != 0 && i1 != 1016) {
             chatboxInterfaceType = 0;
             aBoolean1240 = true;

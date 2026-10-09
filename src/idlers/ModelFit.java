@@ -1,10 +1,12 @@
 package idlers;
 
+import java.util.stream.IntStream;
+
 /**
  * Frames a model in a widget: the model is moved so the middle of its bounds sits at the origin, the point the
- * client's model widgets look at, and the camera stands back so models keep their real sizes within limits (Maxime,
- * 2026-10-09): one as big as {@link #REFERENCE} or bigger fills the widget, seen from its pitch and yaw; a smaller one
- * shows smaller, down to {@link #SMALLEST} of the widget.
+ * client's model widgets look at, and the camera stands back so the model fills {@link #FILL} of the widget, seen from
+ * its pitch and yaw, whatever its size (Maxime, 2026-10-09: small bodies were hard to read in the search's cells).
+ * Only its {@link #framed} vertices count.
  */
 public final class ModelFit {
 
@@ -14,19 +16,43 @@ public final class ModelFit {
     /** The client projects a point at depth z at {@code 512 / z} pixels per model unit. */
     private static final double FOCAL = 512;
 
-    /**
-     * Half the size, in model units, of a model that just fills the widget: a man (about 103 units from his middle to
-     * his head) fills about two-thirds of it.
-     */
-    static final double REFERENCE = 160;
-
-    /** The smallest share of the widget a model is shown at, so a rat stays readable. */
-    static final double SMALLEST = 0.5;
+    /** Faces at least this see-through (0 opaque, 255 invisible) do not count when framing. */
+    static final int SEE_THROUGH = 128;
 
     /** Closest a vertex may come to the camera; the client divides by depth without clipping. */
     private static final double NEAREST = 50;
 
     private ModelFit() {
+    }
+
+    /** The coordinates of some of a model's vertices, the first {@code count} of each array. */
+    public record Vertices(int[] xs, int[] ys, int[] zs, int count) {
+    }
+
+    /**
+     * The vertices a model is framed on: those of its faces less than half see-through, or all of them when it has no
+     * such face. A duck's water ripples, see-through faces around it, would otherwise shrink the duck to a third of
+     * its frame. {@code transparency} is null for a model whose faces are all opaque.
+     */
+    public static Vertices framed(int[] xs, int[] ys, int[] zs, int vertexCount, int[] facesA, int[] facesB, int[] facesC,
+            int[] transparency, int faceCount) {
+        boolean[] solid = new boolean[vertexCount];
+        for (int face = 0; face < faceCount; face++) {
+            if (transparency == null || transparency[face] < SEE_THROUGH) {
+                solid[facesA[face]] = true;
+                solid[facesB[face]] = true;
+                solid[facesC[face]] = true;
+            }
+        }
+        int[] kept = IntStream.range(0, vertexCount).filter(vertex -> solid[vertex]).toArray();
+        if (kept.length == 0) {
+            return new Vertices(xs, ys, zs, vertexCount);
+        }
+        return new Vertices(pick(xs, kept), pick(ys, kept), pick(zs, kept), kept.length);
+    }
+
+    private static int[] pick(int[] values, int[] indexes) {
+        return IntStream.of(indexes).map(index -> values[index]).toArray();
     }
 
     /** The move that centres a model. */
@@ -38,18 +64,10 @@ public final class ModelFit {
     }
 
     /**
-     * The camera's distance for a centred model turned by {@code yaw} and seen from {@code pitch} (2048 units a turn), as
-     * {@code client.method142} turns a model widget: as far as a model of {@link #REFERENCE} needs to fill the widget,
-     * nearer for a bigger model so it fits, and never so far that the model shows below {@link #SMALLEST} of it.
+     * The camera's distance at which a centred model turned by {@code yaw} and seen from {@code pitch} (2048 units a
+     * turn), as {@code client.method142} turns a model widget, fills {@link #FILL} of the widget.
      */
     public static int zoom(int[] xs, int[] ys, int[] zs, int count, int pitch, int yaw, int width, int height) {
-        int filling = fillingZoom(xs, ys, zs, count, pitch, yaw, width, height);
-        double reference = FOCAL * REFERENCE / (Math.min(width, height) * FILL / 2);
-        return (int) Math.ceil(Math.max(filling, Math.min(filling / SMALLEST, reference)));
-    }
-
-    /** The camera's distance at which the model fills {@link #FILL} of the widget. */
-    static int fillingZoom(int[] xs, int[] ys, int[] zs, int count, int pitch, int yaw, int width, int height) {
         double sinYaw = sin(yaw);
         double cosYaw = cos(yaw);
         double sinPitch = sin(pitch);

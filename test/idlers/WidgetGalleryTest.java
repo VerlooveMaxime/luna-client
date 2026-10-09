@@ -141,6 +141,34 @@ class WidgetGalleryTest {
         assertEquals("", assertInstanceOf(WidgetSpec.Text.class, SPECS.get(WidgetGallery.OPENED_LINE)).text());
     }
 
+    static IntStream searches() {
+        return IntStream.range(0, WidgetGallery.SEARCHES.size());
+    }
+
+    @ParameterizedTest
+    @MethodSource("searches")
+    void everySearchHasAButtonNamedAfterIt(int search) {
+        WidgetSpec.Button button = assertInstanceOf(WidgetSpec.Button.class, SPECS.get(WidgetGallery.search(search)));
+
+        assertEquals(WidgetGallery.SEARCHES.get(search), button.text());
+        assertEquals("Search " + WidgetGallery.SEARCHES.get(search).toLowerCase(), button.option());
+    }
+
+    @Test
+    void theSearchButtonsFollowEachOther() {
+        WidgetSpec trees = SPECS.get(WidgetGallery.search(0));
+        WidgetSpec fish = SPECS.get(WidgetGallery.search(1));
+
+        assertEquals(trees.x() + trees.width() + 6, fish.x());
+    }
+
+    @Test
+    void theLastSearchButtonEndsInsideTheGallery() {
+        WidgetSpec last = SPECS.get(WidgetGallery.search(WidgetGallery.SEARCHES.size() - 1));
+
+        assertTrue(last.x() + last.width() <= 504);
+    }
+
     @Test
     void theSpecsCannotBeChanged() {
         assertThrows(UnsupportedOperationException.class, () -> SPECS.remove(WidgetGallery.GALLERY));

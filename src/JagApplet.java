@@ -283,6 +283,8 @@ public class JagApplet extends Applet implements Runnable, MouseListener, MouseM
 			j = 9;
 		if (i == 10)
 			j = 10;
+		if (i == 27) // IdleRS: Escape reaches the key queue, so the chatbox search can close on it
+			j = 27;
 		if (i >= 112 && i <= 123)
 			j = (1008 + i) - 112;
 		if (i == 36)
