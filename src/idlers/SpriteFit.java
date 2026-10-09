@@ -3,9 +3,10 @@ package idlers;
 import idlers.worldmap.MapSprite;
 
 /**
- * Fits a media sprite into a widget: the sprite on its whole canvas (so a set of icons keeps its alignment), shrunk
- * to fit when the canvas is bigger than the widget, never enlarged, and centred. Shrinking averages every source pixel
- * a target pixel covers, so pixel art keeps its shape better than when pixels are skipped.
+ * Fits a sprite into a widget: its opaque pixels, whatever room its canvas leaves around them (the minimap's flag
+ * sits at the top of a canvas twice its height), shrunk to fit when they are bigger than the widget, never enlarged,
+ * and centred. Shrinking averages every source pixel a target pixel covers, so pixel art keeps its shape better than
+ * when pixels are skipped.
  */
 public final class SpriteFit {
 
@@ -16,49 +17,71 @@ public final class SpriteFit {
     public record Fitted(int[] pixels, int width, int height) {
     }
 
+    /** A sprite the client drew, such as an item's inventory icon, read as a media sprite: 0 is transparent. */
+    public static MapSprite clientSprite(int[] pixels, int width, int height) {
+        int[] argb = new int[pixels.length];
+        for (int i = 0; i < pixels.length; i++) {
+            argb[i] = pixels[i] == 0 ? 0 : MapSprite.OPAQUE | pixels[i];
+        }
+        return new MapSprite(argb, width, height, 0, 0, width, height);
+    }
+
     public static Fitted fit(MapSprite sprite, int width, int height) {
-        int canvasWidth = sprite.canvasWidth();
-        int canvasHeight = sprite.canvasHeight();
-        double scale = Math.min(1.0, Math.min((double) width / canvasWidth, (double) height / canvasHeight));
-        int fittedWidth = Math.max(1, (int) Math.round(canvasWidth * scale));
-        int fittedHeight = Math.max(1, (int) Math.round(canvasHeight * scale));
+        int[] pixels = new int[width * height];
+        Bounds art = Bounds.of(sprite);
+        if (art == null) {
+            return new Fitted(pixels, width, height);
+        }
+        double scale = Math.min(1.0, Math.min((double) width / art.width(), (double) height / art.height()));
+        int fittedWidth = Math.max(1, (int) Math.round(art.width() * scale));
+        int fittedHeight = Math.max(1, (int) Math.round(art.height() * scale));
         int left = (width - fittedWidth) / 2;
         int top = (height - fittedHeight) / 2;
-        int[] canvas = canvas(sprite);
-        int[] pixels = new int[width * height];
         for (int y = 0; y < fittedHeight; y++) {
             for (int x = 0; x < fittedWidth; x++) {
-                pixels[(top + y) * width + left + x] = average(canvas, canvasWidth, canvasHeight,
-                        (double) x * canvasWidth / fittedWidth, (double) (x + 1) * canvasWidth / fittedWidth,
-                        (double) y * canvasHeight / fittedHeight, (double) (y + 1) * canvasHeight / fittedHeight);
+                pixels[(top + y) * width + left + x] = average(sprite,
+                        art.left() + (double) x * art.width() / fittedWidth, art.left() + (double) (x + 1) * art.width() / fittedWidth,
+                        art.top() + (double) y * art.height() / fittedHeight, art.top() + (double) (y + 1) * art.height() / fittedHeight);
             }
         }
         return new Fitted(pixels, width, height);
     }
 
-    private static int[] canvas(MapSprite sprite) {
-        int[] canvas = new int[sprite.canvasWidth() * sprite.canvasHeight()];
-        for (int y = 0; y < sprite.height(); y++) {
-            for (int x = 0; x < sprite.width(); x++) {
-                canvas[(sprite.offsetY() + y) * sprite.canvasWidth() + sprite.offsetX() + x] = sprite.pixels()[y * sprite.width() + x];
+    /** The smallest rectangle of the sprite's pixels holding every opaque one. */
+    private record Bounds(int left, int top, int width, int height) {
+
+        /** Null for a sprite with no opaque pixel. */
+        static Bounds of(MapSprite sprite) {
+            int left = sprite.width();
+            int top = sprite.height();
+            int right = -1;
+            int bottom = -1;
+            for (int y = 0; y < sprite.height(); y++) {
+                for (int x = 0; x < sprite.width(); x++) {
+                    if (MapSprite.isOpaque(sprite.pixels()[y * sprite.width() + x])) {
+                        left = Math.min(left, x);
+                        top = Math.min(top, y);
+                        right = Math.max(right, x);
+                        bottom = Math.max(bottom, y);
+                    }
+                }
             }
+            return right < 0 ? null : new Bounds(left, top, right - left + 1, bottom - top + 1);
         }
-        return canvas;
     }
 
     /** The covered source pixels' average colour, or transparent when less than half the area is opaque. */
-    private static int average(int[] canvas, int canvasWidth, int canvasHeight, double left, double right, double top,
-            double bottom) {
+    private static int average(MapSprite sprite, double left, double right, double top, double bottom) {
         double area = 0;
         double opaque = 0;
         double red = 0;
         double green = 0;
         double blue = 0;
-        for (int y = (int) top; y < Math.min(canvasHeight, Math.ceil(bottom)); y++) {
+        for (int y = (int) top; y < Math.ceil(bottom); y++) {
             double rowCover = Math.min(bottom, y + 1) - Math.max(top, y);
-            for (int x = (int) left; x < Math.min(canvasWidth, Math.ceil(right)); x++) {
+            for (int x = (int) left; x < Math.ceil(right); x++) {
                 double cover = rowCover * (Math.min(right, x + 1) - Math.max(left, x));
-                int argb = canvas[y * canvasWidth + x];
+                int argb = sprite.pixels()[y * sprite.width() + x];
                 area += cover;
                 if (MapSprite.isOpaque(argb)) {
                     opaque += cover;

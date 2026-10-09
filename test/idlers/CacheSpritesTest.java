@@ -35,6 +35,11 @@ class CacheSpritesTest {
     }
 
     @Test
+    void aSpriteIsFittedIntoTheSizeAsked() {
+        assertArrayEquals(new int[]{0xff0000, 0}, sprites.fitted("dot", 0, 2, 1).pixels());
+    }
+
+    @Test
     void eachFileIsReadOnce() {
         sprites.fitted(spec("dot", 0));
         sprites.fitted(spec("dot", 0));

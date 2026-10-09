@@ -21,7 +21,7 @@ class WidgetGalleryTest {
 
     static Stream<Arguments> iconsAtEverySize() {
         return IntStream.range(0, WidgetGallery.ICON_SIZES.size()).boxed().flatMap(size ->
-                IntStream.range(0, WidgetGallery.STEP_ICONS.size()).mapToObj(kind -> Arguments.of(size, kind)));
+                IntStream.range(0, WidgetGallery.ICON_KINDS).mapToObj(kind -> Arguments.of(size, kind)));
     }
 
     @Test
@@ -59,20 +59,50 @@ class WidgetGalleryTest {
     }
 
     @Test
-    void aTileShowsTheIconOfItsKindOfStep() {
-        WidgetSpec.Sprite icon = assertInstanceOf(WidgetSpec.Sprite.class, SPECS.get(WidgetGallery.tile(2) + 3));
+    void aTilesFaceCanBeDragged() {
+        assertTrue(assertInstanceOf(WidgetSpec.Tile.class, SPECS.get(WidgetGallery.tileFace(3))).draggable());
+    }
 
-        assertEquals(WidgetGallery.STEP_ICONS.get(2).index(), icon.index());
+    @Test
+    void aTileHasAPictureAndTextsTheServerFills() {
+        assertInstanceOf(WidgetSpec.Picture.class, SPECS.get(WidgetGallery.tilePicture(2)));
+        assertEquals("", assertInstanceOf(WidgetSpec.Text.class, SPECS.get(WidgetGallery.tileLabel(2))).text());
+        assertEquals("", assertInstanceOf(WidgetSpec.Text.class, SPECS.get(WidgetGallery.tileKind(2))).text());
     }
 
     @ParameterizedTest
     @MethodSource("iconsAtEverySize")
-    void everyStepIconShowsAtEverySize(int size, int kind) {
-        WidgetSpec.Sprite icon = assertInstanceOf(WidgetSpec.Sprite.class, SPECS.get(WidgetGallery.icon(size, kind)));
+    void everyStepIconHasAPictureAtEverySize(int size, int kind) {
+        WidgetSpec.Picture icon = assertInstanceOf(WidgetSpec.Picture.class, SPECS.get(WidgetGallery.icon(size, kind)));
 
-        assertEquals(WidgetGallery.STEP_ICONS.get(kind).name(), icon.name());
         assertEquals(WidgetGallery.ICON_SIZES.get(size), icon.width());
         assertEquals(WidgetGallery.ICON_SIZES.get(size), icon.height());
+    }
+
+    @Test
+    void itemIconsShowAtTheirOwnSizeAndShrunk() {
+        WidgetSpec.Picture small = assertInstanceOf(WidgetSpec.Picture.class, SPECS.get(WidgetGallery.item(1, 1)));
+
+        assertEquals(WidgetGallery.ITEM_SIZES.get(1), small.width());
+    }
+
+    @Test
+    void eachNpcHasANameTheServerFillsUnderIt() {
+        WidgetSpec.Picture npc = (WidgetSpec.Picture) SPECS.get(WidgetGallery.npc(2));
+        WidgetSpec.Text name = assertInstanceOf(WidgetSpec.Text.class, SPECS.get(WidgetGallery.npcName(2)));
+
+        assertEquals("", name.text());
+        assertEquals(npc.x() + npc.width() / 2, name.x());
+        assertTrue(name.y() >= npc.y() + npc.height());
+    }
+
+    @Test
+    void npcBodiesAreSeenFromAboveAndTurnedTowardsTheCamera() {
+        WidgetSpec.Picture npc = assertInstanceOf(WidgetSpec.Picture.class, SPECS.get(WidgetGallery.npc(3)));
+
+        assertEquals(WidgetGallery.NPC_PITCH, npc.pitch());
+        assertEquals(WidgetGallery.NPC_YAW, npc.yaw());
+        assertEquals(WidgetGallery.NPC_SIZE, npc.height());
     }
 
     @Test

@@ -36,10 +36,17 @@ class SpriteFitTest {
     }
 
     @Test
-    void theSpriteKeepsItsPlaceOnItsCanvas() {
-        MapSprite sprite = new MapSprite(new int[]{opaque(RED)}, 1, 1, 1, 0, 2, 1);
+    void theOpaquePixelsAreCentredWhateverRoomTheirCanvasLeaves() {
+        MapSprite flag = new MapSprite(new int[]{opaque(RED), 0, 0}, 1, 3, 0, 0, 1, 6);
 
-        assertArrayEquals(new int[]{0, RED}, SpriteFit.fit(sprite, 2, 1).pixels());
+        assertArrayEquals(new int[]{0, RED, 0}, SpriteFit.fit(flag, 1, 3).pixels());
+    }
+
+    @Test
+    void aSpriteWithNoOpaquePixelLeavesTheWidgetEmpty() {
+        MapSprite blank = new MapSprite(new int[]{0, 0}, 2, 1, 0, 0, 2, 1);
+
+        assertArrayEquals(new int[]{0, 0, 0}, SpriteFit.fit(blank, 3, 1).pixels());
     }
 
     @Test
@@ -66,7 +73,7 @@ class SpriteFitTest {
 
     @Test
     void aTargetPixelLessThanHalfOpaqueIsTransparent() {
-        MapSprite sprite = new MapSprite(new int[]{opaque(RED), 0, 0, 0}, 2, 2, 0, 0, 2, 2);
+        MapSprite sprite = new MapSprite(new int[]{opaque(RED), 0, 0, 0, opaque(RED)}, 5, 1, 0, 0, 5, 1);
 
         assertArrayEquals(new int[]{0}, SpriteFit.fit(sprite, 1, 1).pixels());
     }
@@ -86,5 +93,13 @@ class SpriteFitTest {
         assertArrayEquals(new int[]{
                 0, RED, 0, 0,
                 0, RED, 0, 0}, SpriteFit.fit(sprite, 4, 2).pixels());
+    }
+
+    @Test
+    void aClientSpriteKeepsItsColoursAndItsTransparency() {
+        MapSprite sprite = SpriteFit.clientSprite(new int[]{RED, 0}, 2, 1);
+
+        assertArrayEquals(new int[]{opaque(RED), 0}, sprite.pixels());
+        assertEquals(2, sprite.canvasWidth());
     }
 }

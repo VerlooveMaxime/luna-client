@@ -52,9 +52,13 @@ public sealed interface WidgetSpec {
             int font, String option) implements WidgetSpec {
     }
 
-    /** A filled box that lights up under the mouse and has a click option, sent as a button click: a GE-style tile. */
-    record Tile(int id, int parent, int x, int y, int width, int height, int colour, int hoverColour, String option)
-            implements WidgetSpec {
+    /**
+     * A filled box that lights up under the mouse and has a click option, sent as a button click: the face of a
+     * GE-style tile, a layer holding it and the tile's other widgets. A draggable face lets the player drag its tile
+     * onto another draggable tile of the same layer ({@link TileDrag}).
+     */
+    record Tile(int id, int parent, int x, int y, int width, int height, int colour, int hoverColour, String option,
+            boolean draggable) implements WidgetSpec {
     }
 
     /** An invisible area; after about two seconds of hover the client shows its text in a light-yellow box below it. */
@@ -63,6 +67,14 @@ public sealed interface WidgetSpec {
 
     /** Sprite {@code index} of {@code name} in the cache's media archive, fitted into the widget ({@link SpriteFit}). */
     record Sprite(int id, int parent, int x, int y, int width, int height, String name, int index) implements WidgetSpec {
+    }
+
+    /**
+     * Empty until the server sends what it shows ({@link WidgetPicture}): a media sprite or an item's icon fitted into
+     * it, or an npc's whole body, framed by {@link ModelFit} and seen from {@code pitch} and {@code yaw} (2048 units a
+     * turn, as the client's model widgets).
+     */
+    record Picture(int id, int parent, int x, int y, int width, int height, int pitch, int yaw) implements WidgetSpec {
     }
 
     static Layer layer(int id, int parent, int x, int y, int width, int height, List<Integer> children) {

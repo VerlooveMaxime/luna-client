@@ -143,6 +143,29 @@ public class NpcDefinition {
 		return class50_sub1_sub4_sub4;
 	}
 
+	/** IdleRS: the whole body unlit, like {@link #getHeadModel}, for a picture widget to light and animate. */
+	public Model getBodyModel() {
+		if (morphIds != null) {
+			NpcDefinition current = morph(false);
+			return current == null ? null : current.getBodyModel();
+		}
+		if (modelIds == null)
+			return null;
+		for (int modelId : modelIds)
+			if (!Model.isDownloaded(modelId))
+				return null;
+		Model[] parts = new Model[modelIds.length];
+		for (int i = 0; i < modelIds.length; i++)
+			parts[i] = Model.forId(modelIds[i]);
+		Model model = parts.length == 1 ? parts[0] : new Model(parts.length, parts);
+		if (originalColours != null)
+			for (int i = 0; i < originalColours.length; i++)
+				model.replaceColor(originalColours[i], replacementColours[i]);
+		if (scaleXZ != 128 || scaleY != 128)
+			model.resizeModel(scaleXZ, scaleY, scaleXZ);
+		return model;
+	}
+
 	public boolean method360(int i) {
 		while (i >= 0)
 			aBoolean662 = !aBoolean662;

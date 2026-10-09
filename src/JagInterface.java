@@ -64,6 +64,8 @@ public class JagInterface {
 			model = item.getUncachedModel(50);
 		if (type == 5)
 			model = null;
+		if (type == IdleWidgets.NPC_BODY) // IdleRS: an npc's whole body on a picture widget
+			model = IdleWidgets.npcBodyModel(id);
 		if (model != null)
 			lruModelTable.put(model, (type << 16) + id);
 		return model;

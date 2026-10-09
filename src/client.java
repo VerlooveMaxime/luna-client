@@ -795,15 +795,25 @@ public class client extends JagApplet {
             if (super.mouseX > anInt1114 + 5 || super.mouseX < anInt1114 - 5 || super.mouseY > anInt1115 + 5
                     || super.mouseY < anInt1115 - 5)
                 aBoolean1155 = true;
+            if (aBoolean1155 && anInt1269 >= 5) // IdleRS: a dragged tile follows the mouse
+                IdleWidgets.dragTile(super.mouseX - anInt1114, super.mouseY - anInt1115);
             if (super.anInt21 == 0) {
                 if (anInt1113 == 2)
                     aBoolean1181 = true;
                 if (anInt1113 == 3)
                     aBoolean1240 = true;
                 anInt1113 = 0;
+                IdleWidgets.endTileDrag(); // IdleRS: back in its place before the drop is hit-tested
                 if (aBoolean1155 && anInt1269 >= 5) {
                     anInt1064 = -1;
                     method91(-521);
+                    IdleWidgets.droppedTile(anInt1111, anInt1302).ifPresent(move -> { // IdleRS: a tile dropped on another
+                        outBuffer.putOpcode(123);
+                        outBuffer.putLEShortAdded(move.to());
+                        outBuffer.putByteAdded(1);
+                        outBuffer.putShortAdded(move.layer());
+                        outBuffer.putLEShortDup(move.from());
+                    });
                     if (anInt1064 == anInt1111 && anInt1063 != anInt1112) {
                         JagInterface class13 = JagInterface.forId(anInt1111);
                         int i1 = 0;
@@ -2543,6 +2553,11 @@ public class client extends JagApplet {
                 opcode = -1;
                 return true;
             }
+            if (opcode == 102) { // IdleRS: a picture on a widget defined in code
+                IdleWidgets.picture(buffer);
+                opcode = -1;
+                return true;
+            }
             if (opcode == 101) { // IdleRS: the flow builder asks for a tile picked on the world map
                 int worldX = buffer.getShort();
                 int worldY = buffer.getShort();
@@ -3692,6 +3707,15 @@ public class client extends JagApplet {
         } else {
             if (j == 1 && anInt1183 > 0) {
                 int i1 = anIntArray981[anInt1183 - 1];
+                if (i1 == 352 && IdleWidgets.startTileDrag(anIntArray980[anInt1183 - 1])) { // IdleRS: a draggable tile
+                    aBoolean1155 = false;
+                    anInt1269 = 0;
+                    anInt1111 = anIntArray980[anInt1183 - 1];
+                    anInt1113 = 1;
+                    anInt1114 = super.anInt29;
+                    anInt1115 = super.anInt30;
+                    return;
+                }
                 if (i1 == 9 || i1 == 225 || i1 == 444 || i1 == 564 || i1 == 894 || i1 == 961 || i1 == 399 || i1 == 324
                         || i1 == 227 || i1 == 891 || i1 == 52 || i1 == 1094) {
                     int l1 = anIntArray979[anInt1183 - 1];
@@ -10361,7 +10385,13 @@ public class client extends JagApplet {
         int j1 = Drawable.anInt1427;
         int k1 = Drawable.anInt1430;
         int l1 = Drawable.anInt1428;
-        Drawable.method446(i, j, i + class13.anInt238, j + class13.anInt241, true);
+        if (IdleWidgets.isNestedLayer(class13.id)) { // IdleRS: kept inside its parent's clip, a scrolling layer's included
+            int top = Math.max(i, j1);
+            int left = Math.max(j, i1);
+            Drawable.method446(top, left, Math.max(top, Math.min(i + class13.anInt238, l1)),
+                    Math.max(left, Math.min(j + class13.anInt241, k1)), true);
+        } else
+            Drawable.method446(i, j, i + class13.anInt238, j + class13.anInt241, true);
         int i2 = class13.anIntArray258.length;
         if (l != 8)
             opcode = -1;
@@ -10565,6 +10595,8 @@ public class client extends JagApplet {
                     }
 
                 } else if (class13_1.anInt236 == 5) {
+                    if (class13_1.mediaType == IdleWidgets.ITEM_ICON) // IdleRS: an item's icon once its model is in
+                        IdleWidgets.loadItemIcon(class13_1);
                     RgbSprite class50_sub1_sub1_sub1;
                     if (method95(class13_1, -693))
                         class50_sub1_sub1_sub1 = class13_1.aClass50_Sub1_Sub1_Sub1_245;
@@ -10573,6 +10605,8 @@ public class client extends JagApplet {
                     if (class50_sub1_sub1_sub1 != null)
                         class50_sub1_sub1_sub1.method461(l2, k2, -488);
                 } else if (class13_1.anInt236 == 6) {
+                    if (class13_1.mediaType == IdleWidgets.NPC_BODY) // IdleRS: framed before the camera below is set
+                        IdleWidgets.frameNpcBody(class13_1);
                     int k3 = ThreeDimensionalCanvas.centerX;
                     int k4 = ThreeDimensionalCanvas.centerY;
                     ThreeDimensionalCanvas.centerX = k2 + class13_1.anInt241 / 2;
