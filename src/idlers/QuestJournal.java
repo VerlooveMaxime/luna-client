@@ -1,6 +1,7 @@
 package idlers;
 
 import java.util.Arrays;
+import java.util.Map;
 
 import static idlers.WidgetSpec.FONT_BOLD;
 import static idlers.WidgetSpec.FONT_PLAIN;
@@ -12,7 +13,8 @@ import static idlers.WidgetSpec.FONT_PLAIN;
  */
 public final class QuestJournal {
 
-    /** The quest journal's scrolling list. */
+    /** The quest journal's tab and its scrolling list. */
+    public static final int TAB = 638;
     public static final int LIST = 639;
 
     public static final int STAGES_HEADER = 30300;
@@ -38,13 +40,14 @@ public final class QuestJournal {
     public record Layout(int[] ids, int[] xs, int[] ys, int scrollHeight) {
     }
 
-    /** The widgets the stages add, or null for any other id. */
-    public static WidgetSpec spec(int id) {
-        if (id == STAGES_HEADER)
-            return WidgetSpec.text(STAGES_HEADER, 638, HEADER_X, HEADER_Y, 84, LINE_HEIGHT, HEADER_TEXT, ORANGE, FONT_BOLD);
-        if (id == TUTORIAL_LINE)
-            return WidgetSpec.text(TUTORIAL_LINE, 638, LINE_X, LINE_Y, 131, LINE_HEIGHT, "", RED, FONT_PLAIN);
-        return null;
+    /**
+     * The widgets the stages add. Their parent is the journal tab (638), the root of the cache's group, which the
+     * client keeps as their group id like the quest lines'.
+     */
+    public static Map<Integer, WidgetSpec> specs() {
+        return Map.of(
+                STAGES_HEADER, WidgetSpec.text(STAGES_HEADER, TAB, HEADER_X, HEADER_Y, 84, LINE_HEIGHT, HEADER_TEXT, ORANGE, FONT_BOLD),
+                TUTORIAL_LINE, WidgetSpec.text(TUTORIAL_LINE, TAB, LINE_X, LINE_Y, 131, LINE_HEIGHT, "", RED, FONT_PLAIN));
     }
 
     /**

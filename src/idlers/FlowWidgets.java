@@ -9,6 +9,7 @@ import java.util.Map;
 import static idlers.WidgetSpec.FONT_BOLD;
 import static idlers.WidgetSpec.FONT_PLAIN;
 import static idlers.WidgetSpec.FONT_SMALL;
+import static idlers.WidgetSpecs.add;
 
 /**
  * The IdleRS widgets: the sidebar tab (tab slot 7, unused by the 377 client) and the flow builder screen. Ids start
@@ -99,11 +100,6 @@ public final class FlowWidgets {
         return rowText(row) + 3;
     }
 
-    /** The spec for {@code id}, or null when IdleRS defines no widget with that id. */
-    public static WidgetSpec spec(int id) {
-        return SPECS.get(id);
-    }
-
     public static Map<Integer, WidgetSpec> specs() {
         return Collections.unmodifiableMap(SPECS);
     }
@@ -170,12 +166,5 @@ public final class FlowWidgets {
 
     private static WidgetSpec button(int id, int parent, int x, int y, int width, int height, String text, String tooltip) {
         return WidgetSpec.button(id, parent, x, y, width, height, text, ORANGE, YELLOW, FONT_PLAIN, tooltip);
-    }
-
-    static void add(Map<Integer, WidgetSpec> specs, List<Integer> children, WidgetSpec spec) {
-        if (specs.put(spec.id(), spec) != null) {
-            throw new IllegalStateException("Widget id " + spec.id() + " defined twice");
-        }
-        children.add(spec.id());
     }
 }

@@ -295,6 +295,8 @@ public class JagFont extends Drawable {
 			return 0x80ff00;
 		if (code.equals("gr3"))
 			return 0x40ff00;
+		if (code.equals("gry")) // IdleRS: greyed options and values
+			return 0x8f8268;
 		if (code.equals("str"))
 			strikethrough = true;
 		if (code.equals("end"))

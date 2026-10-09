@@ -290,6 +290,7 @@ public class JagInterface {
 			temp[0] = (byte) (j >> 8);
 			temp[1] = (byte) j;
 		}
+		IdleWidgets.media(class2_1); // IdleRS: kept for the sprites of widgets defined in code
 		aClass2_214 = null;
 		if (i >= 0)
 			anInt210 = 391;

@@ -4,7 +4,7 @@ import org.junit.jupiter.api.Test;
 
 import static org.junit.jupiter.api.Assertions.assertArrayEquals;
 import static org.junit.jupiter.api.Assertions.assertEquals;
-import static org.junit.jupiter.api.Assertions.assertNull;
+import static org.junit.jupiter.api.Assertions.assertInstanceOf;
 import static org.junit.jupiter.api.Assertions.assertSame;
 
 class QuestJournalTest {
@@ -45,7 +45,7 @@ class QuestJournalTest {
 
     @Test
     void theHeaderIsStyledLikeTheQuestHeaders() {
-        WidgetSpec header = QuestJournal.spec(QuestJournal.STAGES_HEADER);
+        WidgetSpec.Text header = assertInstanceOf(WidgetSpec.Text.class, QuestJournal.specs().get(QuestJournal.STAGES_HEADER));
 
         assertEquals("STAGES:", header.text());
         assertEquals(0xf99b15, header.colour());
@@ -54,7 +54,7 @@ class QuestJournalTest {
 
     @Test
     void theTutorialLineStartsBlankAndRedLikeAnUnstartedQuest() {
-        WidgetSpec line = QuestJournal.spec(QuestJournal.TUTORIAL_LINE);
+        WidgetSpec.Text line = assertInstanceOf(WidgetSpec.Text.class, QuestJournal.specs().get(QuestJournal.TUTORIAL_LINE));
 
         assertEquals("", line.text());
         assertEquals(0xff0000, line.colour());
@@ -67,7 +67,7 @@ class QuestJournalTest {
     }
 
     @Test
-    void otherIdsAreNotTheJournals() {
-        assertNull(QuestJournal.spec(QuestJournal.ID_LIMIT));
+    void theStagesHangUnderTheJournalTab() {
+        assertEquals(QuestJournal.TAB, QuestJournal.specs().get(QuestJournal.TUTORIAL_LINE).parent());
     }
 }
