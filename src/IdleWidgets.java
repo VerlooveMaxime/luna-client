@@ -1,3 +1,4 @@
+import idlers.BuilderWidgets;
 import idlers.CacheSprites;
 import idlers.ModelFit;
 import idlers.QuestJournal;
@@ -17,7 +18,8 @@ import java.util.Optional;
  */
 final class IdleWidgets {
 
-    static final int CAPACITY = WidgetSpecs.CAPACITY;
+    /** Sub-opcodes of packet 108, the IdleRS packet: the builder's step slots. */
+    static final int BUILDER_SLOTS = 0;
 
     /** Media types of picture widgets: an item's icon on a sprite widget, an npc's body on a model widget. */
     static final int ITEM_ICON = 4;
@@ -39,7 +41,10 @@ final class IdleWidgets {
         }
     };
 
-    private static final TileDrag TILE_DRAG = new TileDrag(WidgetSpecs.all());
+    /** The widgets as built for the step slots the server last said the player has, and their drag rules. */
+    private static int builderSlots;
+    private static WidgetSpecs specs = WidgetSpecs.of(builderSlots);
+    private static TileDrag tileDrag = new TileDrag(specs.all());
 
     /** The tile being dragged, -1 for none, and its layer's children as they were before it was drawn on top. */
     private static int draggedTile = -1;
@@ -52,13 +57,37 @@ final class IdleWidgets {
         sprites = new CacheSprites(archive::get);
     }
 
+    /** Room the client makes for widget ids. */
+    static int capacity() {
+        return specs.capacity();
+    }
+
+    /** Packet 108: a sub-opcode, then its content. */
+    static void idlePacket(JagBuffer buffer) {
+        int sub = buffer.getByte();
+        if (sub == BUILDER_SLOTS)
+            builderSlots(buffer.getShort());
+    }
+
+    /** The builder's widgets built again for {@code slots} step slots; the ones built for the old count are dropped. */
+    private static void builderSlots(int slots) {
+        if (slots == builderSlots)
+            return;
+        WidgetSpecs old = specs;
+        builderSlots = slots;
+        specs = WidgetSpecs.of(slots);
+        tileDrag = new TileDrag(specs.all());
+        JagInterface.grow(specs.capacity());
+        old.all().keySet().stream().filter(id -> old.root(id) == BuilderWidgets.ROOT).forEach(id -> JagInterface.interfaces[id] = null);
+    }
+
     static JagInterface build(int id) {
-        WidgetSpec spec = WidgetSpecs.spec(id).orElse(null);
+        WidgetSpec spec = specs.spec(id).orElse(null);
         if (spec == null)
             return null;
         JagInterface inter = new JagInterface();
         inter.id = id;
-        inter.anInt248 = WidgetSpecs.root(id);
+        inter.anInt248 = specs.root(id);
         inter.anInt254 = -1;
         inter.anInt241 = spec.width();
         inter.anInt238 = spec.height();
@@ -71,7 +100,7 @@ final class IdleWidgets {
                 inter.childX = new int[count];
                 inter.childY = new int[count];
                 for (int i = 0; i < count; i++) {
-                    WidgetSpec child = WidgetSpecs.spec(layer.children().get(i)).orElseThrow();
+                    WidgetSpec child = specs.spec(layer.children().get(i)).orElseThrow();
                     inter.childIds[i] = child.id();
                     inter.childX[i] = child.x();
                     inter.childY[i] = child.y();
@@ -111,7 +140,7 @@ final class IdleWidgets {
      * clip a tile scrolled out of its scrolling layer would still draw.
      */
     static boolean isNestedLayer(int id) {
-        return WidgetSpecs.spec(id).map(spec -> spec instanceof WidgetSpec.Layer && spec.parent() != -1).orElse(false);
+        return specs.spec(id).map(spec -> spec instanceof WidgetSpec.Layer && spec.parent() != -1).orElse(false);
     }
 
     /** Packet 102: what a picture widget shows ({@link WidgetPicture}). */
@@ -232,7 +261,7 @@ final class IdleWidgets {
 
     /** A press on {@code widgetId}: true when it starts dragging a tile, drawn above its neighbours from now on. */
     static boolean startTileDrag(int widgetId) {
-        Optional<Integer> tile = TILE_DRAG.tileOf(widgetId);
+        Optional<Integer> tile = tileDrag.tileOf(widgetId);
         if (tile.isEmpty())
             return false;
         draggedTile = tile.get();
@@ -269,11 +298,11 @@ final class IdleWidgets {
 
     /** The move of a tile dragged by {@code face} and dropped on {@code target}, the widget under the mouse. */
     static Optional<TileDrag.Move> droppedTile(int face, int target) {
-        return TILE_DRAG.drop(face, target);
+        return tileDrag.drop(face, target);
     }
 
     private static int parentOf(int id) {
-        return WidgetSpecs.spec(id).orElseThrow().parent();
+        return specs.spec(id).orElseThrow().parent();
     }
 
     private static void box(JagInterface inter, int colour, int hoverColour, boolean filled) {

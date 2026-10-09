@@ -268,13 +268,21 @@ public class JagInterface {
 		return inter;
 	}
 
+	/** IdleRS: room for more widgets defined in code, the builder's slots grown. */
+	static void grow(int capacity) {
+		if (capacity > interfaces.length) {
+			interfaces = java.util.Arrays.copyOf(interfaces, capacity);
+			data = java.util.Arrays.copyOf(data, capacity);
+		}
+	}
+
 	public static void unpack(int i, JagFont aclass50_sub1_sub1_sub2[], Archive archive, Archive class2_1) {
 		aClass33_250 = new LruHashTable(50000);
 		aClass2_214 = class2_1;
 		aClass50_Sub1_Sub1_Sub2Array223 = aclass50_sub1_sub1_sub2;
 		int j = -1;
 		JagBuffer buf = new JagBuffer(archive.get("data"));
-		int count = Math.max(buf.getShort(), IdleWidgets.CAPACITY); // IdleRS: room for the widgets defined in code
+		int count = Math.max(buf.getShort(), IdleWidgets.capacity()); // IdleRS: room for the widgets defined in code
 		interfaces = new JagInterface[count];
 		data = new byte[count][];
 		while (buf.position < buf.buffer.length) {

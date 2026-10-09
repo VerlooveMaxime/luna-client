@@ -20,7 +20,9 @@ import static org.junit.jupiter.api.Assertions.assertTrue;
 /** Rules every code-defined widget follows, whichever screen defines it. */
 class WidgetSpecsTest {
 
-    private static final Map<Integer, WidgetSpec> ALL = WidgetSpecs.all();
+    /** Six step slots: two rows of slots, the padlock on the second. */
+    private static final WidgetSpecs SPECS = WidgetSpecs.of(6);
+    private static final Map<Integer, WidgetSpec> ALL = SPECS.all();
 
     static Stream<WidgetSpec> specs() {
         return ALL.values().stream();
@@ -50,7 +52,7 @@ class WidgetSpecsTest {
     @ParameterizedTest
     @MethodSource("specs")
     void everyIdIsAboveTheCacheWidgetsAndBelowTheClientsCapacity(WidgetSpec spec) {
-        assertTrue(spec.id() >= FlowWidgets.FIRST_ID && spec.id() < WidgetSpecs.CAPACITY);
+        assertTrue(spec.id() >= FlowWidgets.FIRST_ID && spec.id() < SPECS.capacity());
     }
 
     @ParameterizedTest
@@ -88,27 +90,27 @@ class WidgetSpecsTest {
 
     @Test
     void anUnknownIdHasNoSpec() {
-        assertTrue(WidgetSpecs.spec(FlowWidgets.FIRST_ID - 1).isEmpty());
+        assertTrue(SPECS.spec(FlowWidgets.FIRST_ID - 1).isEmpty());
     }
 
     @Test
     void aKnownIdHasItsSpec() {
-        assertEquals(FlowWidgets.BUILDER, WidgetSpecs.spec(FlowWidgets.BUILDER).orElseThrow().id());
+        assertEquals(FlowWidgets.BUILDER, SPECS.spec(FlowWidgets.BUILDER).orElseThrow().id());
     }
 
     @Test
     void aRootIsItsOwnGroupAsInTheCache() {
-        assertEquals(WidgetGallery.GALLERY, WidgetSpecs.root(WidgetGallery.GALLERY));
+        assertEquals(WidgetGallery.GALLERY, SPECS.root(WidgetGallery.GALLERY));
     }
 
     @Test
     void aNestedWidgetBelongsToTheGroupOfItsRootNotOfItsDirectParent() {
-        assertEquals(WidgetGallery.GALLERY, WidgetSpecs.root(WidgetGallery.tileFace(0)));
+        assertEquals(WidgetGallery.GALLERY, SPECS.root(WidgetGallery.tileFace(0)));
     }
 
     @Test
     void aWidgetUnderACacheLayerBelongsToThatLayersGroup() {
-        assertEquals(QuestJournal.TAB, WidgetSpecs.root(QuestJournal.TUTORIAL_LINE));
+        assertEquals(QuestJournal.TAB, SPECS.root(QuestJournal.TUTORIAL_LINE));
     }
 
     @Test
@@ -126,5 +128,20 @@ class WidgetSpecsTest {
         WidgetSpecs.add(specs, children, WidgetSpec.text(30002, 30000, 0, 0, 10, 10, "", 0, 0));
 
         assertEquals(List.of(30001, 30002), children);
+    }
+
+    @Test
+    void theCapacityIsOnePastTheHighestId() {
+        assertEquals(BuilderWidgets.lockedSprite(6) + 1, SPECS.capacity());
+    }
+
+    @Test
+    void moreStepSlotsNeedMoreRoom() {
+        assertTrue(WidgetSpecs.of(40).capacity() > SPECS.capacity());
+    }
+
+    @Test
+    void theSpecsCannotBeChanged() {
+        assertThrows(UnsupportedOperationException.class, () -> ALL.remove(FlowWidgets.TAB));
     }
 }

@@ -2584,6 +2584,11 @@ public class client extends JagApplet {
                 opcode = -1;
                 return true;
             }
+            if (opcode == 108) { // IdleRS: our own packet, a sub-opcode first
+                IdleWidgets.idlePacket(buffer);
+                opcode = -1;
+                return true;
+            }
             if (opcode == 101) { // IdleRS: the flow builder asks for a tile picked on the world map
                 int worldX = buffer.getShort();
                 int worldY = buffer.getShort();

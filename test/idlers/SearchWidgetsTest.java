@@ -58,6 +58,6 @@ class SearchWidgetsTest {
 
     @Test
     void theClientMakesRoomForTheSearchsIds() {
-        assertEquals(SearchWidgets.ID_LIMIT, WidgetSpecs.CAPACITY);
+        assertTrue(WidgetSpecs.of(0).capacity() >= SearchWidgets.ID_LIMIT);
     }
 }

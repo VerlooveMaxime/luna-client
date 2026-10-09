@@ -7,26 +7,35 @@ import java.util.Map;
 import java.util.Optional;
 
 /**
- * Every widget IdleRS defines in code: the flow widgets, the quest journal's stages, the widget gallery and the search
- * prompt's icons.
+ * Every widget IdleRS defines in code: the flow widgets, the quest journal's stages, the widget gallery, the search
+ * prompt's icons and the builder's screens, built for the number of step slots the player has, which the server
+ * sends; the client builds them again when it changes.
  */
 public final class WidgetSpecs {
 
-    /** Room the client makes for widget ids; the search prompt's ids come last. */
-    public static final int CAPACITY = SearchWidgets.ID_LIMIT;
+    private final Map<Integer, WidgetSpec> all;
 
-    private static final Map<Integer, WidgetSpec> ALL = merge(List.of(FlowWidgets.specs(), QuestJournal.specs(), WidgetGallery.specs(),
-            SearchWidgets.specs()));
-
-    private WidgetSpecs() {
+    private WidgetSpecs(Map<Integer, WidgetSpec> all) {
+        this.all = all;
     }
 
-    public static Optional<WidgetSpec> spec(int id) {
-        return Optional.ofNullable(ALL.get(id));
+    /** The widgets for a player with {@code builderSlots} step slots. */
+    public static WidgetSpecs of(int builderSlots) {
+        return new WidgetSpecs(merge(List.of(FlowWidgets.specs(), QuestJournal.specs(), WidgetGallery.specs(), SearchWidgets.specs(),
+                BuilderWidgets.specs(builderSlots))));
     }
 
-    public static Map<Integer, WidgetSpec> all() {
-        return Collections.unmodifiableMap(ALL);
+    public Optional<WidgetSpec> spec(int id) {
+        return Optional.ofNullable(all.get(id));
+    }
+
+    public Map<Integer, WidgetSpec> all() {
+        return Collections.unmodifiableMap(all);
+    }
+
+    /** Room the client makes for widget ids: one past the highest. */
+    public int capacity() {
+        return all.keySet().stream().mapToInt(Integer::intValue).max().orElse(0) + 1;
     }
 
     /**
@@ -35,12 +44,12 @@ public final class WidgetSpecs {
      * they come back fresh; a direct parent there would leave deeper widgets with stale texts and hidden flags.
      * A parent the cache defines is taken as the root.
      */
-    public static int root(int id) {
-        int parent = ALL.get(id).parent();
+    public int root(int id) {
+        int parent = all.get(id).parent();
         if (parent == -1) {
             return id;
         }
-        return ALL.containsKey(parent) ? root(parent) : parent;
+        return all.containsKey(parent) ? root(parent) : parent;
     }
 
     static Map<Integer, WidgetSpec> merge(List<Map<Integer, WidgetSpec>> sources) {
