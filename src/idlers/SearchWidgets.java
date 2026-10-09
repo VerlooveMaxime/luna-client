@@ -34,6 +34,12 @@ public final class SearchWidgets {
     public static final int HINT_RIGHT = 475;
     public static final String HINT = "Escape: cancel";
 
+    /** The name mode, drawn as the 377's "Enter amount:" (Maxime): title and typed line centred, a hint at the bottom. */
+    public static final int NAME_TITLE_Y = 40;
+    public static final int NAME_TYPED_Y = 60;
+    public static final int NAME_HINT_Y = 90;
+    public static final String NAME_HINT = "Enter to save, Escape to cancel";
+
     public static final int TITLE = 0x000000;
     public static final int LABEL = 0x000000;
     public static final int NOTE = 0x3a3a3a;
@@ -42,6 +48,7 @@ public final class SearchWidgets {
     public static final int MESSAGE = 0x000080;
     public static final int TYPED = 0x0000ff;
     public static final int HINT_COLOUR = 0x555555;
+    public static final int NAME_TYPED = 0x000080;
     /** A white veil over the hovered cell, at this opacity out of 256. */
     public static final int HOVER = 0xffffff;
     public static final int HOVER_OPACITY = 90;

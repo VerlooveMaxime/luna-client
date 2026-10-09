@@ -1,5 +1,6 @@
 import idlers.PageRequest;
 import idlers.SearchGrid;
+import idlers.SearchOpening;
 import idlers.SearchPage;
 import idlers.SearchPrompt;
 import idlers.SearchRow;
@@ -13,17 +14,18 @@ import java.util.OptionalInt;
 
 /**
  * IdleRS: the chatbox search ({@link SearchPrompt}) in the 377's dead item search slot ({@code chatboxInterfaceType}
- * 3): drawn with the client's fonts, paged and picked over our packets.
+ * 3): drawn with the client's fonts, paged and picked over our packets; in name mode, a typed name sent on Enter.
  */
 final class IdleSearch {
 
     /** Incoming: the server opens a prompt, then sends pages of its rows. */
     static final int OPEN = 103;
     static final int ROWS = 105;
-    /** Outgoing: a page asked for, the row picked, the prompt closed without a pick. */
+    /** Outgoing: a page asked for, the row picked, the prompt closed without a pick, the name typed. */
     static final int PAGE = 102;
     static final int PICK = 103;
     static final int CLOSED = 105;
+    static final int NAME = 106;
 
     /** The client-only menu action of "Pick" (the compass menu has 1100 and 1101). */
     static final int PICK_ACTION = 1102;
@@ -49,11 +51,41 @@ final class IdleSearch {
         IdleSearch.bold = bold;
     }
 
-    static void open(JagBuffer buffer) {
-        WidgetPicture.Reader in = IdleWidgets.reader(buffer);
-        PROMPT.open(in.u8(), in.string(), in.string());
+    /** Opens the prompt the server sent; returns the text its typed line starts with. */
+    static String open(JagBuffer buffer) {
+        SearchOpening opening = SearchOpening.read(IdleWidgets.reader(buffer));
+        PROMPT.open(opening);
         Arrays.fill(ICONS_SHOWN, null);
         hovered = -1;
+        return opening.text();
+    }
+
+    static boolean naming() {
+        return PROMPT.naming();
+    }
+
+    static boolean accepts(int key, String typed) {
+        return PROMPT.accepts(key, typed);
+    }
+
+    /** Enter on the typed line: in name mode the line goes to the server and the prompt closes (true); a search ignores it. */
+    static boolean enter(JagBuffer out, String typed) {
+        if (!PROMPT.naming())
+            return false;
+        out.putOpcode(NAME);
+        out.putByte(0);
+        int start = out.position;
+        out.putByte(PROMPT.serial());
+        out.putString(typed);
+        out.putLength(out.position - start);
+        return true;
+    }
+
+    /** The name mode, drawn where and as the 377 draws "Enter amount:". */
+    static void drawName(String typed) {
+        bold.method470(239, 452, SearchWidgets.NAME_TITLE_Y, SearchWidgets.TITLE, PROMPT.title());
+        bold.method470(239, 452, SearchWidgets.NAME_TYPED_Y, SearchWidgets.NAME_TYPED, typed + "*");
+        small.method470(239, 452, SearchWidgets.NAME_HINT_Y, SearchWidgets.HINT_COLOUR, SearchWidgets.NAME_HINT);
     }
 
     /** True when the page starts new results, which show from the top. */

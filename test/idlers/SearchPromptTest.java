@@ -1,6 +1,8 @@
 package idlers;
 
 import org.junit.jupiter.api.Test;
+import org.junit.jupiter.params.ParameterizedTest;
+import org.junit.jupiter.params.provider.ValueSource;
 
 import java.util.List;
 import java.util.Optional;
@@ -14,6 +16,17 @@ class SearchPromptTest {
 
     private static final int SERIAL = 4;
 
+    private static SearchOpening search(int serial, String title, String emptyLine) {
+        return new SearchOpening(serial, SearchPrompt.Mode.SEARCH, title, emptyLine, "", 40);
+    }
+
+    /** A name prompt taking up to 20 characters. */
+    private static SearchPrompt naming() {
+        SearchPrompt prompt = new SearchPrompt();
+        prompt.open(new SearchOpening(SERIAL, SearchPrompt.Mode.NAME, "Name for this flow:", "", "Cows", 20));
+        return prompt;
+    }
+
     /** Rows {@code offset} to {@code offset + count - 1} of results holding {@code total} rows in 3 columns. */
     private static SearchPage page(String query, int total, int offset, int count) {
         List<SearchRow> rows = IntStream.range(offset, offset + count)
@@ -24,7 +37,7 @@ class SearchPromptTest {
     /** A prompt showing the first 15 of 100 opening rows, the window at the top. */
     private static SearchPrompt opened() {
         SearchPrompt prompt = new SearchPrompt();
-        prompt.open(SERIAL, "Which item?", "Nothing to pick");
+        prompt.open(search(SERIAL, "Which item?", "Nothing to pick"));
         prompt.receive(page("", 100, 0, 15));
         return prompt;
     }
@@ -65,7 +78,7 @@ class SearchPromptTest {
     @Test
     void theOpeningPageStartsTheResults() {
         SearchPrompt prompt = new SearchPrompt();
-        prompt.open(SERIAL, "Which item?", "");
+        prompt.open(search(SERIAL, "Which item?", ""));
 
         assertTrue(prompt.receive(page("", 100, 0, 15)));
     }
@@ -73,7 +86,7 @@ class SearchPromptTest {
     @Test
     void theResultsTakeTheServersTotalAndColumns() {
         SearchPrompt prompt = new SearchPrompt();
-        prompt.open(SERIAL, "Which item?", "");
+        prompt.open(search(SERIAL, "Which item?", ""));
         prompt.receive(new SearchPage(SERIAL, "", 8, 2, 0, List.of()));
 
         assertEquals(List.of(2, 4 * SearchGrid.CELL_HEIGHT + 2 * SearchGrid.PAD),
@@ -129,7 +142,7 @@ class SearchPromptTest {
     @Test
     void aRequestStopsAtTheFirstRowAlreadyLoaded() {
         SearchPrompt prompt = new SearchPrompt();
-        prompt.open(SERIAL, "Which item?", "");
+        prompt.open(search(SERIAL, "Which item?", ""));
         prompt.receive(page("", 100, 3, 3));
 
         assertEquals(Optional.of(new PageRequest(SERIAL, 0, 3, "")), prompt.update(0, 0));
@@ -252,7 +265,7 @@ class SearchPromptTest {
     @Test
     void nothingIsSaidBeforeTheFirstPage() {
         SearchPrompt prompt = new SearchPrompt();
-        prompt.open(SERIAL, "Which item?", "Nothing to pick");
+        prompt.open(search(SERIAL, "Which item?", "Nothing to pick"));
 
         assertEquals(Optional.empty(), prompt.message());
     }
@@ -260,7 +273,7 @@ class SearchPromptTest {
     @Test
     void anEmptyListShowsTheServersLine() {
         SearchPrompt prompt = new SearchPrompt();
-        prompt.open(SERIAL, "Which item?", "Nothing to pick");
+        prompt.open(search(SERIAL, "Which item?", "Nothing to pick"));
         prompt.receive(page("", 0, 0, 0));
 
         assertEquals(Optional.of("Nothing to pick"), prompt.message());
@@ -282,8 +295,67 @@ class SearchPromptTest {
     @Test
     void openingAgainDropsTheLastPromptsResults() {
         SearchPrompt prompt = opened();
-        prompt.open(SERIAL + 1, "Which rock?", "");
+        prompt.open(search(SERIAL + 1, "Which rock?", ""));
 
         assertEquals(List.of(List.of(), 0), List.of(prompt.loaded(), prompt.grid().contentHeight() - 2 * SearchGrid.PAD));
+    }
+
+    @Test
+    void aSearchIsNotNaming() {
+        assertFalse(opened().naming());
+    }
+
+    @Test
+    void aNamePromptIsNaming() {
+        assertTrue(naming().naming());
+    }
+
+    @Test
+    void aNameAsksTheServerForNothing() {
+        SearchPrompt prompt = naming();
+        prompt.type("Willow chop", 1000);
+
+        assertEquals(Optional.empty(), prompt.update(2000, 0));
+    }
+
+    @Test
+    void aNameHasNoRows() {
+        assertFalse(naming().grid().scrolls());
+    }
+
+    @ParameterizedTest
+    @ValueSource(chars = {'a', 'Z', '7', ' ', '!', '\'', 'z'})
+    void theTypedLineTakesLettersDigitsPunctuationAndSpaces(char key) {
+        assertTrue(naming().accepts(key, ""));
+    }
+
+    @Test
+    void theTypedLineRefusesAnAt() {
+        assertFalse(naming().accepts('@', ""));
+    }
+
+    @Test
+    void theTypedLineRefusesKeysBelowASpace() {
+        assertFalse(naming().accepts(31, ""));
+    }
+
+    @Test
+    void theTypedLineRefusesKeysPastAZ() {
+        assertFalse(naming().accepts('{', ""));
+    }
+
+    @Test
+    void theTypedLineTakesKeysUntilTheMostCharacters() {
+        assertTrue(naming().accepts('a', "a".repeat(19)));
+    }
+
+    @Test
+    void theTypedLineStopsAtTheMostCharacters() {
+        assertFalse(naming().accepts('a', "a".repeat(20)));
+    }
+
+    @Test
+    void aSearchTakesTheMostCharactersItsOpeningSays() {
+        assertFalse(opened().accepts('a', "a".repeat(40)));
     }
 }

@@ -14,9 +14,15 @@ import java.util.stream.IntStream;
  * 2026-10-09): it opens on its first rows; from {@link #MIN_LETTERS} letters, once the player stops typing for
  * {@link #TYPING_PAUSE} ms, the server is asked for the matches; scrolling asks for the rows coming into the window
  * and drops those leaving it. The client never filters by itself. One request is in flight at a time, asked again
- * after {@link #ANSWER_WAIT} ms without an answer, so dragging the scrollbar cannot flood the server.
+ * after {@link #ANSWER_WAIT} ms without an answer, so dragging the scrollbar cannot flood the server. In name mode the
+ * prompt has no rows: the player types a name and Enter sends it.
  */
 public final class SearchPrompt {
+
+    /** What the prompt asks for: a row picked among the server's, or a name typed on its line. */
+    public enum Mode {
+        SEARCH, NAME
+    }
 
     public static final int MIN_LETTERS = 3;
     public static final long TYPING_PAUSE = 300;
@@ -25,8 +31,10 @@ public final class SearchPrompt {
     static final String NO_MATCH = "No matches, shorten the search";
 
     private int serial;
+    private Mode mode = Mode.SEARCH;
     private String title = "";
     private String emptyLine = "";
+    private int mostCharacters;
 
     private String typed = "";
     private long typedAt;
@@ -41,11 +49,13 @@ public final class SearchPrompt {
     private String asked;
     private long askedAt;
 
-    /** A new prompt: its first rows follow in their own packet. */
-    public void open(int serial, String title, String emptyLine) {
-        this.serial = serial;
-        this.title = title;
-        this.emptyLine = emptyLine;
+    /** A new prompt: a search's first rows follow in their own packet. */
+    public void open(SearchOpening opening) {
+        serial = opening.serial();
+        mode = opening.mode();
+        title = opening.title();
+        emptyLine = opening.emptyLine();
+        mostCharacters = opening.mostCharacters();
         typed = "";
         typedAt = 0;
         query = null;
@@ -62,6 +72,19 @@ public final class SearchPrompt {
 
     public String title() {
         return title;
+    }
+
+    /** True in name mode: no rows, and Enter sends the typed line. */
+    public boolean naming() {
+        return mode == Mode.NAME;
+    }
+
+    /**
+     * Whether {@code key} goes on the typed line {@code typed}: a printable key of the 377 (32 to 122) but {@code @},
+     * which starts the client's colour codes, while the line holds fewer than the prompt's most characters.
+     */
+    public boolean accepts(int key, String typed) {
+        return key >= ' ' && key <= 'z' && key != '@' && typed.length() < mostCharacters;
     }
 
     /** What the player has typed at {@code now}; the typing pause counts from its last change. */
@@ -104,9 +127,13 @@ public final class SearchPrompt {
 
     /**
      * Drops the rows that left the window around {@code scroll}, then says what to ask the server for at {@code now},
-     * if anything: the new query once the typing pause is over, else the first rows missing from the window.
+     * if anything: the new query once the typing pause is over, else the first rows missing from the window. A name
+     * asks for nothing.
      */
     public Optional<PageRequest> update(long now, int scroll) {
+        if (naming()) {
+            return Optional.empty();
+        }
         SearchGrid.Window window = grid().window(scroll);
         rows.keySet().removeIf(place -> !window.contains(place));
         boolean waiting = asked != null && now - askedAt < ANSWER_WAIT;

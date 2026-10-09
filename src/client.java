@@ -1165,12 +1165,16 @@ public class client extends JagApplet {
                     aBoolean1240 = true;
                 }
             } else if (chatboxInterfaceType == 3) {
-                if (key >= 32 && key <= 122 && chatboxInput.length() < 40) {
+                if (IdleSearch.accepts(key, chatboxInput)) { // IdleRS: the keys and length the prompt takes
                     chatboxInput += (char) key;
                     aBoolean1240 = true;
                 }
                 if (key == 8 && chatboxInput.length() > 0) {
                     chatboxInput = chatboxInput.substring(0, chatboxInput.length() - 1);
+                    aBoolean1240 = true;
+                }
+                if ((key == 13 || key == 10) && IdleSearch.enter(outBuffer, chatboxInput)) { // IdleRS: a name sent
+                    chatboxInterfaceType = 0;
                     aBoolean1240 = true;
                 }
                 if (key == 27) { // IdleRS: Escape closes the search and tells the server
@@ -2565,10 +2569,9 @@ public class client extends JagApplet {
                 return true;
             }
             if (opcode == IdleSearch.OPEN) { // IdleRS: the server opens the chatbox search in the dead item search's slot
-                IdleSearch.open(buffer);
+                chatboxInput = IdleSearch.open(buffer);
                 aBoolean866 = false;
                 chatboxInterfaceType = 3;
-                chatboxInput = "";
                 anInt865 = 0;
                 aBoolean1240 = true;
                 opcode = -1;
@@ -6280,6 +6283,8 @@ public class client extends JagApplet {
         } else if (chatboxInterfaceType == 2) {
             aClass50_Sub1_Sub1_Sub2_1061.method470(239, 452, 40, 0, "Enter name:");
             aClass50_Sub1_Sub1_Sub2_1061.method470(239, 452, 60, 128, chatboxInput + "*");
+        } else if (chatboxInterfaceType == 3 && IdleSearch.naming()) { // IdleRS: the prompt's name mode
+            IdleSearch.drawName(chatboxInput);
         } else if (chatboxInterfaceType == 3) { // IdleRS: the search prompt, the dead item search revived
             method142(SearchGrid.TOP, 0, IdleSearch.draw(chatboxInput, anInt865), 0, 8);
             Drawable.method446(0, 0, SearchGrid.TOP, 479, true); // models ignore a clip's top: the title band is painted again

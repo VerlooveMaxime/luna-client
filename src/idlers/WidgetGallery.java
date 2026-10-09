@@ -47,6 +47,8 @@ public final class WidgetGallery {
     public static final int HIDEABLE_TEXT = 30422;
     public static final int HIDE = 30423;
     public static final int SHOW = 30424;
+    /** Opens the chatbox prompt in name mode. */
+    public static final int NAME = 30425;
 
     private static final int ICON_BASE = 30430;
     private static final int ICON_STRIDE = 20;
@@ -65,6 +67,9 @@ public final class WidgetGallery {
     /** The searches the server opens, in its order, with each button's width: its text in the plain font. */
     public static final List<String> SEARCHES = List.of("Trees", "Fish", "Skills", "Banks", "Fight", "Items");
     private static final List<Integer> SEARCH_WIDTHS = List.of(31, 23, 29, 34, 28, 31);
+
+    /** "Name" in the plain font. */
+    private static final int NAME_WIDTH = 31;
 
     private static final int NPC_BASE = 30581;
     private static final int NPC_NAME_BASE = 30585;
@@ -163,6 +168,7 @@ public final class WidgetGallery {
         add(specs, children, hideable(specs));
         add(specs, children, button(HIDE, RIGHT, 282, 36, "Hide", "Hide the nested layer"));
         add(specs, children, button(SHOW, RIGHT + 44, 282, 40, "Show", "Show the nested layer"));
+        add(specs, children, button(NAME, RIGHT + 92, 282, NAME_WIDTH, "Name", "Name a flow"));
         add(specs, children, WidgetSpec.text(OPENED_LINE, GALLERY, 8, 296, RIGHT - 16, LINE, "", FlowWidgets.YELLOW, FONT_PLAIN));
         searches(specs, children);
         add(specs, children, WidgetSpec.text(LEGEND, GALLERY, 8, 314, 496, LINE,

@@ -127,6 +127,14 @@ class WidgetGalleryTest {
     }
 
     @Test
+    void theNameButtonFollowsShow() {
+        WidgetSpec show = SPECS.get(WidgetGallery.SHOW);
+        WidgetSpec.Button name = assertInstanceOf(WidgetSpec.Button.class, SPECS.get(WidgetGallery.NAME));
+
+        assertEquals(List.of(show.x() + show.width() + 8, show.y(), "Name"), List.of(name.x(), name.y(), name.text()));
+    }
+
+    @Test
     void theLockedSlotsKeysAreShrunkToTwoSizes() {
         WidgetSpec.Sprite small = assertInstanceOf(WidgetSpec.Sprite.class, SPECS.get(WidgetGallery.KEYS_SMALL));
         WidgetSpec.Sprite big = assertInstanceOf(WidgetSpec.Sprite.class, SPECS.get(WidgetGallery.KEYS_BIG));
