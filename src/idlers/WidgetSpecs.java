@@ -7,7 +7,7 @@ import java.util.Map;
 import java.util.Optional;
 
 /**
- * Every widget IdleRS defines in code: the flow widgets, the quest journal's stages, the widget gallery, the search
+ * Every widget IdleRS defines in code: the Idle tab, the quest journal's stages, the widget gallery, the search
  * prompt's icons and the builder's screens, built for the number of step slots the player has, which the server
  * sends; the client builds them again when it changes.
  */
