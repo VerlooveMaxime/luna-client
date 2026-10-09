@@ -20,8 +20,8 @@ import static org.junit.jupiter.api.Assertions.assertTrue;
 /** Rules every code-defined widget follows, whichever screen defines it. */
 class WidgetSpecsTest {
 
-    /** Six step slots: two rows of slots, the padlock on the second. */
-    private static final WidgetSpecs SPECS = WidgetSpecs.of(6);
+    /** Six step slots: two rows of slots, the padlock on the second; four saved flows, which scroll. */
+    private static final WidgetSpecs SPECS = WidgetSpecs.of(6, 4);
     private static final Map<Integer, WidgetSpec> ALL = SPECS.all();
 
     static Stream<WidgetSpec> specs() {
@@ -137,7 +137,12 @@ class WidgetSpecsTest {
 
     @Test
     void moreStepSlotsNeedMoreRoom() {
-        assertTrue(WidgetSpecs.of(40).capacity() > SPECS.capacity());
+        assertTrue(WidgetSpecs.of(40, 4).capacity() > SPECS.capacity());
+    }
+
+    @Test
+    void savedFlowSlotsAreBuiltForTheCountGiven() {
+        assertTrue(WidgetSpecs.of(6, 5).spec(FlowWidgets.row(4)).isPresent());
     }
 
     @Test

@@ -8,8 +8,8 @@ import java.util.Optional;
 
 /**
  * Every widget IdleRS defines in code: the Idle tab, the quest journal's stages, the widget gallery, the search
- * prompt's icons and the builder's screens, built for the number of step slots the player has, which the server
- * sends; the client builds them again when it changes.
+ * prompt's icons and the builder's screens, built for the number of step slots and saved-flow slots the player has,
+ * which the server sends; the client builds them again when either changes.
  */
 public final class WidgetSpecs {
 
@@ -19,10 +19,10 @@ public final class WidgetSpecs {
         this.all = all;
     }
 
-    /** The widgets for a player with {@code builderSlots} step slots. */
-    public static WidgetSpecs of(int builderSlots) {
-        return new WidgetSpecs(merge(List.of(FlowWidgets.specs(), QuestJournal.specs(), WidgetGallery.specs(), SearchWidgets.specs(),
-                BuilderWidgets.specs(builderSlots))));
+    /** The widgets for a player with {@code builderSlots} step slots and {@code savedSlots} saved-flow slots. */
+    public static WidgetSpecs of(int builderSlots, int savedSlots) {
+        return new WidgetSpecs(merge(List.of(FlowWidgets.specs(savedSlots), QuestJournal.specs(), WidgetGallery.specs(),
+                SearchWidgets.specs(), BuilderWidgets.specs(builderSlots))));
     }
 
     public Optional<WidgetSpec> spec(int id) {

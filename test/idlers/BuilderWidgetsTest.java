@@ -36,6 +36,14 @@ class BuilderWidgetsTest {
     }
 
     @Test
+    void theOverviewSavesTheFlowLeftOfRun() {
+        WidgetSpec.Button save = assertInstanceOf(WidgetSpec.Button.class, SPECS.get(BuilderWidgets.SAVE_FLOW));
+
+        assertEquals(List.of("Save", BuilderWidgets.OVERVIEW), List.of(save.text(), save.parent()));
+        assertTrue(save.x() + save.width() < SPECS.get(BuilderWidgets.RUN).x());
+    }
+
+    @Test
     void theFixedIdsStayInTheirRange() {
         assertTrue(SPECS.keySet().stream().filter(id -> id < BuilderWidgets.SLOT_BASE)
                 .allMatch(id -> id >= BuilderWidgets.FIRST_ID && id < BuilderWidgets.ID_LIMIT));

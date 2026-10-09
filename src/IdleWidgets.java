@@ -1,5 +1,6 @@
 import idlers.BuilderWidgets;
 import idlers.CacheSprites;
+import idlers.FlowWidgets;
 import idlers.ModelFit;
 import idlers.QuestJournal;
 import idlers.SpriteFit;
@@ -18,8 +19,9 @@ import java.util.Optional;
  */
 final class IdleWidgets {
 
-    /** Sub-opcodes of packet 108, the IdleRS packet: the builder's step slots. */
+    /** Sub-opcodes of packet 108, the IdleRS packet: the builder's step slots, the Idle tab's saved-flow slots. */
     static final int BUILDER_SLOTS = 0;
+    static final int SAVED_FLOW_SLOTS = 1;
 
     /** Media types of picture widgets: an item's icon on a sprite widget, an npc's body on a model widget. */
     static final int ITEM_ICON = 4;
@@ -41,9 +43,10 @@ final class IdleWidgets {
         }
     };
 
-    /** The widgets as built for the step slots the server last said the player has, and their drag rules. */
+    /** The widgets as built for the step and saved-flow slots the server last said the player has, and their drag rules. */
     private static int builderSlots;
-    private static WidgetSpecs specs = WidgetSpecs.of(builderSlots);
+    private static int savedFlowSlots;
+    private static WidgetSpecs specs = WidgetSpecs.of(builderSlots, savedFlowSlots);
     private static TileDrag tileDrag = new TileDrag(specs.all());
 
     /** The tile being dragged, -1 for none, and its layer's children as they were before it was drawn on top. */
@@ -62,23 +65,27 @@ final class IdleWidgets {
         return specs.capacity();
     }
 
-    /** Packet 108: a sub-opcode, then its content. */
+    /** Packet 108: a sub-opcode, then its content; both so far carry a slot count. */
     static void idlePacket(JagBuffer buffer) {
         int sub = buffer.getByte();
-        if (sub == BUILDER_SLOTS)
-            builderSlots(buffer.getShort());
+        int slots = buffer.getShort();
+        if (sub == BUILDER_SLOTS && slots != builderSlots) {
+            builderSlots = slots;
+            rebuild(BuilderWidgets.ROOT);
+        }
+        if (sub == SAVED_FLOW_SLOTS && slots != savedFlowSlots) {
+            savedFlowSlots = slots;
+            rebuild(FlowWidgets.TAB);
+        }
     }
 
-    /** The builder's widgets built again for {@code slots} step slots; the ones built for the old count are dropped. */
-    private static void builderSlots(int slots) {
-        if (slots == builderSlots)
-            return;
+    /** The widgets built again for the counts the server last sent; the ones built before in {@code root}'s group are dropped. */
+    private static void rebuild(int root) {
         WidgetSpecs old = specs;
-        builderSlots = slots;
-        specs = WidgetSpecs.of(slots);
+        specs = WidgetSpecs.of(builderSlots, savedFlowSlots);
         tileDrag = new TileDrag(specs.all());
         JagInterface.grow(specs.capacity());
-        old.all().keySet().stream().filter(id -> old.root(id) == BuilderWidgets.ROOT).forEach(id -> JagInterface.interfaces[id] = null);
+        old.all().keySet().stream().filter(id -> old.root(id) == root).forEach(id -> JagInterface.interfaces[id] = null);
     }
 
     static JagInterface build(int id) {

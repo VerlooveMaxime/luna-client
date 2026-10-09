@@ -41,6 +41,7 @@ public final class BuilderWidgets {
     public static final int RUN = 30718;
     public static final int STOP = 30719;
     public static final int CLEAR = 30720;
+    public static final int SAVE_FLOW = 30721;
 
     public static final int KINDS = 30730;
     public static final int KINDS_TITLE = 30731;
@@ -294,6 +295,7 @@ public final class BuilderWidgets {
         add(specs, children, button(BASE_LEVELS, OVERVIEW, 51, 284, 28, "Base", "Grey options on base levels"));
         add(specs, children, WidgetSpec.frame(BOOSTED_LEVELS_FRAME, OVERVIEW, 86, 282, 54, 18, FlowWidgets.EDGE));
         add(specs, children, button(BOOSTED_LEVELS, OVERVIEW, 89, 284, 48, "Boosted", "Grey options on boosted levels"));
+        add(specs, children, button(SAVE_FLOW, OVERVIEW, 336, 284, 34, "Save", "Save the flow"));
         add(specs, children, button(RUN, OVERVIEW, 378, 284, 30, "Run", "Run the flow"));
         add(specs, children, button(STOP, OVERVIEW, 416, 284, 34, "Stop", "Stop the flow"));
         add(specs, children, button(CLEAR, OVERVIEW, 458, 284, 38, "Clear", "Clear the flow"));
