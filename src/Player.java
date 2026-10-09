@@ -95,9 +95,9 @@ public class Player extends Actor {
 		if (npc != null) {
 			int i = -1;
 			if (super.currentAnimation >= 0 && super.animationDelay == 0)
-				i = Animation.animations[super.currentAnimation].anIntArray295[super.animationFrame];
+				i = Animation.animations[super.currentAnimation].frameIds[super.animationFrame];
 			else if (super.anInt1588 >= 0)
-				i = Animation.animations[super.anInt1588].anIntArray295[super.anInt1589];
+				i = Animation.animations[super.anInt1588].frameIds[super.anInt1589];
 			Model class50_sub1_sub4_sub4 = npc.method362(i, -1, 0, null);
 			return class50_sub1_sub4_sub4;
 		}
@@ -110,9 +110,9 @@ public class Player extends Actor {
 			aBoolean1767 = !aBoolean1767;
 		if (super.currentAnimation >= 0 && super.animationDelay == 0) {
 			Animation class14 = Animation.animations[super.currentAnimation];
-			j = class14.anIntArray295[super.animationFrame];
+			j = class14.frameIds[super.animationFrame];
 			if (super.anInt1588 >= 0 && super.anInt1588 != super.anInt1634)
-				k = Animation.animations[super.anInt1588].anIntArray295[super.anInt1589];
+				k = Animation.animations[super.anInt1588].frameIds[super.anInt1589];
 			if (class14.anInt302 >= 0) {
 				i1 = class14.anInt302;
 				l += i1 - equipment[5] << 40;
@@ -122,7 +122,7 @@ public class Player extends Actor {
 				l += j1 - equipment[3] << 48;
 			}
 		} else if (super.anInt1588 >= 0)
-			j = Animation.animations[super.anInt1588].anIntArray295[super.anInt1589];
+			j = Animation.animations[super.anInt1588].frameIds[super.anInt1589];
 		Model class50_sub1_sub4_sub4_1 = (Model) aClass33_1761.get(l);
 		if (class50_sub1_sub4_sub4_1 == null) {
 			boolean flag = false;
@@ -221,7 +221,7 @@ public class Player extends Actor {
 						class50_sub1_sub4_sub4_2, AnimationFrame.isFrameTransparent(super.anInt1615));
 				class50_sub1_sub4_sub4_3.translate(0, -super.anInt1618, 0);
 				class50_sub1_sub4_sub4_3.groupIndicesByTransform();
-				class50_sub1_sub4_sub4_3.applyAnimation(class27.animation.anIntArray295[super.anInt1615], (byte) 6);
+				class50_sub1_sub4_sub4_3.applyAnimation(class27.animation.frameIds[super.anInt1615], (byte) 6);
 				class50_sub1_sub4_sub4_3.faceIndicesByBone = null;
 				class50_sub1_sub4_sub4_3.vertexIndicesByBone = null;
 				if (class27.anInt561 != 128 || class27.anInt562 != 128)

@@ -89,7 +89,7 @@ public class Class50_Sub1_Sub4_Sub5 extends Entity {
 			}
 			anInt1729 = client.pulseCycle - j;
 			if (animation != null)
-				i = animation.anIntArray295[anInt1730];
+				i = animation.frameIds[anInt1730];
 		}
 		ObjectDefinition objectDefinition;
 		if (anIntArray1727 != null)

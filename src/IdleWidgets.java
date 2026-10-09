@@ -67,14 +67,14 @@ final class IdleWidgets {
                 inter.anInt236 = 0;
                 inter.anInt285 = layer.scrollHeight();
                 int count = layer.children().size();
-                inter.anIntArray258 = new int[count];
-                inter.anIntArray232 = new int[count];
-                inter.anIntArray276 = new int[count];
+                inter.childIds = new int[count];
+                inter.childX = new int[count];
+                inter.childY = new int[count];
                 for (int i = 0; i < count; i++) {
                     WidgetSpec child = WidgetSpecs.spec(layer.children().get(i)).orElseThrow();
-                    inter.anIntArray258[i] = child.id();
-                    inter.anIntArray232[i] = child.x();
-                    inter.anIntArray276[i] = child.y();
+                    inter.childIds[i] = child.id();
+                    inter.childX[i] = child.x();
+                    inter.childY[i] = child.y();
                 }
             }
             case WidgetSpec.Box box -> box(inter, box.colour(), 0, box.filled());
@@ -200,11 +200,11 @@ final class IdleWidgets {
             return false;
         draggedTile = tile.get();
         JagInterface layer = JagInterface.forId(parentOf(draggedTile));
-        childrenBeforeDrag = new TileDrag.Children(layer.anIntArray258, layer.anIntArray232, layer.anIntArray276);
+        childrenBeforeDrag = new TileDrag.Children(layer.childIds, layer.childX, layer.childY);
         TileDrag.Children front = TileDrag.toFront(childrenBeforeDrag, draggedTile);
-        layer.anIntArray258 = front.ids();
-        layer.anIntArray232 = front.xs();
-        layer.anIntArray276 = front.ys();
+        layer.childIds = front.ids();
+        layer.childX = front.xs();
+        layer.childY = front.ys();
         return true;
     }
 
@@ -224,9 +224,9 @@ final class IdleWidgets {
         tile.drawOffsetX = 0;
         tile.drawOffsetY = 0;
         JagInterface layer = JagInterface.forId(parentOf(draggedTile));
-        layer.anIntArray258 = childrenBeforeDrag.ids();
-        layer.anIntArray232 = childrenBeforeDrag.xs();
-        layer.anIntArray276 = childrenBeforeDrag.ys();
+        layer.childIds = childrenBeforeDrag.ids();
+        layer.childX = childrenBeforeDrag.xs();
+        layer.childY = childrenBeforeDrag.ys();
         draggedTile = -1;
     }
 
@@ -263,10 +263,10 @@ final class IdleWidgets {
 
     /** Puts the stages on top of the quest journal's list, as {@link QuestJournal} lays them out. */
     static void addStages(JagInterface list) {
-        QuestJournal.Layout layout = QuestJournal.withStages(list.anIntArray258, list.anIntArray232, list.anIntArray276, list.anInt285);
-        list.anIntArray258 = layout.ids();
-        list.anIntArray232 = layout.xs();
-        list.anIntArray276 = layout.ys();
+        QuestJournal.Layout layout = QuestJournal.withStages(list.childIds, list.childX, list.childY, list.anInt285);
+        list.childIds = layout.ids();
+        list.childX = layout.xs();
+        list.childY = layout.ys();
         list.anInt285 = layout.scrollHeight();
     }
 

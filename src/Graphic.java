@@ -41,7 +41,7 @@ public class Graphic extends Entity {
 		Model class50_sub1_sub4_sub4 = spotAnimation.getModel();
 		if (class50_sub1_sub4_sub4 == null)
 			return null;
-		int i = spotAnimation.animation.anIntArray295[anInt1737];
+		int i = spotAnimation.animation.frameIds[anInt1737];
 		Model class50_sub1_sub4_sub4_1 = new Model(false, false, true,
 				class50_sub1_sub4_sub4, AnimationFrame.isFrameTransparent(i));
 		if (!aBoolean1736) {

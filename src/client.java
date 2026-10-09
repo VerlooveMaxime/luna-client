@@ -4765,15 +4765,15 @@ public class client extends JagApplet {
     public void method66(int i, JagInterface class13, int j, int k, int l, int i1, int j1, int k1) {
         if (j1 != 23658)
             return;
-        if (class13.anInt236 != 0 || class13.anIntArray258 == null || class13.aBoolean219)
+        if (class13.anInt236 != 0 || class13.childIds == null || class13.aBoolean219)
             return;
         if (i1 < l || k1 < i || i1 > l + class13.anInt241 || k1 > i + class13.anInt238)
             return;
-        int l1 = class13.anIntArray258.length;
+        int l1 = class13.childIds.length;
         for (int i2 = 0; i2 < l1; i2++) {
-            int j2 = class13.anIntArray232[i2] + l;
-            int k2 = (class13.anIntArray276[i2] + i) - k;
-            JagInterface class13_1 = JagInterface.forId(class13.anIntArray258[i2]);
+            int j2 = class13.childX[i2] + l;
+            int k2 = (class13.childY[i2] + i) - k;
+            JagInterface class13_1 = JagInterface.forId(class13.childIds[i2]);
             j2 += class13_1.drawOffsetX;
             k2 += class13_1.drawOffsetY;
             if ((class13_1.anInt254 >= 0 || class13_1.anInt261 != 0) && i1 >= j2 && k1 >= k2
@@ -6628,10 +6628,10 @@ public class client extends JagApplet {
     public boolean method88(int i, int j, byte byte0) {
         boolean flag = false;
         JagInterface class13 = JagInterface.forId(j);
-        for (int k = 0; k < class13.anIntArray258.length; k++) {
-            if (class13.anIntArray258[k] == -1)
+        for (int k = 0; k < class13.childIds.length; k++) {
+            if (class13.childIds[k] == -1)
                 break;
-            JagInterface class13_1 = JagInterface.forId(class13.anIntArray258[k]);
+            JagInterface class13_1 = JagInterface.forId(class13.childIds[k]);
             if (class13_1.anInt236 == 0)
                 flag |= method88(i, class13_1.id, (byte) 5);
             if (class13_1.anInt236 == 6 && (class13_1.modelAnimation != -1 || class13_1.activeModelAnimation != -1)) {
@@ -7451,7 +7451,7 @@ public class client extends JagApplet {
 
                 class50_sub1_sub4_sub4.groupIndicesByTransform();
                 class50_sub1_sub4_sub4.applyAnimation(
-                        Animation.animations[((Actor) (thisPlayer)).anInt1634].anIntArray295[0], (byte) 6);
+                        Animation.animations[((Actor) (thisPlayer)).anInt1634].frameIds[0], (byte) 6);
                 class50_sub1_sub4_sub4.initLighting(64, 850, -30, -50, -30, true);
                 class13.mediaType = 5;
                 class13.mediaId = 0;
@@ -7923,10 +7923,10 @@ public class client extends JagApplet {
         if (byte0 != 36)
             outBuffer.putByte(6);
         JagInterface class13 = JagInterface.forId(i);
-        for (int j = 0; j < class13.anIntArray258.length; j++) {
-            if (class13.anIntArray258[j] == -1)
+        for (int j = 0; j < class13.childIds.length; j++) {
+            if (class13.childIds[j] == -1)
                 break;
-            JagInterface class13_1 = JagInterface.forId(class13.anIntArray258[j]);
+            JagInterface class13_1 = JagInterface.forId(class13.childIds[j]);
             if (class13_1.anInt236 == 1)
                 method112((byte) 36, class13_1.id);
             class13_1.modelAnimationFrame = 0;
@@ -10376,7 +10376,7 @@ public class client extends JagApplet {
     }
 
     public void method142(int i, int j, JagInterface class13, int k, int l) {
-        if (class13.anInt236 != 0 || class13.anIntArray258 == null)
+        if (class13.anInt236 != 0 || class13.childIds == null)
             return;
         if (class13.aBoolean219 && anInt1302 != class13.id && anInt1280 != class13.id
                 && anInt1106 != class13.id)
@@ -10392,13 +10392,13 @@ public class client extends JagApplet {
                     Math.max(left, Math.min(j + class13.anInt241, k1)), true);
         } else
             Drawable.method446(i, j, i + class13.anInt238, j + class13.anInt241, true);
-        int i2 = class13.anIntArray258.length;
+        int i2 = class13.childIds.length;
         if (l != 8)
             opcode = -1;
         for (int j2 = 0; j2 < i2; j2++) {
-            int k2 = class13.anIntArray232[j2] + j;
-            int l2 = (class13.anIntArray276[j2] + i) - k;
-            JagInterface class13_1 = JagInterface.forId(class13.anIntArray258[j2]);
+            int k2 = class13.childX[j2] + j;
+            int l2 = (class13.childY[j2] + i) - k;
+            JagInterface class13_1 = JagInterface.forId(class13.childIds[j2]);
             k2 += class13_1.drawOffsetX;
             l2 += class13_1.drawOffsetY;
             if (class13_1.anInt242 > 0)
@@ -10624,7 +10624,7 @@ public class client extends JagApplet {
                         class50_sub1_sub4_sub4 = class13_1.method203(-1, -1, 0, flag2);
                     } else {
                         Animation class14 = Animation.animations[k7];
-                        class50_sub1_sub4_sub4 = class13_1.method203(class14.anIntArray295[class13_1.modelAnimationFrame],
+                        class50_sub1_sub4_sub4 = class13_1.method203(class14.frameIds[class13_1.modelAnimationFrame],
                                 class14.anIntArray296[class13_1.modelAnimationFrame], 0, flag2);
                     }
                     if (class50_sub1_sub4_sub4 != null)

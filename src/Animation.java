@@ -21,7 +21,7 @@ public class Animation {
 		if (i != 0)
 			return 1;
 		if (k == 0) {
-			AnimationFrame class21 = AnimationFrame.forId(anIntArray295[j]);
+			AnimationFrame class21 = AnimationFrame.forId(frameIds[j]);
 			if (class21 != null)
 				k = anIntArray297[j] = class21.frameDuration;
 		}
@@ -37,11 +37,11 @@ public class Animation {
 				break;
 			if (attribute == 1) {
 				anInt294 = buf.getByte();
-				anIntArray295 = new int[anInt294];
+				frameIds = new int[anInt294];
 				anIntArray296 = new int[anInt294];
 				anIntArray297 = new int[anInt294];
 				for (int j = 0; j < anInt294; j++) {
-					anIntArray295[j] = buf.getShort();
+					frameIds[j] = buf.getShort();
 					anIntArray296[j] = buf.getShort();
 					if (anIntArray296[j] == 65535)
 						anIntArray296[j] = -1;
@@ -80,8 +80,8 @@ public class Animation {
 		} while (true);
 		if (anInt294 == 0) {
 			anInt294 = 1;
-			anIntArray295 = new int[1];
-			anIntArray295[0] = -1;
+			frameIds = new int[1];
+			frameIds[0] = -1;
 			anIntArray296 = new int[1];
 			anIntArray296[0] = -1;
 			anIntArray297 = new int[1];
@@ -116,7 +116,7 @@ public class Animation {
 	public static int count;
 	public static Animation animations[];
 	public int anInt294;
-	public int anIntArray295[];
+	public int frameIds[];
 	public int anIntArray296[];
 	public int anIntArray297[];
 	public int anInt298;

@@ -6,15 +6,15 @@ public class Npc extends Actor {
 
 	public Model method569() {
 		if (super.currentAnimation >= 0 && super.animationDelay == 0) {
-			int i = Animation.animations[super.currentAnimation].anIntArray295[super.animationFrame];
+			int i = Animation.animations[super.currentAnimation].frameIds[super.animationFrame];
 			int k = -1;
 			if (super.anInt1588 >= 0 && super.anInt1588 != super.anInt1634)
-				k = Animation.animations[super.anInt1588].anIntArray295[super.anInt1589];
+				k = Animation.animations[super.anInt1588].frameIds[super.anInt1589];
 			return def.method362(i, k, 0, Animation.animations[super.currentAnimation].anIntArray299);
 		}
 		int j = -1;
 		if (super.anInt1588 >= 0)
-			j = Animation.animations[super.anInt1588].anIntArray295[super.anInt1589];
+			j = Animation.animations[super.anInt1588].frameIds[super.anInt1589];
 		return def.method362(j, -1, 0, null);
 	}
 
@@ -30,7 +30,7 @@ public class Npc extends Actor {
 			SpotAnimation class27 = SpotAnimation.spotAnimations[super.anInt1614];
 			Model class50_sub1_sub4_sub4_1 = class27.getModel();
 			if (class50_sub1_sub4_sub4_1 != null) {
-				int i = class27.animation.anIntArray295[super.anInt1615];
+				int i = class27.animation.frameIds[super.anInt1615];
 				Model class50_sub1_sub4_sub4_2 = new Model(false, false, true,
 						class50_sub1_sub4_sub4_1, AnimationFrame.isFrameTransparent(i));
 				class50_sub1_sub4_sub4_2.translate(0, -super.anInt1618, 0);

@@ -118,13 +118,13 @@ public class JagInterface {
 			inter.anInt285 = buf.getShort();
 			inter.aBoolean219 = buf.getByte() == 1;
 			int l1 = buf.getShort();
-			inter.anIntArray258 = new int[l1];
-			inter.anIntArray232 = new int[l1];
-			inter.anIntArray276 = new int[l1];
+			inter.childIds = new int[l1];
+			inter.childX = new int[l1];
+			inter.childY = new int[l1];
 			for (int i3 = 0; i3 < l1; i3++) {
-				inter.anIntArray258[i3] = buf.getShort();
-				inter.anIntArray232[i3] = buf.getSignedShort();
-				inter.anIntArray276[i3] = buf.getSignedShort();
+				inter.childIds[i3] = buf.getShort();
+				inter.childX[i3] = buf.getSignedShort();
+				inter.childY[i3] = buf.getSignedShort();
 			}
 
 		}
@@ -381,7 +381,7 @@ public class JagInterface {
 	public boolean aBoolean229;
 	public String aString230;
 	public int anInt231;
-	public int anIntArray232[];
+	public int childX[];
 	public boolean aBoolean233;
 	public int anIntArrayArray234[][];
 	public int modelAnimationFrame;
@@ -407,7 +407,7 @@ public class JagInterface {
 	public static int anInt255 = -1;
 	public int anIntArray256[];
 	public static boolean aBoolean257;
-	public int anIntArray258[];
+	public int childIds[];
 	public int drawOffsetY;
 	public int anInt260;
 	public int anInt261;
@@ -425,7 +425,7 @@ public class JagInterface {
 	public int anIntArray273[];
 	public boolean aBoolean274;
 	public static int anInt275 = -291;
-	public int anIntArray276[];
+	public int childY[];
 	public static int anInt277 = -1;
 	public static boolean aBoolean278 = true;
 	public static int anInt279 = 373;

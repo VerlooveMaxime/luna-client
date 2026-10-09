@@ -50,7 +50,7 @@ public class Projectile extends Entity {
 			return null;
 		int i = -1;
 		if (spotAnimation.animation != null)
-			i = spotAnimation.animation.anIntArray295[anInt1567];
+			i = spotAnimation.animation.frameIds[anInt1567];
 		Model class50_sub1_sub4_sub4_1 = new Model(false, false, true,
 				class50_sub1_sub4_sub4, AnimationFrame.isFrameTransparent(i));
 		if (i != -1) {
