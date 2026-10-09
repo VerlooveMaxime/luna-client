@@ -1413,8 +1413,8 @@ public class client extends JagApplet {
                 int l10 = buffer.method552();
                 int interfaceId = buffer.getShort();
                 JagInterface class13_5 = JagInterface.forId(interfaceId);
-                class13_5.anInt228 = l10;
-                class13_5.anInt259 = l;
+                class13_5.drawOffsetX = l10;
+                class13_5.drawOffsetY = l;
                 opcode = -1;
                 return true;
             }
@@ -1423,17 +1423,17 @@ public class client extends JagApplet {
                 int interfaceId = buffer.getLEShortA();
                 int l16 = buffer.getShortAdded();
                 int i22 = buffer.getLEShort();
-                JagInterface.forId(interfaceId).anInt252 = i1;
-                JagInterface.forId(interfaceId).anInt253 = i22;
-                JagInterface.forId(interfaceId).anInt251 = l16;
+                JagInterface.forId(interfaceId).modelPitch = i1;
+                JagInterface.forId(interfaceId).modelYaw = i22;
+                JagInterface.forId(interfaceId).modelZoom = l16;
                 opcode = -1;
                 return true;
             }
             if (opcode == 216) {
                 int j1 = buffer.getLEShortA();
                 int interfaceId = buffer.getLEShortA();
-                JagInterface.forId(interfaceId).anInt283 = 1;
-                JagInterface.forId(interfaceId).anInt284 = j1;
+                JagInterface.forId(interfaceId).mediaType = 1;
+                JagInterface.forId(interfaceId).mediaId = j1;
                 opcode = -1;
                 return true;
             }
@@ -1491,8 +1491,8 @@ public class client extends JagApplet {
             if (opcode == 162) {
                 int j2 = buffer.getShortAdded();
                 int interfaceId = buffer.getLEShort();
-                JagInterface.forId(interfaceId).anInt283 = 2;
-                JagInterface.forId(interfaceId).anInt284 = j2;
+                JagInterface.forId(interfaceId).mediaType = 2;
+                JagInterface.forId(interfaceId).mediaId = j2;
                 opcode = -1;
                 return true;
             }
@@ -1970,13 +1970,13 @@ public class client extends JagApplet {
             }
             if (opcode == 255) { // show player in an interface *maybe*?
                 int interfaceId = buffer.getLEShortA();
-                JagInterface.forId(interfaceId).anInt283 = 3;
+                JagInterface.forId(interfaceId).mediaType = 3;
                 if (thisPlayer.npc == null) // maybe that is the appear as npc thing?
-                    JagInterface.forId(interfaceId).anInt284 = (thisPlayer.colors[0] << 25) + (thisPlayer.colors[4] << 20)
+                    JagInterface.forId(interfaceId).mediaId = (thisPlayer.colors[0] << 25) + (thisPlayer.colors[4] << 20)
                             + (thisPlayer.equipment[0] << 15) + (thisPlayer.equipment[8] << 10)
                             + (thisPlayer.equipment[11] << 5) + thisPlayer.equipment[1];
                 else
-                    JagInterface.forId(interfaceId).anInt284 = (int) (0x12345678L + thisPlayer.npc.id);
+                    JagInterface.forId(interfaceId).mediaId = (int) (0x12345678L + thisPlayer.npc.id);
                 opcode = -1;
                 return true;
             }
@@ -2365,16 +2365,16 @@ public class client extends JagApplet {
                 int itemId = buffer.getLEShort();
                 int interfaceId = buffer.getLEShortA();
                 if (itemId == 65535) {
-                    JagInterface.forId(interfaceId).anInt283 = 0;
+                    JagInterface.forId(interfaceId).mediaType = 0;
                     opcode = -1;
                     return true;
                 } else {
                     ItemDefinition class16 = ItemDefinition.forId(itemId);
-                    JagInterface.forId(interfaceId).anInt283 = 4;
-                    JagInterface.forId(interfaceId).anInt284 = itemId;
-                    JagInterface.forId(interfaceId).anInt252 = class16.modelRotationX;
-                    JagInterface.forId(interfaceId).anInt253 = class16.modelRotationY;
-                    JagInterface.forId(interfaceId).anInt251 = (class16.modelScale * 100) / scale;
+                    JagInterface.forId(interfaceId).mediaType = 4;
+                    JagInterface.forId(interfaceId).mediaId = itemId;
+                    JagInterface.forId(interfaceId).modelPitch = class16.modelRotationX;
+                    JagInterface.forId(interfaceId).modelYaw = class16.modelRotationY;
+                    JagInterface.forId(interfaceId).modelZoom = (class16.modelScale * 100) / scale;
                     opcode = -1;
                     return true;
                 }
@@ -2398,9 +2398,9 @@ public class client extends JagApplet {
                 int interfaceId = buffer.getLEShortA();
                 int i15 = buffer.method553();
                 JagInterface class13_3 = JagInterface.forId(interfaceId);
-                if (class13_3.anInt286 != i15 || i15 == -1) {
-                    class13_3.anInt286 = i15;
-                    class13_3.anInt235 = 0;
+                if (class13_3.modelAnimation != i15 || i15 == -1) {
+                    class13_3.modelAnimation = i15;
+                    class13_3.modelAnimationFrame = 0;
                     class13_3.anInt227 = 0;
                 }
                 opcode = -1;
@@ -4068,7 +4068,7 @@ public class client extends JagApplet {
                 npc.anInt1620 = npc.def.anInt643;
                 npc.anInt1621 = npc.def.anInt641;
                 npc.anInt1622 = npc.def.anInt633;
-                npc.anInt1634 = npc.def.anInt621;
+                npc.anInt1634 = npc.def.standAnimation;
             }
             // Update NPC transformation
             if ((updateMask & 0x40) != 0) {
@@ -4750,8 +4750,8 @@ public class client extends JagApplet {
             int j2 = class13.anIntArray232[i2] + l;
             int k2 = (class13.anIntArray276[i2] + i) - k;
             JagInterface class13_1 = JagInterface.forId(class13.anIntArray258[i2]);
-            j2 += class13_1.anInt228;
-            k2 += class13_1.anInt259;
+            j2 += class13_1.drawOffsetX;
+            k2 += class13_1.drawOffsetY;
             if ((class13_1.anInt254 >= 0 || class13_1.anInt261 != 0) && i1 >= j2 && k1 >= k2
                     && i1 < j2 + class13_1.anInt241 && k1 < k2 + class13_1.anInt238)
                 if (class13_1.anInt254 >= 0)
@@ -6098,8 +6098,8 @@ public class client extends JagApplet {
             groundItems = null;
         if (anInt1183 >= 400)
             return;
-        if (class37.anIntArray622 != null)
-            class37 = class37.method363(false);
+        if (class37.morphIds != null)
+            class37 = class37.morph(false);
         if (class37 == null)
             return;
         if (!class37.aBoolean631)
@@ -6510,8 +6510,8 @@ public class client extends JagApplet {
             Npc class50_sub1_sub4_sub3_sub1 = npcs[anIntArray1134[j6]];
             if (class50_sub1_sub4_sub3_sub1 != null && class50_sub1_sub4_sub3_sub1.isVisible()) {
                 NpcDefinition class37 = class50_sub1_sub4_sub3_sub1.def;
-                if (class37.anIntArray622 != null)
-                    class37 = class37.method363(false);
+                if (class37.morphIds != null)
+                    class37 = class37.morph(false);
                 if (class37 != null && class37.aBoolean636 && class37.aBoolean631) {
                     int j1 = ((Actor) (class50_sub1_sub4_sub3_sub1)).unitX / 32
                             - ((Actor) (thisPlayer)).unitX / 32;
@@ -6610,22 +6610,22 @@ public class client extends JagApplet {
             JagInterface class13_1 = JagInterface.forId(class13.anIntArray258[k]);
             if (class13_1.anInt236 == 0)
                 flag |= method88(i, class13_1.id, (byte) 5);
-            if (class13_1.anInt236 == 6 && (class13_1.anInt286 != -1 || class13_1.anInt287 != -1)) {
+            if (class13_1.anInt236 == 6 && (class13_1.modelAnimation != -1 || class13_1.activeModelAnimation != -1)) {
                 boolean flag1 = method95(class13_1, -693);
                 int i1;
                 if (flag1)
-                    i1 = class13_1.anInt287;
+                    i1 = class13_1.activeModelAnimation;
                 else
-                    i1 = class13_1.anInt286;
+                    i1 = class13_1.modelAnimation;
                 if (i1 != -1) {
                     Animation class14 = Animation.animations[i1];
-                    for (class13_1.anInt227 += i; class13_1.anInt227 > class14.method205(0, class13_1.anInt235); ) {
-                        class13_1.anInt227 -= class14.method205(0, class13_1.anInt235);
-                        class13_1.anInt235++;
-                        if (class13_1.anInt235 >= class14.anInt294) {
-                            class13_1.anInt235 -= class14.anInt298;
-                            if (class13_1.anInt235 < 0 || class13_1.anInt235 >= class14.anInt294)
-                                class13_1.anInt235 = 0;
+                    for (class13_1.anInt227 += i; class13_1.anInt227 > class14.method205(0, class13_1.modelAnimationFrame); ) {
+                        class13_1.anInt227 -= class14.method205(0, class13_1.modelAnimationFrame);
+                        class13_1.modelAnimationFrame++;
+                        if (class13_1.modelAnimationFrame >= class14.anInt294) {
+                            class13_1.modelAnimationFrame -= class14.anInt298;
+                            if (class13_1.modelAnimationFrame < 0 || class13_1.modelAnimationFrame >= class14.anInt294)
+                                class13_1.modelAnimationFrame = 0;
                         }
                         flag = true;
                     }
@@ -6637,8 +6637,8 @@ public class client extends JagApplet {
                 int j1 = (class13_1.anInt218 << 16) >> 16;
                 l *= i;
                 j1 *= i;
-                class13_1.anInt252 = class13_1.anInt252 + l & 0x7ff;
-                class13_1.anInt253 = class13_1.anInt253 + j1 & 0x7ff;
+                class13_1.modelPitch = class13_1.modelPitch + l & 0x7ff;
+                class13_1.modelYaw = class13_1.modelYaw + j1 & 0x7ff;
                 flag = true;
             }
         }
@@ -7398,8 +7398,8 @@ public class client extends JagApplet {
             return;
         }
         if (i == 327) {
-            class13.anInt252 = 150;
-            class13.anInt253 = (int) (Math.sin((double) pulseCycle / 40D) * 256D) & 0x7ff;
+            class13.modelPitch = 150;
+            class13.modelYaw = (int) (Math.sin((double) pulseCycle / 40D) * 256D) & 0x7ff;
             if (aBoolean1277) {
                 for (int j1 = 0; j1 < 7; j1++) {
                     int i2 = anIntArray1326[j1];
@@ -7429,8 +7429,8 @@ public class client extends JagApplet {
                 class50_sub1_sub4_sub4.applyAnimation(
                         Animation.animations[((Actor) (thisPlayer)).anInt1634].anIntArray295[0], (byte) 6);
                 class50_sub1_sub4_sub4.initLighting(64, 850, -30, -50, -30, true);
-                class13.anInt283 = 5;
-                class13.anInt284 = 0;
+                class13.mediaType = 5;
+                class13.mediaId = 0;
                 JagInterface.method201(5, class50_sub1_sub4_sub4, 0, 6);
             }
             return;
@@ -7905,7 +7905,7 @@ public class client extends JagApplet {
             JagInterface class13_1 = JagInterface.forId(class13.anIntArray258[j]);
             if (class13_1.anInt236 == 1)
                 method112((byte) 36, class13_1.id);
-            class13_1.anInt235 = 0;
+            class13_1.modelAnimationFrame = 0;
             class13_1.anInt227 = 0;
         }
 
@@ -8929,8 +8929,8 @@ public class client extends JagApplet {
             Npc class50_sub1_sub4_sub3_sub1_6 = npcs[id];
             if (class50_sub1_sub4_sub3_sub1_6 != null) {
                 NpcDefinition class37 = class50_sub1_sub4_sub3_sub1_6.def;
-                if (class37.anIntArray622 != null)
-                    class37 = class37.method363(false);
+                if (class37.morphIds != null)
+                    class37 = class37.morph(false);
                 if (class37 != null) {
                     String s10;
                     if (class37.aByteArray660 != null)
@@ -9136,8 +9136,8 @@ public class client extends JagApplet {
                 continue;
             if (obj instanceof Npc) {
                 NpcDefinition class37 = ((Npc) obj).def;
-                if (class37.anIntArray622 != null)
-                    class37 = class37.method363(false);
+                if (class37.morphIds != null)
+                    class37 = class37.morph(false);
                 if (class37 == null)
                     continue;
             }
@@ -9819,7 +9819,7 @@ public class client extends JagApplet {
             npc.anInt1620 = npc.def.anInt643;
             npc.anInt1621 = npc.def.anInt641;
             npc.anInt1622 = npc.def.anInt633;
-            npc.anInt1634 = npc.def.anInt621;
+            npc.anInt1634 = npc.def.standAnimation;
             npc.teleport(thisPlayer.walkingQueueX[0] + deltaX, thisPlayer.walkingQueueY[0] + deltaY, discardWalkingQueue == 1);
         }
         buf.finishBitAccess();
@@ -10369,8 +10369,8 @@ public class client extends JagApplet {
             int k2 = class13.anIntArray232[j2] + j;
             int l2 = (class13.anIntArray276[j2] + i) - k;
             JagInterface class13_1 = JagInterface.forId(class13.anIntArray258[j2]);
-            k2 += class13_1.anInt228;
-            l2 += class13_1.anInt259;
+            k2 += class13_1.drawOffsetX;
+            l2 += class13_1.drawOffsetY;
             if (class13_1.anInt242 > 0)
                 method103((byte) 2, class13_1);
             if (class13_1.anInt236 == 0) {
@@ -10577,24 +10577,24 @@ public class client extends JagApplet {
                     int k4 = ThreeDimensionalCanvas.centerY;
                     ThreeDimensionalCanvas.centerX = k2 + class13_1.anInt241 / 2;
                     ThreeDimensionalCanvas.centerY = l2 + class13_1.anInt238 / 2;
-                    int k5 = ThreeDimensionalCanvas.sineTable[class13_1.anInt252] * class13_1.anInt251 >> 16;
-                    int j6 = ThreeDimensionalCanvas.cosineTable[class13_1.anInt252] * class13_1.anInt251 >> 16;
+                    int k5 = ThreeDimensionalCanvas.sineTable[class13_1.modelPitch] * class13_1.modelZoom >> 16;
+                    int j6 = ThreeDimensionalCanvas.cosineTable[class13_1.modelPitch] * class13_1.modelZoom >> 16;
                     boolean flag2 = method95(class13_1, -693);
                     int k7;
                     if (flag2)
-                        k7 = class13_1.anInt287;
+                        k7 = class13_1.activeModelAnimation;
                     else
-                        k7 = class13_1.anInt286;
+                        k7 = class13_1.modelAnimation;
                     Model class50_sub1_sub4_sub4;
                     if (k7 == -1) {
                         class50_sub1_sub4_sub4 = class13_1.method203(-1, -1, 0, flag2);
                     } else {
                         Animation class14 = Animation.animations[k7];
-                        class50_sub1_sub4_sub4 = class13_1.method203(class14.anIntArray295[class13_1.anInt235],
-                                class14.anIntArray296[class13_1.anInt235], 0, flag2);
+                        class50_sub1_sub4_sub4 = class13_1.method203(class14.anIntArray295[class13_1.modelAnimationFrame],
+                                class14.anIntArray296[class13_1.modelAnimationFrame], 0, flag2);
                     }
                     if (class50_sub1_sub4_sub4 != null)
-                        class50_sub1_sub4_sub4.viewportTransform(0, class13_1.anInt253, 0, class13_1.anInt252, 0, k5, j6);
+                        class50_sub1_sub4_sub4.viewportTransform(0, class13_1.modelYaw, 0, class13_1.modelPitch, 0, k5, j6);
                     ThreeDimensionalCanvas.centerX = k3;
                     ThreeDimensionalCanvas.centerY = k4;
                 } else {

@@ -201,8 +201,8 @@ public class JagInterface {
 		if (inter.anInt236 == 6) {
 			id = buf.getByte();
 			if (id != 0) {
-				inter.anInt283 = 1;
-				inter.anInt284 = (id - 1 << 8) + buf.getByte();
+				inter.mediaType = 1;
+				inter.mediaId = (id - 1 << 8) + buf.getByte();
 			}
 			id = buf.getByte();
 			if (id != 0) {
@@ -211,17 +211,17 @@ public class JagInterface {
 			}
 			id = buf.getByte();
 			if (id != 0)
-				inter.anInt286 = (id - 1 << 8) + buf.getByte();
+				inter.modelAnimation = (id - 1 << 8) + buf.getByte();
 			else
-				inter.anInt286 = -1;
+				inter.modelAnimation = -1;
 			id = buf.getByte();
 			if (id != 0)
-				inter.anInt287 = (id - 1 << 8) + buf.getByte();
+				inter.activeModelAnimation = (id - 1 << 8) + buf.getByte();
 			else
-				inter.anInt287 = -1;
-			inter.anInt251 = buf.getShort();
-			inter.anInt252 = buf.getShort();
-			inter.anInt253 = buf.getShort();
+				inter.activeModelAnimation = -1;
+			inter.modelZoom = buf.getShort();
+			inter.modelPitch = buf.getShort();
+			inter.modelYaw = buf.getShort();
 		}
 		if (inter.anInt236 == 7) {
 			inter.itemIds = new int[inter.anInt241 * inter.anInt238];
@@ -333,7 +333,7 @@ public class JagInterface {
 		if (flag)
 			model = method197(anInt266, anInt267);
 		else
-			model = method197(anInt283, anInt284);
+			model = method197(mediaType, mediaId);
 		if (model == null)
 			return null;
 		if (i == -1 && j == -1 && model.colors == null)
@@ -375,14 +375,14 @@ public class JagInterface {
 	public int anInt225;
 	public int anInt226;
 	public int anInt227;
-	public int anInt228;
+	public int drawOffsetX;
 	public boolean aBoolean229;
 	public String aString230;
 	public int anInt231;
 	public int anIntArray232[];
 	public boolean aBoolean233;
 	public int anIntArrayArray234[][];
-	public int anInt235;
+	public int modelAnimationFrame;
 	public int anInt236;
 	public JagFont aClass50_Sub1_Sub1_Sub2_237;
 	public int anInt238;
@@ -398,15 +398,15 @@ public class JagInterface {
 	public int anInt248;
 	public String aString249;
 	public static LruHashTable aClass33_250;
-	public int anInt251;
-	public int anInt252;
-	public int anInt253;
+	public int modelZoom;
+	public int modelPitch;
+	public int modelYaw;
 	public int anInt254;
 	public static int anInt255 = -1;
 	public int anIntArray256[];
 	public static boolean aBoolean257;
 	public int anIntArray258[];
-	public int anInt259;
+	public int drawOffsetY;
 	public int anInt260;
 	public int anInt261;
 	public String options[];
@@ -430,11 +430,11 @@ public class JagInterface {
 	public static int anInt280;
 	public String aString281;
 	public static byte data[][];
-	public int anInt283;
-	public int anInt284;
+	public int mediaType;
+	public int mediaId;
 	public int anInt285;
-	public int anInt286;
-	public int anInt287;
+	public int modelAnimation;
+	public int activeModelAnimation;
 	public boolean aBoolean288;
 	public int anInt289;
 

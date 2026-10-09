@@ -14,9 +14,9 @@ public class NpcDefinition {
 				return;
 			if (i == 1) {
 				int j = class50_sub1_sub2.getByte();
-				anIntArray626 = new int[j];
+				modelIds = new int[j];
 				for (int j1 = 0; j1 < j; j1++)
-					anIntArray626[j1] = class50_sub1_sub2.getShort();
+					modelIds[j1] = class50_sub1_sub2.getShort();
 
 			} else if (i == 2)
 				aString652 = class50_sub1_sub2.getString();
@@ -25,7 +25,7 @@ public class NpcDefinition {
 			else if (i == 12)
 				aByte642 = class50_sub1_sub2.getSignedByte();
 			else if (i == 13)
-				anInt621 = class50_sub1_sub2.getShort();
+				standAnimation = class50_sub1_sub2.getShort();
 			else if (i == 14)
 				anInt645 = class50_sub1_sub2.getShort();
 			else if (i == 17) {
@@ -41,11 +41,11 @@ public class NpcDefinition {
 					aStringArray646[i - 30] = null;
 			} else if (i == 40) {
 				int k = class50_sub1_sub2.getByte();
-				anIntArray634 = new int[k];
-				anIntArray656 = new int[k];
+				originalColours = new int[k];
+				replacementColours = new int[k];
 				for (int k1 = 0; k1 < k; k1++) {
-					anIntArray634[k1] = class50_sub1_sub2.getShort();
-					anIntArray656[k1] = class50_sub1_sub2.getShort();
+					originalColours[k1] = class50_sub1_sub2.getShort();
+					replacementColours[k1] = class50_sub1_sub2.getShort();
 				}
 
 			} else if (i == 60) {
@@ -65,9 +65,9 @@ public class NpcDefinition {
 			else if (i == 95)
 				anInt639 = class50_sub1_sub2.getShort();
 			else if (i == 97)
-				anInt632 = class50_sub1_sub2.getShort();
+				scaleXZ = class50_sub1_sub2.getShort();
 			else if (i == 98)
-				anInt630 = class50_sub1_sub2.getShort();
+				scaleY = class50_sub1_sub2.getShort();
 			else if (i == 99)
 				aBoolean644 = true;
 			else if (i == 100)
@@ -86,11 +86,11 @@ public class NpcDefinition {
 				if (anInt659 == 65535)
 					anInt659 = -1;
 				int i1 = class50_sub1_sub2.getByte();
-				anIntArray622 = new int[i1 + 1];
+				morphIds = new int[i1 + 1];
 				for (int i2 = 0; i2 <= i1; i2++) {
-					anIntArray622[i2] = class50_sub1_sub2.getShort();
-					if (anIntArray622[i2] == 65535)
-						anIntArray622[i2] = -1;
+					morphIds[i2] = class50_sub1_sub2.getShort();
+					if (morphIds[i2] == 65535)
+						morphIds[i2] = -1;
 				}
 
 			} else if (i == 107)
@@ -109,8 +109,8 @@ public class NpcDefinition {
 	}
 
 	public Model getHeadModel() {
-		if (anIntArray622 != null) {
-			NpcDefinition class37 = method363(false);
+		if (morphIds != null) {
+			NpcDefinition class37 = morph(false);
 			if (class37 == null)
 				return null;
 			else
@@ -135,9 +135,9 @@ public class NpcDefinition {
 		else
 			class50_sub1_sub4_sub4 = new Model(aclass50_sub1_sub4_sub4.length,
 					aclass50_sub1_sub4_sub4);
-		if (anIntArray634 != null) {
-			for (int i1 = 0; i1 < anIntArray634.length; i1++)
-				class50_sub1_sub4_sub4.replaceColor(anIntArray634[i1], anIntArray656[i1]);
+		if (originalColours != null) {
+			for (int i1 = 0; i1 < originalColours.length; i1++)
+				class50_sub1_sub4_sub4.replaceColor(originalColours[i1], replacementColours[i1]);
 
 		}
 		return class50_sub1_sub4_sub4;
@@ -146,7 +146,7 @@ public class NpcDefinition {
 	public boolean method360(int i) {
 		while (i >= 0)
 			aBoolean662 = !aBoolean662;
-		if (anIntArray622 == null)
+		if (morphIds == null)
 			return true;
 		int packedValue = -1;
 		if (anInt654 != -1) {
@@ -158,7 +158,7 @@ public class NpcDefinition {
 			packedValue = aClient629.localVarps[k] >> l & j1;
 		} else if (anInt659 != -1)
 			packedValue = aClient629.localVarps[anInt659];
-		return packedValue >= 0 && packedValue < anIntArray622.length && anIntArray622[packedValue] != -1;
+		return packedValue >= 0 && packedValue < morphIds.length && morphIds[packedValue] != -1;
 	}
 
 	public static void unpack(Archive class2) {
@@ -179,8 +179,8 @@ public class NpcDefinition {
 	}
 
 	public Model method362(int i, int j, int k, int ai[]) {
-		if (anIntArray622 != null) {
-			NpcDefinition class37 = method363(false);
+		if (morphIds != null) {
+			NpcDefinition class37 = morph(false);
 			if (class37 == null)
 				return null;
 			else
@@ -189,24 +189,24 @@ public class NpcDefinition {
 		Model class50_sub1_sub4_sub4 = (Model) aClass33_635.get(id);
 		if (class50_sub1_sub4_sub4 == null) {
 			boolean flag = false;
-			for (int l = 0; l < anIntArray626.length; l++)
-				if (!Model.isDownloaded(anIntArray626[l]))
+			for (int l = 0; l < modelIds.length; l++)
+				if (!Model.isDownloaded(modelIds[l]))
 					flag = true;
 
 			if (flag)
 				return null;
-			Model aclass50_sub1_sub4_sub4[] = new Model[anIntArray626.length];
-			for (int i1 = 0; i1 < anIntArray626.length; i1++)
-				aclass50_sub1_sub4_sub4[i1] = Model.forId(anIntArray626[i1]);
+			Model aclass50_sub1_sub4_sub4[] = new Model[modelIds.length];
+			for (int i1 = 0; i1 < modelIds.length; i1++)
+				aclass50_sub1_sub4_sub4[i1] = Model.forId(modelIds[i1]);
 
 			if (aclass50_sub1_sub4_sub4.length == 1)
 				class50_sub1_sub4_sub4 = aclass50_sub1_sub4_sub4[0];
 			else
 				class50_sub1_sub4_sub4 = new Model(aclass50_sub1_sub4_sub4.length,
 						aclass50_sub1_sub4_sub4);
-			if (anIntArray634 != null) {
-				for (int j1 = 0; j1 < anIntArray634.length; j1++)
-					class50_sub1_sub4_sub4.replaceColor(anIntArray634[j1], anIntArray656[j1]);
+			if (originalColours != null) {
+				for (int j1 = 0; j1 < originalColours.length; j1++)
+					class50_sub1_sub4_sub4.replaceColor(originalColours[j1], replacementColours[j1]);
 
 			}
 			class50_sub1_sub4_sub4.groupIndicesByTransform();
@@ -222,8 +222,8 @@ public class NpcDefinition {
 			class50_sub1_sub4_sub4_1.applyBlendedAnimation(j, 0, i, ai);
 		else if (i != -1)
 			class50_sub1_sub4_sub4_1.applyAnimation(i, (byte) 6);
-		if (anInt632 != 128 || anInt630 != 128)
-			class50_sub1_sub4_sub4_1.resizeModel(anInt632, anInt630, anInt632);
+		if (scaleXZ != 128 || scaleY != 128)
+			class50_sub1_sub4_sub4_1.resizeModel(scaleXZ, scaleY, scaleXZ);
 		class50_sub1_sub4_sub4_1.calculateRadius();
 		class50_sub1_sub4_sub4_1.faceIndicesByBone = null;
 		class50_sub1_sub4_sub4_1.vertexIndicesByBone = null;
@@ -232,7 +232,7 @@ public class NpcDefinition {
 		return class50_sub1_sub4_sub4_1;
 	}
 
-	public NpcDefinition method363(boolean flag) {
+	public NpcDefinition morph(boolean flag) {
 		if (flag)
 			anInt640 = -212;
 		int i = -1;
@@ -245,10 +245,10 @@ public class NpcDefinition {
 			i = aClient629.localVarps[j] >> k & i1;
 		} else if (anInt659 != -1)
 			i = aClient629.localVarps[anInt659];
-		if (i < 0 || i >= anIntArray622.length || anIntArray622[i] == -1)
+		if (i < 0 || i >= morphIds.length || morphIds[i] == -1)
 			return null;
 		else
-			return forId(anIntArray622[i]);
+			return forId(morphIds[i]);
 	}
 
 	public static NpcDefinition forId(int id) {
@@ -265,14 +265,14 @@ public class NpcDefinition {
 	}
 
 	public NpcDefinition() {
-		anInt621 = -1;
+		standAnimation = -1;
 		aBoolean623 = true;
 		anInt624 = 932;
 		anInt627 = -1;
 		id = -1L;
-		anInt630 = 128;
+		scaleY = 128;
 		aBoolean631 = true;
-		anInt632 = 128;
+		scaleXZ = 128;
 		anInt633 = -1;
 		aBoolean636 = true;
 		anInt637 = -1;
@@ -293,20 +293,20 @@ public class NpcDefinition {
 		aBoolean662 = false;
 	}
 
-	public int anInt621;
-	public int anIntArray622[];
+	public int standAnimation;
+	public int morphIds[];
 	public boolean aBoolean623;
 	public int anInt624;
 	public int anIntArray625[];
-	public int anIntArray626[];
+	public int modelIds[];
 	public int anInt627;
 	public long id;
 	public static client aClient629;
-	public int anInt630;
+	public int scaleY;
 	public boolean aBoolean631;
-	public int anInt632;
+	public int scaleXZ;
 	public int anInt633;
-	public int anIntArray634[];
+	public int originalColours[];
 	public static LruHashTable aClass33_635 = new LruHashTable(30);
 	public boolean aBoolean636;
 	public int anInt637;
@@ -328,7 +328,7 @@ public class NpcDefinition {
 	public static byte aByte653 = 6;
 	public int anInt654;
 	public static NpcDefinition aClass37Array655[];
-	public int anIntArray656[];
+	public int replacementColours[];
 	public static JagBuffer aClass50_Sub1_Sub2_657;
 	public int anInt658;
 	public int anInt659;
