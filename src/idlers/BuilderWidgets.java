@@ -14,14 +14,15 @@ import static idlers.WidgetSpecs.add;
  * The flow builder's screens (flow builder v2, S06): one root holding a layer per screen, which the server shows one
  * at a time (packet 82), so an open chatbox prompt survives the switch. The overview holds a slot per step slot the
  * player has, as many as the server says (packet 108; Maxime, 2026-10-09: no fixed most), then the padlock; the kind
- * picker a button per kind of step. The server mirrors these ids in {@code game.idle.ui.BuilderWidgets}; text and
- * pictures it changes start empty here.
+ * picker a button per kind of step; the configure screen a header, two columns of setting rows the server fills or
+ * hides, a warnings band and its buttons. The server mirrors these ids in {@code game.idle.ui.BuilderWidgets}; text
+ * and pictures it changes start empty here.
  */
 public final class BuilderWidgets {
 
     public static final int FIRST_ID = 30700;
     /** The fixed ids end here; the slots follow from {@link #SLOT_BASE}. */
-    public static final int ID_LIMIT = 30800;
+    public static final int ID_LIMIT = 31000;
 
     public static final int ROOT = 30700;
     public static final int PANEL = 30701;
@@ -48,6 +49,25 @@ public final class BuilderWidgets {
     private static final int KIND_BASE = 30736;
     private static final int KIND_STRIDE = 4;
 
+    public static final int CONFIGURE = 30800;
+    public static final int HEADER_PICTURE = 30801;
+    public static final int HEADER_CORNER_LAYER = 30802;
+    public static final int HEADER_CORNER_BOX = 30803;
+    public static final int HEADER_CORNER = 30804;
+    public static final int HEADER_NAME = 30805;
+    public static final int HEADER_DESCRIPTION = 30806;
+    public static final int TOP_DIVIDER = 30807;
+    public static final int BOTTOM_DIVIDER = 30808;
+    public static final int WARNING_LINES = 3;
+    private static final int WARNING_BASE = 30810;
+    public static final int DELETE = 30813;
+    public static final int BACK = 30814;
+    public static final int SAVE = 30815;
+    public static final int ROWS_PER_COLUMN = 5;
+    public static final int ROWS = 2 * ROWS_PER_COLUMN;
+    private static final int ROW_BASE = 30830;
+    private static final int ROW_STRIDE = 13;
+
     public static final int SLOT_BASE = 31000;
     public static final int SLOT_STRIDE = 16;
     public static final int SLOT_LINES = 4;
@@ -72,6 +92,19 @@ public final class BuilderWidgets {
     public static final int CORNER_PICTURE = 16;
     public static final int KIND_PICTURE = 25;
 
+    /** The mockup's configure rows: a label, a field box, and the amount's button, 28 px apart in two columns. */
+    public static final int ROW_TOP = 50;
+    public static final int ROW_HEIGHT = 28;
+    public static final int RIGHT_COLUMN = 252;
+    public static final int LABEL_WIDTH = 62;
+    public static final int FIELD_X = 64;
+    public static final int FIELD_WIDTH = 128;
+    public static final int FIELD_HEIGHT = 21;
+    public static final int FIELD_PICTURE = 18;
+    public static final int ROW_BUTTON_X = 196;
+    public static final int ROW_BUTTON_WIDTH = 48;
+    public static final int HEADER_PICTURE_SIZE = 36;
+
     public static final int KIND_WIDTH = 64;
     public static final int KIND_HEIGHT = 52;
     public static final int KIND_GAP = 6;
@@ -83,6 +116,11 @@ public final class BuilderWidgets {
     static final int CORNER = 0x2a241c;
     static final int LOCKED = 0x2b261f;
     static final int NUMBER = 0xa89a7c;
+    static final int FIELD = 0x1e1a14;
+    static final int FIELD_HOVER = 0x2a241c;
+    static final int BUTTON = 0x4a4031;
+    static final int BUTTON_HOVER = 0x5a4e3c;
+    static final int MUTED = 0xc8bfa8;
 
     private static final int LINE = 14;
 
@@ -164,6 +202,68 @@ public final class BuilderWidgets {
         return slot(slots) + 3;
     }
 
+    public static int warning(int line) {
+        return WARNING_BASE + line;
+    }
+
+    /** The layer of configure row {@code row}: the left column's rows first, then the right's. */
+    public static int row(int row) {
+        return ROW_BASE + row * ROW_STRIDE;
+    }
+
+    public static int rowLabel(int row) {
+        return row(row) + 1;
+    }
+
+    /** The layer of the row's field box, which the server hides on a note row. */
+    public static int rowField(int row) {
+        return row(row) + 2;
+    }
+
+    public static int rowFace(int row) {
+        return row(row) + 3;
+    }
+
+    /** The field's frame, which the server colours yellow while the field is typed (packet 218). */
+    public static int rowFrame(int row) {
+        return row(row) + 4;
+    }
+
+    public static int rowPicture(int row) {
+        return row(row) + 5;
+    }
+
+    /** The field's text right of its picture. */
+    public static int rowText(int row) {
+        return row(row) + 6;
+    }
+
+    /** The field's text where a field shows no picture. */
+    public static int rowPlainText(int row) {
+        return row(row) + 7;
+    }
+
+    /** The layer of the button right of the field, hidden on rows without one. */
+    public static int rowButton(int row) {
+        return row(row) + 8;
+    }
+
+    public static int rowButtonFace(int row) {
+        return row(row) + 9;
+    }
+
+    public static int rowButtonText(int row) {
+        return row(row) + 10;
+    }
+
+    public static int rowNote(int row) {
+        return row(row) + 11;
+    }
+
+    public static int rowButtonFrame(int row) {
+        return row(row) + 12;
+    }
+
     /** The widgets for a player with {@code slots} step slots. */
     public static Map<Integer, WidgetSpec> specs(int slots) {
         Map<Integer, WidgetSpec> specs = new LinkedHashMap<>();
@@ -175,6 +275,7 @@ public final class BuilderWidgets {
         add(specs, children, button(CLOSE, ROOT, 460, 6, 42, "Close", "Close"));
         add(specs, children, overview(specs, slots));
         add(specs, children, kinds(specs));
+        add(specs, children, configure(specs));
         specs.put(ROOT, WidgetSpec.layer(ROOT, -1, 0, 0, SCREEN_WIDTH, SCREEN_HEIGHT, children));
         return specs;
     }
@@ -268,6 +369,70 @@ public final class BuilderWidgets {
         }
         add(specs, children, button(KINDS_BACK, KINDS, (LAYER_WIDTH - 34) / 2, 284, 34, "Back", "Back"));
         return WidgetSpec.layer(KINDS, ROOT, LAYER_X, LAYER_Y, LAYER_WIDTH, LAYER_HEIGHT, children);
+    }
+
+    /** The mockup's configure screen: header, two columns of rows, warnings, then Delete, Back and Save. */
+    private static WidgetSpec configure(Map<Integer, WidgetSpec> specs) {
+        List<Integer> children = new ArrayList<>();
+        add(specs, children, picture(HEADER_PICTURE, CONFIGURE, 4, 2, HEADER_PICTURE_SIZE));
+        add(specs, children, headerCorner(specs));
+        add(specs, children, WidgetSpec.text(HEADER_NAME, CONFIGURE, 46, 4, 450, LINE, "", FlowWidgets.ORANGE, FONT_BOLD));
+        add(specs, children, WidgetSpec.text(HEADER_DESCRIPTION, CONFIGURE, 46, 22, 450, LINE, "", MUTED, FONT_SMALL));
+        add(specs, children, WidgetSpec.box(TOP_DIVIDER, CONFIGURE, 0, 42, LAYER_WIDTH, 1, FlowWidgets.EDGE));
+        for (int row = 0; row < ROWS; row++) {
+            add(specs, children, row(specs, row));
+        }
+        add(specs, children, WidgetSpec.box(BOTTOM_DIVIDER, CONFIGURE, 0, 236, LAYER_WIDTH, 1, FlowWidgets.EDGE));
+        for (int line = 0; line < WARNING_LINES; line++) {
+            add(specs, children, WidgetSpec.text(warning(line), CONFIGURE, 4, 241 + 13 * line, 492, LINE, "", FlowWidgets.YELLOW, FONT_SMALL));
+        }
+        add(specs, children, button(DELETE, CONFIGURE, 366, 284, 40, "Delete", "Delete the step"));
+        add(specs, children, button(BACK, CONFIGURE, 418, 284, 30, "Back", "Back without saving"));
+        add(specs, children, button(SAVE, CONFIGURE, 460, 284, 34, "Save", "Save the step"));
+        return WidgetSpec.layer(CONFIGURE, ROOT, LAYER_X, LAYER_Y, LAYER_WIDTH, LAYER_HEIGHT, children);
+    }
+
+    /** The header's corner, as a slot's: the kind's icon on a dark box over the picture's bottom right. */
+    private static WidgetSpec headerCorner(Map<Integer, WidgetSpec> specs) {
+        int size = CORNER_PICTURE + 2;
+        List<Integer> children = new ArrayList<>();
+        add(specs, children, WidgetSpec.box(HEADER_CORNER_BOX, HEADER_CORNER_LAYER, 0, 0, size, size, CORNER));
+        add(specs, children, picture(HEADER_CORNER, HEADER_CORNER_LAYER, 1, 1, CORNER_PICTURE));
+        return WidgetSpec.layer(HEADER_CORNER_LAYER, CONFIGURE, 24, 22, size, size, children);
+    }
+
+    /** Configure row {@code row}: its label, then a field box or a note in its place, and the amount's button. */
+    private static WidgetSpec row(Map<Integer, WidgetSpec> specs, int row) {
+        int id = row(row);
+        int x = row < ROWS_PER_COLUMN ? 0 : RIGHT_COLUMN;
+        int y = ROW_TOP + row % ROWS_PER_COLUMN * ROW_HEIGHT;
+        List<Integer> children = new ArrayList<>();
+        add(specs, children, WidgetSpec.text(rowLabel(row), id, 0, 4, LABEL_WIDTH, LINE, "", FlowWidgets.ORANGE, FONT_SMALL));
+        add(specs, children, field(specs, row));
+        add(specs, children, rowButton(specs, row));
+        add(specs, children, WidgetSpec.text(rowNote(row), id, FIELD_X, 4, RIGHT_COLUMN - FIELD_X - 4, LINE, "", FlowWidgets.WHITE, FONT_SMALL));
+        return WidgetSpec.layer(id, CONFIGURE, x, y, RIGHT_COLUMN - 4, FIELD_HEIGHT + 1, children);
+    }
+
+    private static WidgetSpec field(Map<Integer, WidgetSpec> specs, int row) {
+        int id = rowField(row);
+        List<Integer> children = new ArrayList<>();
+        add(specs, children, new WidgetSpec.Tile(rowFace(row), id, 0, 0, FIELD_WIDTH, FIELD_HEIGHT, FIELD, FIELD_HOVER, "Change", false));
+        add(specs, children, WidgetSpec.frame(rowFrame(row), id, 0, 0, FIELD_WIDTH, FIELD_HEIGHT, TILE_EDGE));
+        add(specs, children, picture(rowPicture(row), id, 2, 1, FIELD_PICTURE));
+        add(specs, children, WidgetSpec.text(rowText(row), id, 22, 4, FIELD_WIDTH - 24, LINE, "", FlowWidgets.WHITE, FONT_SMALL));
+        add(specs, children, WidgetSpec.text(rowPlainText(row), id, 4, 4, FIELD_WIDTH - 8, LINE, "", FlowWidgets.WHITE, FONT_SMALL));
+        return WidgetSpec.layer(id, row(row), FIELD_X, 0, FIELD_WIDTH, FIELD_HEIGHT, children);
+    }
+
+    private static WidgetSpec rowButton(Map<Integer, WidgetSpec> specs, int row) {
+        int id = rowButton(row);
+        int height = FIELD_HEIGHT - 2;
+        List<Integer> children = new ArrayList<>();
+        add(specs, children, new WidgetSpec.Tile(rowButtonFace(row), id, 0, 0, ROW_BUTTON_WIDTH, height, BUTTON, BUTTON_HOVER, "Select", false));
+        add(specs, children, WidgetSpec.frame(rowButtonFrame(row), id, 0, 0, ROW_BUTTON_WIDTH, height, FlowWidgets.EDGE));
+        add(specs, children, WidgetSpec.centredText(rowButtonText(row), id, ROW_BUTTON_WIDTH / 2, 3, LINE, "", FlowWidgets.ORANGE, FONT_SMALL));
+        return WidgetSpec.layer(id, row(row), ROW_BUTTON_X, 1, ROW_BUTTON_WIDTH, height, children);
     }
 
     private static WidgetSpec kindButton(Map<Integer, WidgetSpec> specs, int kind, int x, int y) {

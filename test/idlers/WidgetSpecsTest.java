@@ -95,7 +95,7 @@ class WidgetSpecsTest {
 
     @Test
     void aKnownIdHasItsSpec() {
-        assertEquals(FlowWidgets.BUILDER, SPECS.spec(FlowWidgets.BUILDER).orElseThrow().id());
+        assertEquals(FlowWidgets.TAB, SPECS.spec(FlowWidgets.TAB).orElseThrow().id());
     }
 
     @Test

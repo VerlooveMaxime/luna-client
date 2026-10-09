@@ -184,4 +184,71 @@ class BuilderWidgetsTest {
     void theLastKindButtonEndsBeforeTheIdsOfTheSlots() {
         assertTrue(BuilderWidgets.kindLabel(BuilderWidgets.KIND_BUTTONS - 1) < BuilderWidgets.ID_LIMIT);
     }
+
+    @Test
+    void theConfigureScreenIsALayerOfTheRoot() {
+        assertEquals(BuilderWidgets.ROOT, layer(BuilderWidgets.CONFIGURE).parent());
+    }
+
+    @Test
+    void configureRowsMirrorTheServersIds() {
+        assertEquals(List.of(30843, 30846, 30847, 30852, 30854, 30855, 30960),
+                List.of(BuilderWidgets.row(1), BuilderWidgets.rowFace(1), BuilderWidgets.rowFrame(1), BuilderWidgets.rowButtonFace(1),
+                        BuilderWidgets.rowNote(1), BuilderWidgets.rowButtonFrame(1), BuilderWidgets.row(BuilderWidgets.ROWS)));
+    }
+
+    @Test
+    void configureRowsFillTheLeftColumnThenTheRight() {
+        WidgetSpec fifth = SPECS.get(BuilderWidgets.row(4));
+        WidgetSpec sixth = SPECS.get(BuilderWidgets.row(5));
+
+        assertEquals(List.of(0, BuilderWidgets.ROW_TOP + 4 * BuilderWidgets.ROW_HEIGHT, BuilderWidgets.RIGHT_COLUMN, BuilderWidgets.ROW_TOP),
+                List.of(fifth.x(), fifth.y(), sixth.x(), sixth.y()));
+    }
+
+    @Test
+    void aConfigureRowHoldsItsLabelFieldButtonAndNote() {
+        assertEquals(List.of(BuilderWidgets.rowLabel(2), BuilderWidgets.rowField(2), BuilderWidgets.rowButton(2), BuilderWidgets.rowNote(2)),
+                layer(BuilderWidgets.row(2)).children());
+    }
+
+    @Test
+    void aFieldDrawsItsFaceFirstThenItsFrameSoTheServerCanColourIt() {
+        assertEquals(List.of(BuilderWidgets.rowFace(3), BuilderWidgets.rowFrame(3), BuilderWidgets.rowPicture(3), BuilderWidgets.rowText(3),
+                BuilderWidgets.rowPlainText(3)), layer(BuilderWidgets.rowField(3)).children());
+    }
+
+    @Test
+    void aFieldIsClickedAndNotDragged() {
+        WidgetSpec.Tile face = assertInstanceOf(WidgetSpec.Tile.class, SPECS.get(BuilderWidgets.rowFace(0)));
+
+        assertEquals(List.of("Change", false), List.of(face.option(), face.draggable()));
+    }
+
+    @Test
+    void aRowButtonIsClickedAndNotDragged() {
+        WidgetSpec.Tile face = assertInstanceOf(WidgetSpec.Tile.class, SPECS.get(BuilderWidgets.rowButtonFace(0)));
+
+        assertEquals(List.of("Select", false), List.of(face.option(), face.draggable()));
+    }
+
+    @Test
+    void theFieldsTextLeavesRoomForItsPicture() {
+        WidgetSpec picture = SPECS.get(BuilderWidgets.rowPicture(0));
+
+        assertTrue(SPECS.get(BuilderWidgets.rowText(0)).x() >= picture.x() + picture.width());
+    }
+
+    @Test
+    void theHeaderCornerIsALayerSoItHides() {
+        assertEquals(List.of(BuilderWidgets.HEADER_CORNER_BOX, BuilderWidgets.HEADER_CORNER), layer(BuilderWidgets.HEADER_CORNER_LAYER).children());
+    }
+
+    @Test
+    void theConfigureScreenEndsWithItsWarningsAndButtons() {
+        List<Integer> children = layer(BuilderWidgets.CONFIGURE).children();
+
+        assertEquals(List.of(BuilderWidgets.warning(0), BuilderWidgets.warning(1), BuilderWidgets.warning(2), BuilderWidgets.DELETE,
+                BuilderWidgets.BACK, BuilderWidgets.SAVE), children.subList(children.size() - 6, children.size()));
+    }
 }
