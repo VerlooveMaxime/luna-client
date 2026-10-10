@@ -20,6 +20,11 @@ public final class SearchGrid {
     public static final int ICON = 24;
     /** Room around a cell's content and above the first row. */
     public static final int PAD = 2;
+    /**
+     * The band painted again over the rows' icons, title included: one row into the padding, since the client's font
+     * drops a glyph's last row when it ends on a clip's bottom, and the title's descenders end on the rows' top.
+     */
+    public static final int TITLE_BAND = TOP + 1;
     /** Where a cell's text starts, right of its icon. */
     public static final int TEXT_X = PAD + ICON + 4;
     /** The most icons the area shows at once: 3 rows of 3, partly hidden ones included. */

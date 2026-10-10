@@ -181,4 +181,14 @@ class SearchGridTest {
     void aPointPastTheLastCellNamesNoCell() {
         assertEquals(OptionalInt.empty(), grid(4).at(400, 50, 0));
     }
+
+    @Test
+    void theTitleBandHoldsTheTitlesDescendersWithARowToSpare() {
+        assertTrue(SearchWidgets.TITLE_Y + SearchWidgets.TITLE_DESCENT < SearchGrid.TITLE_BAND);
+    }
+
+    @Test
+    void theTitleBandStaysAboveTheFirstRow() {
+        assertTrue(SearchGrid.TITLE_BAND <= SearchGrid.TOP + SearchGrid.PAD);
+    }
 }

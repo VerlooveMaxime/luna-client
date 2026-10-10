@@ -6292,7 +6292,7 @@ public class client extends JagApplet {
             IdleSearch.drawName(chatboxInput);
         } else if (chatboxInterfaceType == 3) { // IdleRS: the search prompt, the dead item search revived
             method142(SearchGrid.TOP, 0, IdleSearch.draw(chatboxInput, anInt865), 0, 8);
-            Drawable.method446(0, 0, SearchGrid.TOP, 479, true); // models ignore a clip's top: the title band is painted again
+            Drawable.method446(0, 0, SearchGrid.TITLE_BAND, 479, true); // models ignore a clip's top: the title band is painted again
             aClass50_Sub1_Sub1_Sub3_1187.method490(0, 0, -488);
             IdleSearch.drawTitle();
             Drawable.method445();

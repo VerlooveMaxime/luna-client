@@ -26,6 +26,8 @@ public final class SearchWidgets {
 
     /** Baselines in the chatbox: the title, a cell's label and note below its top, the typed line. */
     public static final int TITLE_Y = 13;
+    /** How far the title's bold font reaches below its baseline (g, j, q, y), from the cache's b12_full. */
+    public static final int TITLE_DESCENT = 4;
     public static final int LABEL_Y = 12;
     public static final int NOTE_Y = 25;
     public static final int MESSAGE_Y = 47;
