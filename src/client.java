@@ -10407,6 +10407,11 @@ public class client extends JagApplet {
         aClass50_Sub1_Sub1_Sub1_1018 = null;
     }
 
+    /** IdleRS: whether {@code method142} draws the layer, which a hidden one only is while hovered. */
+    private boolean isLayerDrawn(JagInterface layer) {
+        return !layer.aBoolean219 || anInt1302 == layer.id || anInt1280 == layer.id || anInt1106 == layer.id;
+    }
+
     public void method142(int i, int j, JagInterface class13, int k, int l) {
         if (class13.anInt236 != 0 || class13.childIds == null)
             return;
@@ -10441,7 +10446,7 @@ public class client extends JagApplet {
                 if (class13_1.anInt231 < 0)
                     class13_1.anInt231 = 0;
                 method142(l2, k2, class13_1, class13_1.anInt231, 8);
-                if (class13_1.anInt285 > class13_1.anInt238)
+                if (class13_1.anInt285 > class13_1.anInt238 && isLayerDrawn(class13_1)) // IdleRS: a hidden layer's scrollbar hides too
                     method56(true, class13_1.anInt231, k2 + class13_1.anInt241, class13_1.anInt238, class13_1.anInt285,
                             l2);
             } else if (class13_1.anInt236 != 1)
