@@ -30,7 +30,7 @@ class SearchPromptTest {
     /** Rows {@code offset} to {@code offset + count - 1} of results holding {@code total} rows in 3 columns. */
     private static SearchPage page(String query, int total, int offset, int count) {
         List<SearchRow> rows = IntStream.range(offset, offset + count)
-                .mapToObj(place -> new SearchRow(place, "Row " + place, "", false, new WidgetPicture.None())).toList();
+                .mapToObj(place -> new SearchRow(place, "Row " + place, "", false, new WidgetPicture.None(), false)).toList();
         return new SearchPage(SERIAL, query, total, 3, offset, rows);
     }
 
@@ -46,6 +46,41 @@ class SearchPromptTest {
         SearchPrompt prompt = opened();
         prompt.type(text, at);
         return prompt;
+    }
+
+    private static SearchPrompt several() {
+        SearchPrompt prompt = new SearchPrompt();
+        prompt.open(new SearchOpening(SERIAL, SearchPrompt.Mode.SEVERAL, "Which logs would you like to light?", "", "", 40));
+        return prompt;
+    }
+
+    private static SearchRow row(boolean chosen) {
+        return new SearchRow(0, "Oak logs", "", false, new WidgetPicture.None(), chosen);
+    }
+
+    @Test
+    void aSearchOfSeveralStaysOpenOnAPick() {
+        assertTrue(several().staysOpenOnPick());
+    }
+
+    @Test
+    void aSearchOfOneClosesOnAPick() {
+        assertFalse(opened().staysOpenOnPick());
+    }
+
+    @Test
+    void aSearchOfOnePicksItsRows() {
+        assertEquals("Pick", opened().pickOption(row(false)));
+    }
+
+    @Test
+    void aSearchOfSeveralAddsARowNotChosen() {
+        assertEquals("Add", several().pickOption(row(false)));
+    }
+
+    @Test
+    void aSearchOfSeveralRemovesAChosenRow() {
+        assertEquals("Remove", several().pickOption(row(true)));
     }
 
     @Test
@@ -108,7 +143,7 @@ class SearchPromptTest {
         SearchPrompt prompt = opened();
 
         assertFalse(prompt.receive(new SearchPage(SERIAL + 1, "", 100, 3, 15, List.of(new SearchRow(15, "Other", "", false,
-                new WidgetPicture.None())))));
+                new WidgetPicture.None(), false)))));
         assertEquals(Optional.empty(), prompt.row(15));
     }
 

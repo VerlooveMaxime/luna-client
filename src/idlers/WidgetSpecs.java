@@ -21,8 +21,13 @@ public final class WidgetSpecs {
 
     /** The widgets for a player with {@code builderSlots} step slots and {@code savedSlots} saved-flow slots. */
     public static WidgetSpecs of(int builderSlots, int savedSlots) {
+        return of(builderSlots, savedSlots, BuilderWidgets.unplacedLists());
+    }
+
+    /** The same, the builder's configure lists where the server last placed them ({@code lists}, one per list). */
+    public static WidgetSpecs of(int builderSlots, int savedSlots, List<BuilderWidgets.ListPlacement> lists) {
         return new WidgetSpecs(merge(List.of(FlowWidgets.specs(savedSlots), QuestJournal.specs(), WidgetGallery.specs(),
-                SearchWidgets.specs(), BuilderWidgets.specs(builderSlots))));
+                SearchWidgets.specs(), BuilderWidgets.specs(builderSlots, lists))));
     }
 
     public Optional<WidgetSpec> spec(int id) {

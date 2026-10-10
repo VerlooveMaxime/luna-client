@@ -33,6 +33,6 @@ class SearchPageTest {
         SearchPage page = SearchPage.read(reader(4, "oak", 120, 2, 30, 1, 31, 0, "Oak logs", "312 in bank", WidgetPicture.ITEM, 1521));
 
         assertEquals(new SearchPage(4, "oak", 120, 2, 30,
-                List.of(new SearchRow(31, "Oak logs", "312 in bank", false, new WidgetPicture.Item(1521)))), page);
+                List.of(new SearchRow(31, "Oak logs", "312 in bank", false, new WidgetPicture.Item(1521), false))), page);
     }
 }

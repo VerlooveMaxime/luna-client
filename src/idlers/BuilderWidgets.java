@@ -22,7 +22,7 @@ public final class BuilderWidgets {
 
     public static final int FIRST_ID = 30700;
     /** The fixed ids end here; the slots follow from {@link #SLOT_BASE}. */
-    public static final int ID_LIMIT = 31000;
+    public static final int ID_LIMIT = 32000;
 
     public static final int ROOT = 30700;
     public static final int PANEL = 30701;
@@ -64,12 +64,24 @@ public final class BuilderWidgets {
     public static final int DELETE = 30813;
     public static final int BACK = 30814;
     public static final int SAVE = 30815;
-    public static final int ROWS_PER_COLUMN = 5;
+    /** Six rows a column (Maxime, 2026-10-10). */
+    public static final int ROWS_PER_COLUMN = 6;
     public static final int ROWS = 2 * ROWS_PER_COLUMN;
     private static final int ROW_BASE = 30830;
-    private static final int ROW_STRIDE = 13;
+    private static final int ROW_STRIDE = 30;
+    /** A toggle row's two sets of buttons, the server showing the one of its size. */
+    private static final int TWO_BUTTONS = 13;
+    private static final int THREE_BUTTONS = 20;
 
-    public static final int SLOT_BASE = 31000;
+    /** A scrolling list per column (S07a): a line that adds or removes, then a line per item. */
+    public static final int LISTS = 2;
+    public static final int LIST_LINES = 28;
+    private static final int LIST_BASE = 31200;
+    private static final int LIST_STRIDE = 400;
+    private static final int LINE_BASE = 10;
+    private static final int LINE_STRIDE = 12;
+
+    public static final int SLOT_BASE = 32000;
     public static final int SLOT_STRIDE = 16;
     public static final int SLOT_LINES = 4;
 
@@ -104,6 +116,20 @@ public final class BuilderWidgets {
     public static final int FIELD_PICTURE = 18;
     public static final int ROW_BUTTON_X = 196;
     public static final int ROW_BUTTON_WIDTH = 48;
+    /** A toggle's buttons fill the field's place and the button's: two wide ones, or three. */
+    public static final int TOGGLE_ROOM = ROW_BUTTON_X + ROW_BUTTON_WIDTH - FIELD_X;
+    public static final int TOGGLE_GAP = 4;
+    /** A list's lines, the client's scrollbar right of them within the column. */
+    public static final int LIST_WIDTH = TOGGLE_ROOM - 16;
+    public static final int LINE_HEIGHT = 20;
+    public static final int LINE_GAP = 2;
+    public static final int AMOUNT_X = 84;
+    public static final int AMOUNT_WIDTH = 34;
+    public static final int ALL_X = 120;
+    public static final int ALL_WIDTH = 26;
+    public static final int REMOVE_X = 148;
+    public static final int REMOVE_WIDTH = 14;
+    public static final int NAME_X = 21;
     public static final int HEADER_PICTURE_SIZE = 36;
 
     public static final int KIND_WIDTH = 64;
@@ -265,8 +291,137 @@ public final class BuilderWidgets {
         return row(row) + 12;
     }
 
-    /** The widgets for a player with {@code slots} step slots. */
-    public static Map<Integer, WidgetSpec> specs(int slots) {
+    /** The layer of row {@code row}'s toggle buttons when it has {@code count} of them, two or three. */
+    public static int toggles(int row, int count) {
+        return row(row) + (count == 2 ? TWO_BUTTONS : THREE_BUTTONS);
+    }
+
+    public static int toggleFace(int row, int count, int button) {
+        return toggles(row, count) + 1 + 3 * button;
+    }
+
+    /** The button's frame, which the server lights (packet 218). */
+    public static int toggleFrame(int row, int count, int button) {
+        return toggleFace(row, count, button) + 1;
+    }
+
+    public static int toggleText(int row, int count, int button) {
+        return toggleFace(row, count, button) + 2;
+    }
+
+    /** The scrolling layer of list {@code list}: 0 the left column's, 1 the right's. */
+    public static int list(int list) {
+        return LIST_BASE + list * LIST_STRIDE;
+    }
+
+    /** The layer of the list's first line, which opens the search that adds or removes items. */
+    public static int listAddLine(int list) {
+        return list(list) + 1;
+    }
+
+    public static int listAdd(int list) {
+        return list(list) + 2;
+    }
+
+    public static int listAddFrame(int list) {
+        return list(list) + 3;
+    }
+
+    public static int listAddText(int list) {
+        return list(list) + 4;
+    }
+
+    /** The layer of the list's line {@code line}, an item, which the server hides past the last. */
+    public static int line(int list, int line) {
+        return list(list) + LINE_BASE + line * LINE_STRIDE;
+    }
+
+    public static int lineBox(int list, int line) {
+        return line(list, line) + 1;
+    }
+
+    public static int linePicture(int list, int line) {
+        return line(list, line) + 2;
+    }
+
+    public static int lineName(int list, int line) {
+        return line(list, line) + 3;
+    }
+
+    /** The layer of a withdrawal's amount box and All button, hidden in other lists. */
+    public static int lineAmount(int list, int line) {
+        return line(list, line) + 4;
+    }
+
+    public static int lineAmountFace(int list, int line) {
+        return line(list, line) + 5;
+    }
+
+    public static int lineAmountFrame(int list, int line) {
+        return line(list, line) + 6;
+    }
+
+    public static int lineAmountText(int list, int line) {
+        return line(list, line) + 7;
+    }
+
+    public static int lineAllFace(int list, int line) {
+        return line(list, line) + 8;
+    }
+
+    public static int lineAllText(int list, int line) {
+        return line(list, line) + 9;
+    }
+
+    public static int lineRemoveFace(int list, int line) {
+        return line(list, line) + 10;
+    }
+
+    public static int lineRemoveText(int list, int line) {
+        return line(list, line) + 11;
+    }
+
+    /**
+     * Where list {@code list} sits once the server placed it (packet 108 sub-opcode 2): on its column's field area from
+     * row {@code firstRow}, as tall as its {@code lines} lines up to {@code rows} rows, scrolling past that. Lines past
+     * the last lie outside it, so the server never hides them: the client neither draws nor clicks outside a layer.
+     */
+    public record ListPlacement(int x, int y, int height, int scrollHeight) {
+
+        /** A scroll position kept as far as the new content allows. */
+        public int clampedScroll(int scroll) {
+            return Math.max(0, Math.min(scroll, scrollHeight - height));
+        }
+    }
+
+    /** {@code lists} with list {@code list} at {@code placement}. */
+    public static List<ListPlacement> placed(List<ListPlacement> lists, int list, ListPlacement placement) {
+        List<ListPlacement> placed = new ArrayList<>(lists);
+        placed.set(list, placement);
+        return List.copyOf(placed);
+    }
+
+    /** Where the lists sit before the server places them: their column's whole field area, room for every line. */
+    public static List<ListPlacement> unplacedLists() {
+        List<ListPlacement> placements = new ArrayList<>();
+        for (int list = 0; list < LISTS; list++) {
+            placements.add(listPlacement(list, 0, ROWS_PER_COLUMN, LIST_LINES + 1));
+        }
+        return List.copyOf(placements);
+    }
+
+    public static ListPlacement listPlacement(int list, int firstRow, int rows, int lines) {
+        int room = rows * ROW_HEIGHT - (ROW_HEIGHT - FIELD_HEIGHT);
+        int content = lines * (LINE_HEIGHT + LINE_GAP) - LINE_GAP;
+        return new ListPlacement(listX(list), ROW_TOP + firstRow * ROW_HEIGHT, Math.min(room, content), content);
+    }
+
+    private static int listX(int list) {
+        return list * RIGHT_COLUMN + FIELD_X;
+    }
+
+    /** The widgets for a player with {@code slots} step slots, the lists where the server last placed them. */
+    public static Map<Integer, WidgetSpec> specs(int slots, List<ListPlacement> lists) {
         Map<Integer, WidgetSpec> specs = new LinkedHashMap<>();
         List<Integer> children = new ArrayList<>();
         // The panel comes first so the rest draws over it.
@@ -276,7 +431,7 @@ public final class BuilderWidgets {
         add(specs, children, button(CLOSE, ROOT, 460, 6, 42, "Close", "Close"));
         add(specs, children, overview(specs, slots));
         add(specs, children, kinds(specs));
-        add(specs, children, configure(specs));
+        add(specs, children, configure(specs, lists));
         specs.put(ROOT, WidgetSpec.layer(ROOT, -1, 0, 0, SCREEN_WIDTH, SCREEN_HEIGHT, children));
         return specs;
     }
@@ -374,7 +529,7 @@ public final class BuilderWidgets {
     }
 
     /** The mockup's configure screen: header, two columns of rows, warnings, then Delete, Back and Save. */
-    private static WidgetSpec configure(Map<Integer, WidgetSpec> specs) {
+    private static WidgetSpec configure(Map<Integer, WidgetSpec> specs, List<ListPlacement> lists) {
         List<Integer> children = new ArrayList<>();
         add(specs, children, picture(HEADER_PICTURE, CONFIGURE, 4, 2, HEADER_PICTURE_SIZE));
         add(specs, children, headerCorner(specs));
@@ -383,6 +538,9 @@ public final class BuilderWidgets {
         add(specs, children, WidgetSpec.box(TOP_DIVIDER, CONFIGURE, 0, 42, LAYER_WIDTH, 1, FlowWidgets.EDGE));
         for (int row = 0; row < ROWS; row++) {
             add(specs, children, row(specs, row));
+        }
+        for (int list = 0; list < LISTS; list++) {
+            add(specs, children, list(specs, list, lists.get(list)));
         }
         add(specs, children, WidgetSpec.box(BOTTOM_DIVIDER, CONFIGURE, 0, 236, LAYER_WIDTH, 1, FlowWidgets.EDGE));
         for (int line = 0; line < WARNING_LINES; line++) {
@@ -413,7 +571,73 @@ public final class BuilderWidgets {
         add(specs, children, field(specs, row));
         add(specs, children, rowButton(specs, row));
         add(specs, children, WidgetSpec.text(rowNote(row), id, FIELD_X, 4, RIGHT_COLUMN - FIELD_X - 4, LINE, "", FlowWidgets.WHITE, FONT_SMALL));
+        add(specs, children, toggles(specs, row, 2));
+        add(specs, children, toggles(specs, row, 3));
         return WidgetSpec.layer(id, CONFIGURE, x, y, RIGHT_COLUMN - 4, FIELD_HEIGHT + 1, children);
+    }
+
+    /** A toggle's {@code count} buttons side by side in the field's place, each a face, a frame the server lights and a word. */
+    private static WidgetSpec toggles(Map<Integer, WidgetSpec> specs, int row, int count) {
+        int id = toggles(row, count);
+        int width = toggleWidth(count);
+        int height = FIELD_HEIGHT - 2;
+        List<Integer> children = new ArrayList<>();
+        for (int button = 0; button < count; button++) {
+            int x = button * (width + TOGGLE_GAP);
+            add(specs, children, new WidgetSpec.Tile(toggleFace(row, count, button), id, x, 0, width, height, BUTTON, BUTTON_HOVER, "Select", false));
+            add(specs, children, WidgetSpec.frame(toggleFrame(row, count, button), id, x, 0, width, height, TILE_EDGE));
+            add(specs, children, WidgetSpec.centredText(toggleText(row, count, button), id, x + width / 2, 3, LINE, "", FlowWidgets.ORANGE, FONT_SMALL));
+        }
+        return WidgetSpec.layer(id, row(row), FIELD_X, 1, TOGGLE_ROOM, height, children);
+    }
+
+    public static int toggleWidth(int count) {
+        return (TOGGLE_ROOM - (count - 1) * TOGGLE_GAP) / count;
+    }
+
+    private static WidgetSpec list(Map<Integer, WidgetSpec> specs, int list, ListPlacement placement) {
+        int id = list(list);
+        List<Integer> children = new ArrayList<>();
+        add(specs, children, addLine(specs, list));
+        for (int line = 0; line < LIST_LINES; line++) {
+            add(specs, children, line(specs, list, line));
+        }
+        return WidgetSpec.scrollLayer(id, CONFIGURE, placement.x(), placement.y(), LIST_WIDTH, placement.height(), placement.scrollHeight(), children);
+    }
+
+    private static WidgetSpec addLine(Map<Integer, WidgetSpec> specs, int list) {
+        int id = listAddLine(list);
+        List<Integer> children = new ArrayList<>();
+        add(specs, children, new WidgetSpec.Tile(listAdd(list), id, 0, 0, LIST_WIDTH, LINE_HEIGHT, FIELD, FIELD_HOVER, "Search", false));
+        add(specs, children, WidgetSpec.frame(listAddFrame(list), id, 0, 0, LIST_WIDTH, LINE_HEIGHT, TILE_EDGE));
+        add(specs, children, WidgetSpec.text(listAddText(list), id, 4, 3, LIST_WIDTH - 8, LINE, "", FlowWidgets.GREY, FONT_SMALL));
+        return WidgetSpec.layer(id, list(list), 0, 0, LIST_WIDTH, LINE_HEIGHT, children);
+    }
+
+    /** An item's line: its picture and name, a withdrawal's amount box and All button, and the x that takes it out. */
+    private static WidgetSpec line(Map<Integer, WidgetSpec> specs, int list, int line) {
+        int id = line(list, line);
+        List<Integer> children = new ArrayList<>();
+        add(specs, children, WidgetSpec.box(lineBox(list, line), id, 0, 0, LIST_WIDTH, LINE_HEIGHT, FIELD));
+        add(specs, children, picture(linePicture(list, line), id, 1, 1, FIELD_PICTURE));
+        add(specs, children, WidgetSpec.text(lineName(list, line), id, NAME_X, 3, REMOVE_X - NAME_X - 2, LINE, "", FlowWidgets.WHITE, FONT_SMALL));
+        add(specs, children, amount(specs, list, line));
+        add(specs, children, new WidgetSpec.Tile(lineRemoveFace(list, line), id, REMOVE_X, 3, REMOVE_WIDTH, LINE_HEIGHT - 6, BUTTON, BUTTON_HOVER, "Remove", false));
+        add(specs, children, WidgetSpec.centredText(lineRemoveText(list, line), id, REMOVE_X + REMOVE_WIDTH / 2, 3, LINE, "x", FlowWidgets.ORANGE, FONT_SMALL));
+        return WidgetSpec.layer(id, list(list), 0, (line + 1) * (LINE_HEIGHT + LINE_GAP), LIST_WIDTH, LINE_HEIGHT, children);
+    }
+
+    private static WidgetSpec amount(Map<Integer, WidgetSpec> specs, int list, int line) {
+        int id = lineAmount(list, line);
+        int height = LINE_HEIGHT - 4;
+        List<Integer> children = new ArrayList<>();
+        add(specs, children, new WidgetSpec.Tile(lineAmountFace(list, line), id, 0, 0, AMOUNT_WIDTH, height, FIELD_HOVER, TILE_HOVER, "Change", false));
+        add(specs, children, WidgetSpec.frame(lineAmountFrame(list, line), id, 0, 0, AMOUNT_WIDTH, height, TILE_EDGE));
+        add(specs, children, WidgetSpec.centredText(lineAmountText(list, line), id, AMOUNT_WIDTH / 2, 2, LINE, "", FlowWidgets.WHITE, FONT_SMALL));
+        int all = ALL_X - AMOUNT_X;
+        add(specs, children, new WidgetSpec.Tile(lineAllFace(list, line), id, all, 0, ALL_WIDTH, height, BUTTON, BUTTON_HOVER, "Select", false));
+        add(specs, children, WidgetSpec.centredText(lineAllText(list, line), id, all + ALL_WIDTH / 2, 2, LINE, "All", FlowWidgets.ORANGE, FONT_SMALL));
+        return WidgetSpec.layer(id, line(list, line), AMOUNT_X, 2, ALL_X + ALL_WIDTH - AMOUNT_X, height, children);
     }
 
     private static WidgetSpec field(Map<Integer, WidgetSpec> specs, int row) {

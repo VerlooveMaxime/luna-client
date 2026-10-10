@@ -16,7 +16,7 @@ import static org.junit.jupiter.api.Assertions.assertTrue;
 class BuilderWidgetsTest {
 
     /** Six step slots: a full row, then two slots and the padlock. */
-    private static final Map<Integer, WidgetSpec> SPECS = BuilderWidgets.specs(6);
+    private static final Map<Integer, WidgetSpec> SPECS = BuilderWidgets.specs(6, BuilderWidgets.unplacedLists());
 
     private static WidgetSpec.Layer layer(int id) {
         return assertInstanceOf(WidgetSpec.Layer.class, SPECS.get(id));
@@ -105,7 +105,7 @@ class BuilderWidgetsTest {
 
     @Test
     void aThirdRowScrolls() {
-        WidgetSpec.Layer slots = assertInstanceOf(WidgetSpec.Layer.class, BuilderWidgets.specs(8).get(BuilderWidgets.SLOTS));
+        WidgetSpec.Layer slots = assertInstanceOf(WidgetSpec.Layer.class, BuilderWidgets.specs(8, BuilderWidgets.unplacedLists()).get(BuilderWidgets.SLOTS));
 
         assertEquals(3 * BuilderWidgets.SLOT_HEIGHT + 2 * BuilderWidgets.SLOT_GAP, slots.scrollHeight());
     }
@@ -119,7 +119,7 @@ class BuilderWidgetsTest {
     @Test
     void noSlotsLeavesThePadlockAlone() {
         assertEquals(List.of(BuilderWidgets.slot(0)),
-                assertInstanceOf(WidgetSpec.Layer.class, BuilderWidgets.specs(0).get(BuilderWidgets.SLOTS)).children());
+                assertInstanceOf(WidgetSpec.Layer.class, BuilderWidgets.specs(0, BuilderWidgets.unplacedLists()).get(BuilderWidgets.SLOTS)).children());
     }
 
     @Test
@@ -200,24 +200,177 @@ class BuilderWidgetsTest {
 
     @Test
     void configureRowsMirrorTheServersIds() {
-        assertEquals(List.of(30843, 30846, 30847, 30852, 30854, 30855, 30960),
+        assertEquals(List.of(30860, 30863, 30864, 30869, 30871, 30872, 31190),
                 List.of(BuilderWidgets.row(1), BuilderWidgets.rowFace(1), BuilderWidgets.rowFrame(1), BuilderWidgets.rowButtonFace(1),
                         BuilderWidgets.rowNote(1), BuilderWidgets.rowButtonFrame(1), BuilderWidgets.row(BuilderWidgets.ROWS)));
     }
 
     @Test
-    void configureRowsFillTheLeftColumnThenTheRight() {
-        WidgetSpec fifth = SPECS.get(BuilderWidgets.row(4));
-        WidgetSpec sixth = SPECS.get(BuilderWidgets.row(5));
-
-        assertEquals(List.of(0, BuilderWidgets.ROW_TOP + 4 * BuilderWidgets.ROW_HEIGHT, BuilderWidgets.RIGHT_COLUMN, BuilderWidgets.ROW_TOP),
-                List.of(fifth.x(), fifth.y(), sixth.x(), sixth.y()));
+    void toggleButtonsMirrorTheServersIds() {
+        assertEquals(List.of(30873, 30877, 30880, 30888, 30853),
+                List.of(BuilderWidgets.toggles(1, 2), BuilderWidgets.toggleFace(1, 2, 1), BuilderWidgets.toggles(1, 3),
+                        BuilderWidgets.toggleFrame(1, 3, 2), BuilderWidgets.toggleText(0, 3, 0)));
     }
 
     @Test
-    void aConfigureRowHoldsItsLabelFieldButtonAndNote() {
-        assertEquals(List.of(BuilderWidgets.rowLabel(2), BuilderWidgets.rowField(2), BuilderWidgets.rowButton(2), BuilderWidgets.rowNote(2)),
-                layer(BuilderWidgets.row(2)).children());
+    void listsMirrorTheServersIds() {
+        assertEquals(List.of(31600, 31202, 31604, 31634, 31212, 31537, 31614, 31232),
+                List.of(BuilderWidgets.list(1), BuilderWidgets.listAdd(0), BuilderWidgets.listAddText(1), BuilderWidgets.line(1, 2),
+                        BuilderWidgets.linePicture(0, 0), BuilderWidgets.lineName(0, 27), BuilderWidgets.lineAmount(1, 0),
+                        BuilderWidgets.lineRemoveFace(0, 1)));
+    }
+
+    @Test
+    void configureRowsFillTheLeftColumnThenTheRight() {
+        WidgetSpec sixth = SPECS.get(BuilderWidgets.row(5));
+        WidgetSpec seventh = SPECS.get(BuilderWidgets.row(6));
+
+        assertEquals(List.of(0, BuilderWidgets.ROW_TOP + 5 * BuilderWidgets.ROW_HEIGHT, BuilderWidgets.RIGHT_COLUMN, BuilderWidgets.ROW_TOP),
+                List.of(sixth.x(), sixth.y(), seventh.x(), seventh.y()));
+    }
+
+    @Test
+    void theSixthRowEndsAboveTheWarnings() {
+        WidgetSpec sixth = SPECS.get(BuilderWidgets.row(5));
+
+        assertTrue(sixth.y() + sixth.height() < SPECS.get(BuilderWidgets.BOTTOM_DIVIDER).y());
+    }
+
+    @Test
+    void aConfigureRowHoldsItsLabelFieldButtonNoteAndToggles() {
+        assertEquals(List.of(BuilderWidgets.rowLabel(2), BuilderWidgets.rowField(2), BuilderWidgets.rowButton(2), BuilderWidgets.rowNote(2),
+                BuilderWidgets.toggles(2, 2), BuilderWidgets.toggles(2, 3)), layer(BuilderWidgets.row(2)).children());
+    }
+
+    @Test
+    void twoToggleButtonsSplitTheFieldAndButtonsPlace() {
+        WidgetSpec second = SPECS.get(BuilderWidgets.toggleFace(0, 2, 1));
+
+        assertEquals(List.of(88, 92, BuilderWidgets.TOGGLE_ROOM), List.of(second.width(), second.x(), second.x() + second.width()));
+    }
+
+    @Test
+    void threeToggleButtonsAreNarrower() {
+        WidgetSpec third = SPECS.get(BuilderWidgets.toggleFace(0, 3, 2));
+
+        assertEquals(List.of(57, 122), List.of(third.width(), third.x()));
+    }
+
+    @Test
+    void aToggleButtonDrawsItsFaceThenItsFrameThenItsWord() {
+        assertEquals(List.of(BuilderWidgets.toggleFace(4, 2, 0), BuilderWidgets.toggleFrame(4, 2, 0), BuilderWidgets.toggleText(4, 2, 0),
+                BuilderWidgets.toggleFace(4, 2, 1), BuilderWidgets.toggleFrame(4, 2, 1), BuilderWidgets.toggleText(4, 2, 1)),
+                layer(BuilderWidgets.toggles(4, 2)).children());
+    }
+
+    @Test
+    void aToggleButtonIsClickedAndNotDragged() {
+        WidgetSpec.Tile face = assertInstanceOf(WidgetSpec.Tile.class, SPECS.get(BuilderWidgets.toggleFace(0, 3, 1)));
+
+        assertEquals(List.of("Select", false), List.of(face.option(), face.draggable()));
+    }
+
+    @Test
+    void aListScrollsOnTheConfigureScreenOverItsAddLineAndItsLines() {
+        WidgetSpec.Layer list = layer(BuilderWidgets.list(0));
+
+        assertEquals(List.of(BuilderWidgets.CONFIGURE, BuilderWidgets.LIST_LINES + 1, BuilderWidgets.listAddLine(0), BuilderWidgets.line(0, 27)),
+                List.of(list.parent(), list.children().size(), list.children().get(0), list.children().get(BuilderWidgets.LIST_LINES)));
+    }
+
+    @Test
+    void theListsComeAfterTheRowsSoTheyDrawOverThem() {
+        List<Integer> children = layer(BuilderWidgets.CONFIGURE).children();
+
+        assertTrue(children.indexOf(BuilderWidgets.list(0)) > children.indexOf(BuilderWidgets.row(BuilderWidgets.ROWS - 1)));
+    }
+
+    @Test
+    void theAddLineOpensTheSearch() {
+        WidgetSpec.Tile face = assertInstanceOf(WidgetSpec.Tile.class, SPECS.get(BuilderWidgets.listAdd(1)));
+
+        assertEquals(List.of("Search", BuilderWidgets.LIST_WIDTH), List.of(face.option(), face.width()));
+    }
+
+    @Test
+    void aLineHoldsItsBoxPictureNameAmountAndRemoveButton() {
+        assertEquals(List.of(BuilderWidgets.lineBox(0, 3), BuilderWidgets.linePicture(0, 3), BuilderWidgets.lineName(0, 3),
+                BuilderWidgets.lineAmount(0, 3), BuilderWidgets.lineRemoveFace(0, 3), BuilderWidgets.lineRemoveText(0, 3)),
+                layer(BuilderWidgets.line(0, 3)).children());
+    }
+
+    @Test
+    void linesFollowTheAddLineOneUnderTheOther() {
+        assertEquals(List.of(22, 44), List.of(SPECS.get(BuilderWidgets.line(1, 0)).y(), SPECS.get(BuilderWidgets.line(1, 1)).y()));
+    }
+
+    @Test
+    void aWithdrawalsAmountHoldsItsBoxAndAllButton() {
+        assertEquals(List.of(BuilderWidgets.lineAmountFace(0, 0), BuilderWidgets.lineAmountFrame(0, 0), BuilderWidgets.lineAmountText(0, 0),
+                BuilderWidgets.lineAllFace(0, 0), BuilderWidgets.lineAllText(0, 0)), layer(BuilderWidgets.lineAmount(0, 0)).children());
+    }
+
+    @Test
+    void theRemoveButtonTakesTheItemOut() {
+        WidgetSpec.Tile face = assertInstanceOf(WidgetSpec.Tile.class, SPECS.get(BuilderWidgets.lineRemoveFace(0, 0)));
+
+        assertEquals("Remove", face.option());
+    }
+
+    @Test
+    void aPlacedListSitsOnItsRowsInTheFieldsPlaceAsTallAsItsLines() {
+        BuilderWidgets.ListPlacement placement = BuilderWidgets.listPlacement(0, 4, 2, 2);
+
+        assertEquals(new BuilderWidgets.ListPlacement(BuilderWidgets.FIELD_X, 162, 42, 42), placement);
+    }
+
+    @Test
+    void aListTallerThanItsRowsStopsAtTheirBottom() {
+        assertEquals(49, BuilderWidgets.listPlacement(0, 4, 2, 9).height());
+    }
+
+    @Test
+    void theRightListSitsInTheRightColumn() {
+        assertEquals(BuilderWidgets.RIGHT_COLUMN + BuilderWidgets.FIELD_X, BuilderWidgets.listPlacement(1, 0, 1, 1).x());
+    }
+
+    @Test
+    void aListOfManyLinesScrollsOverThemAll() {
+        assertEquals(10 * 22 - 2, BuilderWidgets.listPlacement(0, 1, 5, 10).scrollHeight());
+    }
+
+    @Test
+    void aScrollPositionStaysWhileTheContentAllowsIt() {
+        assertEquals(30, BuilderWidgets.listPlacement(0, 1, 5, 10).clampedScroll(30));
+    }
+
+    @Test
+    void aScrollPositionPastTheContentComesBack() {
+        BuilderWidgets.ListPlacement placement = BuilderWidgets.listPlacement(0, 1, 5, 10);
+
+        assertEquals(placement.scrollHeight() - placement.height(), placement.clampedScroll(500));
+    }
+
+    @Test
+    void aListThatFitsDoesNotScroll() {
+        assertEquals(0, BuilderWidgets.listPlacement(0, 1, 5, 2).clampedScroll(40));
+    }
+
+    @Test
+    void placingAListKeepsTheOther() {
+        BuilderWidgets.ListPlacement placement = BuilderWidgets.listPlacement(1, 2, 4, 3);
+
+        assertEquals(List.of(BuilderWidgets.unplacedLists().get(0), placement),
+                BuilderWidgets.placed(BuilderWidgets.unplacedLists(), 1, placement));
+    }
+
+    @Test
+    void theSpecsPutAListWhereItWasPlaced() {
+        BuilderWidgets.ListPlacement placement = BuilderWidgets.listPlacement(0, 3, 3, 9);
+        Map<Integer, WidgetSpec> specs = BuilderWidgets.specs(4, BuilderWidgets.placed(BuilderWidgets.unplacedLists(), 0, placement));
+        WidgetSpec.Layer list = assertInstanceOf(WidgetSpec.Layer.class, specs.get(BuilderWidgets.list(0)));
+
+        assertEquals(List.of(placement.y(), placement.height(), placement.scrollHeight()), List.of(list.y(), list.height(), list.scrollHeight()));
     }
 
     @Test

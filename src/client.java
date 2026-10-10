@@ -6800,7 +6800,7 @@ public class client extends JagApplet {
         if (chatboxInterfaceType == 3) { // IdleRS: the search row under the mouse can be picked
             int hoveredBefore = IdleSearch.hovered();
             IdleSearch.hover(super.mouseX - 17, super.mouseY - 357, anInt865).ifPresent(row -> {
-                aStringArray1184[anInt1183] = "Pick @lre@" + row.label();
+                aStringArray1184[anInt1183] = IdleSearch.pickOption(row) + " @lre@" + row.label();
                 anIntArray981[anInt1183] = IdleSearch.PICK_ACTION;
                 anIntArray979[anInt1183] = row.index();
                 anInt1183++;
@@ -8371,11 +8371,11 @@ public class client extends JagApplet {
         }
         if (i1 == CompassMenu.WORLD_MAP_ACTION)
             worldMap.open(nextTopLeftTileX + (((Actor) (thisPlayer)).unitX >> 7), nextTopLeftTileY + (((Actor) (thisPlayer)).unitY >> 7));
-        if (i1 == IdleSearch.PICK_ACTION) // IdleRS: a search row picked; the prompt closes below
+        if (i1 == IdleSearch.PICK_ACTION) // IdleRS: a search row picked; the prompt closes below unless it picks several
             IdleSearch.sendPick(outBuffer, slot);
         else if (chatboxInterfaceType == 3 && i1 != 1016) // IdleRS: another action closes the search: tell the server first
             IdleSearch.sendClosed(outBuffer);
-        if (chatboxInterfaceType != 0 && i1 != 1016) {
+        if (chatboxInterfaceType != 0 && IdleSearch.closesOn(i1)) { // IdleRS: a search of several stays open on a pick
             chatboxInterfaceType = 0;
             aBoolean1240 = true;
         }

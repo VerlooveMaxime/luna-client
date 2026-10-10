@@ -45,6 +45,7 @@ public final class SearchWidgets {
     public static final int TITLE = 0x000000;
     public static final int LABEL = 0x000000;
     public static final int NOTE = 0x3a3a3a;
+    public static final int CHOSEN_NOTE = 0x006400;
     public static final int GREYED_LABEL = 0x7a6c52;
     public static final int GREYED_REASON = 0x8b0000;
     public static final int MESSAGE = 0x000080;

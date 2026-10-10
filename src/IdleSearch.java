@@ -64,6 +64,16 @@ final class IdleSearch {
         return PROMPT.naming();
     }
 
+    /** The menu option of picking {@code row}: "Pick", or "Add" and "Remove" in a search of several. */
+    static String pickOption(SearchRow row) {
+        return PROMPT.pickOption(row);
+    }
+
+    /** Whether menu action {@code action} closes the open prompt: any but the 377's 1016, and a pick in a search of several. */
+    static boolean closesOn(int action) {
+        return action != 1016 && !(action == PICK_ACTION && PROMPT.staysOpenOnPick());
+    }
+
     static boolean accepts(int key, String typed) {
         return PROMPT.accepts(key, typed);
     }
@@ -154,7 +164,7 @@ final class IdleSearch {
                     cell.x());
         small.method474(2245, cell.textX(), row.greyed() ? SearchWidgets.GREYED_LABEL : SearchWidgets.LABEL,
                 cell.y() + SearchWidgets.LABEL_Y, row.label());
-        small.method474(2245, cell.textX(), row.greyed() ? SearchWidgets.GREYED_REASON : SearchWidgets.NOTE,
+        small.method474(2245, cell.textX(), row.greyed() ? SearchWidgets.GREYED_REASON : row.chosen() ? SearchWidgets.CHOSEN_NOTE : SearchWidgets.NOTE,
                 cell.y() + SearchWidgets.NOTE_Y, row.note());
     }
 

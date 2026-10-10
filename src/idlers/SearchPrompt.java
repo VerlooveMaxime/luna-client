@@ -19,9 +19,9 @@ import java.util.stream.IntStream;
  */
 public final class SearchPrompt {
 
-    /** What the prompt asks for: a row picked among the server's, or a name typed on its line. */
+    /** What the prompt asks for: a row picked among the server's, a name typed on its line, or several rows. */
     public enum Mode {
-        SEARCH, NAME
+        SEARCH, NAME, SEVERAL
     }
 
     public static final int MIN_LETTERS = 3;
@@ -77,6 +77,19 @@ public final class SearchPrompt {
     /** True in name mode: no rows, and Enter sends the typed line. */
     public boolean naming() {
         return mode == Mode.NAME;
+    }
+
+    /** True when the prompt picks several rows: a pick leaves it open (S07a, Maxime 2026-10-10). */
+    public boolean staysOpenOnPick() {
+        return mode == Mode.SEVERAL;
+    }
+
+    /** The menu option that picks {@code row}: "Pick", or in a search of several "Add" or, for a chosen row, "Remove". */
+    public String pickOption(SearchRow row) {
+        if (mode != Mode.SEVERAL) {
+            return "Pick";
+        }
+        return row.chosen() ? "Remove" : "Add";
     }
 
     /**
