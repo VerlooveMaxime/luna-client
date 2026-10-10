@@ -16,8 +16,9 @@ import static idlers.WidgetSpecs.add;
  * player has, as many as the server says (packet 108; Maxime, 2026-10-09: no fixed most), then the padlock, and on its
  * Reflexes tab (S07c) a row per reflex the flow can hold, then the padlock; the kind picker a button per kind of step;
  * the configure screen a header, two columns of setting rows the server fills or hides, a warnings band and its
- * buttons. The server mirrors these ids in {@code game.idle.ui.BuilderWidgets}; text and pictures it changes start
- * empty here.
+ * buttons, and for a step (S07c2b) the Settings and Reflexes tabs, the Reflexes page a line per reflex the flow can
+ * hold. The server mirrors these ids in {@code game.idle.ui.BuilderWidgets}; text and pictures it changes start empty
+ * here.
  */
 public final class BuilderWidgets {
 
@@ -48,6 +49,9 @@ public final class BuilderWidgets {
     public static final int STEPS_TAB_FRAME = 30723;
     public static final int REFLEXES_TAB = 30724;
     public static final int REFLEXES_TAB_FRAME = 30725;
+    /** The Steps tab's button that attaches every reflex to every step (S07c2b), in a layer the Reflexes tab hides. */
+    public static final int ATTACH_ALL_REFLEXES_LAYER = 30726;
+    public static final int ATTACH_ALL_REFLEXES = 30727;
 
     public static final int KINDS = 30730;
     public static final int KINDS_TITLE = 30731;
@@ -70,6 +74,12 @@ public final class BuilderWidgets {
     public static final int DELETE = 30813;
     public static final int BACK = 30814;
     public static final int SAVE = 30815;
+    /** A step screen's tabs (S07c2b), in a layer a reflex's screen hides, each a button and a frame the server lights. */
+    public static final int STEP_TABS = 30816;
+    public static final int SETTINGS_TAB = 30817;
+    public static final int SETTINGS_TAB_FRAME = 30818;
+    public static final int STEP_REFLEXES_TAB = 30819;
+    public static final int STEP_REFLEXES_TAB_FRAME = 30820;
     /** Six rows a column (Maxime, 2026-10-10). */
     public static final int ROWS_PER_COLUMN = 6;
     public static final int ROWS = 2 * ROWS_PER_COLUMN;
@@ -86,6 +96,24 @@ public final class BuilderWidgets {
     private static final int LIST_STRIDE = 400;
     private static final int LINE_BASE = 10;
     private static final int LINE_STRIDE = 12;
+
+    /**
+     * A step's Reflexes page (S07c2b): a list the server places as it places the columns' lists, under index
+     * {@link #ATTACHED_LIST}: a line that attaches or detaches beside Attach all, then a line per reflex.
+     */
+    public static final int ATTACHED_LIST = 2;
+    /** The lists the server places: the columns' and the Reflexes page's. */
+    public static final int PLACED_LISTS = 3;
+    public static final int ATTACHED = 40900;
+    public static final int ATTACH_LINE = 40901;
+    public static final int ATTACH = 40902;
+    public static final int ATTACH_FRAME = 40903;
+    public static final int ATTACH_TEXT = 40904;
+    public static final int ATTACH_ALL = 40905;
+    public static final int ATTACH_ALL_FRAME = 40906;
+    public static final int ATTACH_ALL_TEXT = 40907;
+    private static final int ATTACHED_LINE_BASE = 40910;
+    private static final int ATTACHED_LINE_STRIDE = 8;
 
     public static final int SLOT_BASE = 32000;
     public static final int SLOT_STRIDE = 16;
@@ -150,6 +178,17 @@ public final class BuilderWidgets {
     public static final int REMOVE_X = 148;
     public static final int REMOVE_WIDTH = 14;
     public static final int NAME_X = 21;
+    /** The Reflexes page spans the rows' area, the client's scrollbar right of it. */
+    public static final int ATTACHED_WIDTH = LAYER_WIDTH - 16;
+    public static final int ATTACH_ALL_WIDTH = 56;
+    public static final int ATTACHED_PICTURE_X = 18;
+    public static final int SENTENCE_LINE_X = 40;
+    public static final int DETACH_X = ATTACHED_WIDTH - REMOVE_WIDTH - 4;
+    /** The step tabs, at the right of the header's name line (Maxime, 2026-10-10). */
+    public static final int SETTINGS_TAB_WIDTH = 58;
+    public static final int REFLEXES_TAB_WIDTH = 62;
+    public static final int STEP_TABS_WIDTH = SETTINGS_TAB_WIDTH + 6 + REFLEXES_TAB_WIDTH;
+    public static final int ATTACH_ALL_REFLEXES_WIDTH = 116;
     public static final int HEADER_PICTURE_SIZE = 36;
 
     public static final int KIND_WIDTH = 64;
@@ -280,6 +319,37 @@ public final class BuilderWidgets {
         return reflexRow(reflexSlots) + 3;
     }
 
+    /** The layer of the Reflexes page's line {@code line}; lines past the last lie outside the placed list. */
+    public static int attachedLine(int line) {
+        return ATTACHED_LINE_BASE + line * ATTACHED_LINE_STRIDE;
+    }
+
+    /** The line's face, which drags it onto another line (packet 123 names {@link #ATTACHED}); a click does nothing. */
+    public static int attachedFace(int line) {
+        return attachedLine(line) + 1;
+    }
+
+    public static int attachedNumber(int line) {
+        return attachedLine(line) + 2;
+    }
+
+    public static int attachedPicture(int line) {
+        return attachedLine(line) + 3;
+    }
+
+    public static int attachedSentence(int line) {
+        return attachedLine(line) + 4;
+    }
+
+    /** The x that detaches the line's reflex from the step. */
+    public static int detachFace(int line) {
+        return attachedLine(line) + 5;
+    }
+
+    public static int detachText(int line) {
+        return attachedLine(line) + 6;
+    }
+
     public static int warning(int line) {
         return WARNING_BASE + line;
     }
@@ -360,9 +430,9 @@ public final class BuilderWidgets {
         return toggleFace(row, count, button) + 2;
     }
 
-    /** The scrolling layer of list {@code list}: 0 the left column's, 1 the right's. */
+    /** The scrolling layer of list {@code list}: 0 the left column's, 1 the right's, 2 the Reflexes page. */
     public static int list(int list) {
-        return LIST_BASE + list * LIST_STRIDE;
+        return list == ATTACHED_LIST ? ATTACHED : LIST_BASE + list * LIST_STRIDE;
     }
 
     /** The layer of the list's first line, which opens the search that adds or removes items. */
@@ -452,10 +522,10 @@ public final class BuilderWidgets {
         return List.copyOf(placed);
     }
 
-    /** Where the lists sit before the server places them: their column's whole field area, room for every line. */
+    /** Where the lists sit before the server places them: their whole area, room for every line. */
     public static List<ListPlacement> unplacedLists() {
         List<ListPlacement> placements = new ArrayList<>();
-        for (int list = 0; list < LISTS; list++) {
+        for (int list = 0; list < PLACED_LISTS; list++) {
             placements.add(listPlacement(list, 0, ROWS_PER_COLUMN, LIST_LINES + 1));
         }
         return List.copyOf(placements);
@@ -468,7 +538,7 @@ public final class BuilderWidgets {
     }
 
     private static int listX(int list) {
-        return list * RIGHT_COLUMN + FIELD_X;
+        return list == ATTACHED_LIST ? 0 : list * RIGHT_COLUMN + FIELD_X;
     }
 
     /**
@@ -485,7 +555,7 @@ public final class BuilderWidgets {
         add(specs, children, button(CLOSE, ROOT, 460, 6, 42, "Close", "Close"));
         add(specs, children, overview(specs, slots, reflexSlots));
         add(specs, children, kinds(specs));
-        add(specs, children, configure(specs, lists));
+        add(specs, children, configure(specs, reflexSlots, lists));
         specs.put(ROOT, WidgetSpec.layer(ROOT, -1, 0, 0, SCREEN_WIDTH, SCREEN_HEIGHT, children));
         return specs;
     }
@@ -501,6 +571,7 @@ public final class BuilderWidgets {
         add(specs, children, button(STEPS_TAB, OVERVIEW, 5, 2, 38, "Steps", "Show the steps"));
         add(specs, children, WidgetSpec.frame(REFLEXES_TAB_FRAME, OVERVIEW, 50, 0, 62, TAB_HEIGHT, FlowWidgets.EDGE));
         add(specs, children, button(REFLEXES_TAB, OVERVIEW, 53, 2, 56, "Reflexes", "Show the reflexes"));
+        add(specs, children, attachAllReflexes(specs));
         add(specs, children, slotArea(specs, slots));
         add(specs, children, reflexArea(specs, reflexSlots));
         add(specs, children, WidgetSpec.text(STATUS, OVERVIEW, 4, 242, 492, LINE, "", FlowWidgets.YELLOW, FONT_PLAIN));
@@ -514,6 +585,15 @@ public final class BuilderWidgets {
         add(specs, children, button(STOP, OVERVIEW, 416, 284, 34, "Stop", "Stop the flow"));
         add(specs, children, button(CLEAR, OVERVIEW, 458, 284, 38, "Clear", "Clear the flow"));
         return WidgetSpec.layer(OVERVIEW, ROOT, LAYER_X, LAYER_Y, LAYER_WIDTH, LAYER_HEIGHT, children);
+    }
+
+    /** The Steps tab's "Attach all reflexes", at the right of the tabs row (Maxime, 2026-10-10). */
+    private static WidgetSpec attachAllReflexes(Map<Integer, WidgetSpec> specs) {
+        int x = LAYER_WIDTH - 4 - ATTACH_ALL_REFLEXES_WIDTH;
+        List<Integer> children = new ArrayList<>();
+        add(specs, children, button(ATTACH_ALL_REFLEXES, ATTACH_ALL_REFLEXES_LAYER, 0, 0, ATTACH_ALL_REFLEXES_WIDTH, "",
+                "Attach all reflexes to every step"));
+        return WidgetSpec.layer(ATTACH_ALL_REFLEXES_LAYER, OVERVIEW, x, 2, ATTACH_ALL_REFLEXES_WIDTH, LINE, children);
     }
 
     /** The slots, then the padlock, four to a row; the client's scrollbar sits right of them. */
@@ -622,12 +702,16 @@ public final class BuilderWidgets {
         return WidgetSpec.layer(KINDS, ROOT, LAYER_X, LAYER_Y, LAYER_WIDTH, LAYER_HEIGHT, children);
     }
 
-    /** The mockup's configure screen: header, two columns of rows, warnings, then Delete, Back and Save. */
-    private static WidgetSpec configure(Map<Integer, WidgetSpec> specs, List<ListPlacement> lists) {
+    /**
+     * The mockup's configure screen: header and a step's tabs, two columns of rows, a step's Reflexes page over them,
+     * warnings, then Delete, Back and Save.
+     */
+    private static WidgetSpec configure(Map<Integer, WidgetSpec> specs, int reflexSlots, List<ListPlacement> lists) {
         List<Integer> children = new ArrayList<>();
         add(specs, children, picture(HEADER_PICTURE, CONFIGURE, 4, 2, HEADER_PICTURE_SIZE));
         add(specs, children, headerCorner(specs));
-        add(specs, children, WidgetSpec.text(HEADER_NAME, CONFIGURE, 46, 4, 450, LINE, "", FlowWidgets.ORANGE, FONT_BOLD));
+        add(specs, children, WidgetSpec.text(HEADER_NAME, CONFIGURE, 46, 4, LAYER_WIDTH - STEP_TABS_WIDTH - 52, LINE, "", FlowWidgets.ORANGE, FONT_BOLD));
+        add(specs, children, stepTabs(specs));
         add(specs, children, WidgetSpec.text(HEADER_DESCRIPTION, CONFIGURE, 46, 22, 450, LINE, "", MUTED, FONT_SMALL));
         add(specs, children, WidgetSpec.box(TOP_DIVIDER, CONFIGURE, 0, 42, LAYER_WIDTH, 1, FlowWidgets.EDGE));
         for (int row = 0; row < ROWS; row++) {
@@ -636,6 +720,7 @@ public final class BuilderWidgets {
         for (int list = 0; list < LISTS; list++) {
             add(specs, children, list(specs, list, lists.get(list)));
         }
+        add(specs, children, attached(specs, reflexSlots, lists.get(ATTACHED_LIST)));
         add(specs, children, WidgetSpec.box(BOTTOM_DIVIDER, CONFIGURE, 0, 236, LAYER_WIDTH, 1, FlowWidgets.EDGE));
         for (int line = 0; line < WARNING_LINES; line++) {
             add(specs, children, WidgetSpec.text(warning(line), CONFIGURE, 4, 241 + 13 * line, 492, LINE, "", FlowWidgets.YELLOW, FONT_SMALL));
@@ -644,6 +729,59 @@ public final class BuilderWidgets {
         add(specs, children, button(BACK, CONFIGURE, 418, 284, 30, "Back", "Back without saving"));
         add(specs, children, button(SAVE, CONFIGURE, 460, 284, 34, "Save", "Save"));
         return WidgetSpec.layer(CONFIGURE, ROOT, LAYER_X, LAYER_Y, LAYER_WIDTH, LAYER_HEIGHT, children);
+    }
+
+    /** A step's Settings and Reflexes tabs, drawn as the overview's, at the right of the name line. */
+    private static WidgetSpec stepTabs(Map<Integer, WidgetSpec> specs) {
+        int reflexesX = SETTINGS_TAB_WIDTH + 6;
+        List<Integer> children = new ArrayList<>();
+        add(specs, children, WidgetSpec.frame(SETTINGS_TAB_FRAME, STEP_TABS, 0, 0, SETTINGS_TAB_WIDTH, TAB_HEIGHT, FlowWidgets.EDGE));
+        add(specs, children, button(SETTINGS_TAB, STEP_TABS, 3, 2, SETTINGS_TAB_WIDTH - 6, "Settings", "Show the step's settings"));
+        add(specs, children, WidgetSpec.frame(STEP_REFLEXES_TAB_FRAME, STEP_TABS, reflexesX, 0, REFLEXES_TAB_WIDTH, TAB_HEIGHT, FlowWidgets.EDGE));
+        add(specs, children, button(STEP_REFLEXES_TAB, STEP_TABS, reflexesX + 3, 2, REFLEXES_TAB_WIDTH - 6, "Reflexes", "Show the step's reflexes"));
+        return WidgetSpec.layer(STEP_TABS, CONFIGURE, LAYER_WIDTH - 2 - STEP_TABS_WIDTH, 0, STEP_TABS_WIDTH, TAB_HEIGHT, children);
+    }
+
+    /**
+     * The Reflexes page where the server placed it: the line that opens the attach search, Attach all beside it, then a
+     * line per reflex slot, each dragging onto another.
+     */
+    private static WidgetSpec attached(Map<Integer, WidgetSpec> specs, int reflexSlots, ListPlacement placement) {
+        List<Integer> children = new ArrayList<>();
+        add(specs, children, attachLine(specs));
+        for (int line = 0; line < reflexSlots; line++) {
+            add(specs, children, attachedLine(specs, line));
+        }
+        return WidgetSpec.scrollLayer(ATTACHED, CONFIGURE, placement.x(), placement.y(), ATTACHED_WIDTH, placement.height(), placement.scrollHeight(),
+                children);
+    }
+
+    private static WidgetSpec attachLine(Map<Integer, WidgetSpec> specs) {
+        int width = ATTACHED_WIDTH - ATTACH_ALL_WIDTH - TOGGLE_GAP;
+        int height = LINE_HEIGHT - 2;
+        List<Integer> children = new ArrayList<>();
+        add(specs, children, new WidgetSpec.Tile(ATTACH, ATTACH_LINE, 0, 0, width, LINE_HEIGHT, FIELD, FIELD_HOVER, "Search", false));
+        add(specs, children, WidgetSpec.frame(ATTACH_FRAME, ATTACH_LINE, 0, 0, width, LINE_HEIGHT, TILE_EDGE));
+        add(specs, children, WidgetSpec.text(ATTACH_TEXT, ATTACH_LINE, 4, 3, width - 8, LINE, "", FlowWidgets.GREY, FONT_SMALL));
+        int all = width + TOGGLE_GAP;
+        add(specs, children, new WidgetSpec.Tile(ATTACH_ALL, ATTACH_LINE, all, 1, ATTACH_ALL_WIDTH, height, BUTTON, BUTTON_HOVER, "Attach all", false));
+        add(specs, children, WidgetSpec.frame(ATTACH_ALL_FRAME, ATTACH_LINE, all, 1, ATTACH_ALL_WIDTH, height, FlowWidgets.EDGE));
+        add(specs, children, WidgetSpec.centredText(ATTACH_ALL_TEXT, ATTACH_LINE, all + ATTACH_ALL_WIDTH / 2, 3, LINE, "", FlowWidgets.ORANGE, FONT_SMALL));
+        return WidgetSpec.layer(ATTACH_LINE, ATTACHED, 0, 0, ATTACHED_WIDTH, LINE_HEIGHT, children);
+    }
+
+    /** A reflex's line: its number in the flow, picture and sentence, and the x that detaches it (Maxime: "Move" drags it). */
+    private static WidgetSpec attachedLine(Map<Integer, WidgetSpec> specs, int line) {
+        int id = attachedLine(line);
+        List<Integer> children = new ArrayList<>();
+        add(specs, children, new WidgetSpec.Tile(attachedFace(line), id, 0, 0, ATTACHED_WIDTH, LINE_HEIGHT, FIELD, FIELD_HOVER, "Move", true));
+        add(specs, children, WidgetSpec.centredText(attachedNumber(line), id, 9, 3, LINE, "", NUMBER, FONT_SMALL));
+        add(specs, children, picture(attachedPicture(line), id, ATTACHED_PICTURE_X, 1, FIELD_PICTURE));
+        add(specs, children, WidgetSpec.text(attachedSentence(line), id, SENTENCE_LINE_X, 3, DETACH_X - SENTENCE_LINE_X - 4, LINE, "",
+                FlowWidgets.WHITE, FONT_SMALL));
+        add(specs, children, new WidgetSpec.Tile(detachFace(line), id, DETACH_X, 3, REMOVE_WIDTH, LINE_HEIGHT - 6, BUTTON, BUTTON_HOVER, "Detach", false));
+        add(specs, children, WidgetSpec.centredText(detachText(line), id, DETACH_X + REMOVE_WIDTH / 2, 3, LINE, "x", FlowWidgets.ORANGE, FONT_SMALL));
+        return WidgetSpec.layer(id, ATTACHED, 0, (line + 1) * (LINE_HEIGHT + LINE_GAP), ATTACHED_WIDTH, LINE_HEIGHT, children);
     }
 
     /** The header's corner, as a slot's: the kind's icon on a dark box over the picture's bottom right. */

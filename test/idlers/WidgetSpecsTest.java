@@ -132,7 +132,7 @@ class WidgetSpecsTest {
 
     @Test
     void theCapacityIsOnePastTheHighestId() {
-        assertEquals(BuilderWidgets.reflexLockedSprite(3) + 1, SPECS.capacity());
+        assertEquals(BuilderWidgets.detachText(2) + 1, SPECS.capacity());
     }
 
     @Test

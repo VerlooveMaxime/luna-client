@@ -360,7 +360,7 @@ class BuilderWidgetsTest {
     void placingAListKeepsTheOther() {
         BuilderWidgets.ListPlacement placement = BuilderWidgets.listPlacement(1, 2, 4, 3);
 
-        assertEquals(List.of(BuilderWidgets.unplacedLists().get(0), placement),
+        assertEquals(List.of(BuilderWidgets.unplacedLists().get(0), placement, BuilderWidgets.unplacedLists().get(2)),
                 BuilderWidgets.placed(BuilderWidgets.unplacedLists(), 1, placement));
     }
 
@@ -488,5 +488,122 @@ class BuilderWidgetsTest {
     @Test
     void everyReflexRowWidgetStaysInsideItsStride() {
         assertTrue(BuilderWidgets.reflexRowText(0) < BuilderWidgets.reflexRow(1));
+    }
+
+    @Test
+    void theStepTabsAndTheReflexesPageMirrorTheServersIds() {
+        assertEquals(List.of(30726, 30727, 30816, 30817, 30818, 30819, 30820, 40900, 40902, 40904, 40905, 40907, 40919, 40920, 40921, 40922, 40923),
+                List.of(BuilderWidgets.ATTACH_ALL_REFLEXES_LAYER, BuilderWidgets.ATTACH_ALL_REFLEXES, BuilderWidgets.STEP_TABS,
+                        BuilderWidgets.SETTINGS_TAB, BuilderWidgets.SETTINGS_TAB_FRAME, BuilderWidgets.STEP_REFLEXES_TAB,
+                        BuilderWidgets.STEP_REFLEXES_TAB_FRAME, BuilderWidgets.list(BuilderWidgets.ATTACHED_LIST), BuilderWidgets.ATTACH,
+                        BuilderWidgets.ATTACH_TEXT, BuilderWidgets.ATTACH_ALL, BuilderWidgets.ATTACH_ALL_TEXT, BuilderWidgets.attachedFace(1),
+                        BuilderWidgets.attachedNumber(1), BuilderWidgets.attachedPicture(1), BuilderWidgets.attachedSentence(1),
+                        BuilderWidgets.detachFace(1)));
+    }
+
+    @Test
+    void attachAllReflexesSitsInItsOwnLayerAtTheRightOfTheTabsRow() {
+        WidgetSpec.Layer button = layer(BuilderWidgets.ATTACH_ALL_REFLEXES_LAYER);
+        WidgetSpec reflexes = SPECS.get(BuilderWidgets.REFLEXES_TAB_FRAME);
+
+        assertEquals(List.of(BuilderWidgets.OVERVIEW, List.of(BuilderWidgets.ATTACH_ALL_REFLEXES), BuilderWidgets.LAYER_WIDTH - 4),
+                List.of(button.parent(), button.children(), button.x() + button.width()));
+        assertTrue(reflexes.x() + reflexes.width() < button.x());
+    }
+
+    @Test
+    void theStepTabsSitAtTheRightOfTheNameLineInALayerThatHides() {
+        WidgetSpec.Layer tabs = layer(BuilderWidgets.STEP_TABS);
+        WidgetSpec name = SPECS.get(BuilderWidgets.HEADER_NAME);
+
+        assertEquals(List.of(BuilderWidgets.CONFIGURE, 0, BuilderWidgets.LAYER_WIDTH - 2), List.of(tabs.parent(), tabs.y(), tabs.x() + tabs.width()));
+        assertTrue(name.x() + name.width() < tabs.x());
+    }
+
+    @Test
+    void eachStepTabHasAFrameTheServerLightsThenItsButton() {
+        assertEquals(List.of(BuilderWidgets.SETTINGS_TAB_FRAME, BuilderWidgets.SETTINGS_TAB, BuilderWidgets.STEP_REFLEXES_TAB_FRAME,
+                BuilderWidgets.STEP_REFLEXES_TAB), layer(BuilderWidgets.STEP_TABS).children());
+    }
+
+    @Test
+    void theReflexesPageIsPlacedOverTheRowsAcrossTheScreen() {
+        BuilderWidgets.ListPlacement placement = BuilderWidgets.listPlacement(BuilderWidgets.ATTACHED_LIST, 0, BuilderWidgets.ROWS_PER_COLUMN, 3);
+
+        assertEquals(List.of(0, BuilderWidgets.ROW_TOP, 3 * 22 - 2), List.of(placement.x(), placement.y(), placement.height()));
+    }
+
+    @Test
+    void theReflexesPageComesAfterTheListsSoItDrawsOverTheRows() {
+        List<Integer> children = layer(BuilderWidgets.CONFIGURE).children();
+
+        assertEquals(children.indexOf(BuilderWidgets.list(1)) + 1, children.indexOf(BuilderWidgets.ATTACHED));
+    }
+
+    @Test
+    void theReflexesPageHoldsItsAttachLineThenALinePerReflexSlot() {
+        WidgetSpec.Layer page = layer(BuilderWidgets.ATTACHED);
+
+        assertEquals(List.of(BuilderWidgets.ATTACH_LINE, BuilderWidgets.attachedLine(0), BuilderWidgets.attachedLine(1), BuilderWidgets.attachedLine(2)),
+                page.children());
+        assertEquals(BuilderWidgets.ATTACHED_WIDTH, page.width());
+    }
+
+    @Test
+    void theAttachLineOpensTheSearchBesideAttachAll() {
+        WidgetSpec.Tile search = assertInstanceOf(WidgetSpec.Tile.class, SPECS.get(BuilderWidgets.ATTACH));
+        WidgetSpec.Tile all = assertInstanceOf(WidgetSpec.Tile.class, SPECS.get(BuilderWidgets.ATTACH_ALL));
+
+        assertEquals(List.of("Search", "Attach all", BuilderWidgets.ATTACHED_WIDTH), List.of(search.option(), all.option(), all.x() + all.width()));
+        assertTrue(search.x() + search.width() < all.x());
+    }
+
+    @Test
+    void theAttachLineAndAttachAllAreClickedAndNotDragged() {
+        TileDrag drag = new TileDrag(SPECS);
+
+        assertEquals(List.of(Optional.empty(), Optional.empty(), Optional.empty()),
+                List.of(drag.tileOf(BuilderWidgets.ATTACH), drag.tileOf(BuilderWidgets.ATTACH_ALL), drag.tileOf(BuilderWidgets.detachFace(0))));
+    }
+
+    @Test
+    void aReflexLineShowsItsNumberPictureSentenceAndDetachButton() {
+        assertEquals(List.of(BuilderWidgets.attachedFace(1), BuilderWidgets.attachedNumber(1), BuilderWidgets.attachedPicture(1),
+                BuilderWidgets.attachedSentence(1), BuilderWidgets.detachFace(1), BuilderWidgets.detachText(1)),
+                layer(BuilderWidgets.attachedLine(1)).children());
+    }
+
+    @Test
+    void aReflexLineMovesByDragAndItsXDetaches() {
+        WidgetSpec.Tile face = assertInstanceOf(WidgetSpec.Tile.class, SPECS.get(BuilderWidgets.attachedFace(0)));
+        WidgetSpec.Tile x = assertInstanceOf(WidgetSpec.Tile.class, SPECS.get(BuilderWidgets.detachFace(0)));
+
+        assertEquals(List.of("Move", true, "Detach"), List.of(face.option(), face.draggable(), x.option()));
+    }
+
+    @Test
+    void reflexLinesFollowTheAttachLineOneUnderTheOther() {
+        assertEquals(List.of(22, 44), List.of(SPECS.get(BuilderWidgets.attachedLine(0)).y(), SPECS.get(BuilderWidgets.attachedLine(1)).y()));
+    }
+
+    @Test
+    void aReflexLineDroppedOnAnotherMovesToItsPlace() {
+        assertEquals(Optional.of(new TileDrag.Move(0, 2, BuilderWidgets.ATTACHED)),
+                new TileDrag(SPECS).drop(BuilderWidgets.attachedFace(0), BuilderWidgets.attachedSentence(2)));
+    }
+
+    @Test
+    void aReflexLinesSentenceHasTheRoomTheServerFitsItTo() {
+        assertTrue(SPECS.get(BuilderWidgets.attachedSentence(0)).width() >= 420);
+    }
+
+    @Test
+    void everyReflexLineWidgetStaysInsideItsStride() {
+        assertTrue(BuilderWidgets.detachText(0) < BuilderWidgets.attachedLine(1));
+    }
+
+    @Test
+    void theReflexesPageLiesPastTheMostReflexRows() {
+        assertTrue(BuilderWidgets.reflexLockedSprite(99) < BuilderWidgets.ATTACHED);
     }
 }
