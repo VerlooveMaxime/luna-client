@@ -16,7 +16,7 @@ import static org.junit.jupiter.api.Assertions.assertTrue;
 class BuilderWidgetsTest {
 
     /** Six step slots: a full row, then two slots and the padlock. */
-    private static final Map<Integer, WidgetSpec> SPECS = BuilderWidgets.specs(6, BuilderWidgets.unplacedLists());
+    private static final Map<Integer, WidgetSpec> SPECS = BuilderWidgets.specs(6, 3, BuilderWidgets.unplacedLists());
 
     private static WidgetSpec.Layer layer(int id) {
         return assertInstanceOf(WidgetSpec.Layer.class, SPECS.get(id));
@@ -105,7 +105,7 @@ class BuilderWidgetsTest {
 
     @Test
     void aThirdRowScrolls() {
-        WidgetSpec.Layer slots = assertInstanceOf(WidgetSpec.Layer.class, BuilderWidgets.specs(8, BuilderWidgets.unplacedLists()).get(BuilderWidgets.SLOTS));
+        WidgetSpec.Layer slots = assertInstanceOf(WidgetSpec.Layer.class, BuilderWidgets.specs(8, 3, BuilderWidgets.unplacedLists()).get(BuilderWidgets.SLOTS));
 
         assertEquals(3 * BuilderWidgets.SLOT_HEIGHT + 2 * BuilderWidgets.SLOT_GAP, slots.scrollHeight());
     }
@@ -119,7 +119,7 @@ class BuilderWidgetsTest {
     @Test
     void noSlotsLeavesThePadlockAlone() {
         assertEquals(List.of(BuilderWidgets.slot(0)),
-                assertInstanceOf(WidgetSpec.Layer.class, BuilderWidgets.specs(0, BuilderWidgets.unplacedLists()).get(BuilderWidgets.SLOTS)).children());
+                assertInstanceOf(WidgetSpec.Layer.class, BuilderWidgets.specs(0, 3, BuilderWidgets.unplacedLists()).get(BuilderWidgets.SLOTS)).children());
     }
 
     @Test
@@ -367,7 +367,7 @@ class BuilderWidgetsTest {
     @Test
     void theSpecsPutAListWhereItWasPlaced() {
         BuilderWidgets.ListPlacement placement = BuilderWidgets.listPlacement(0, 3, 3, 9);
-        Map<Integer, WidgetSpec> specs = BuilderWidgets.specs(4, BuilderWidgets.placed(BuilderWidgets.unplacedLists(), 0, placement));
+        Map<Integer, WidgetSpec> specs = BuilderWidgets.specs(4, 3, BuilderWidgets.placed(BuilderWidgets.unplacedLists(), 0, placement));
         WidgetSpec.Layer list = assertInstanceOf(WidgetSpec.Layer.class, specs.get(BuilderWidgets.list(0)));
 
         assertEquals(List.of(placement.y(), placement.height(), placement.scrollHeight()), List.of(list.y(), list.height(), list.scrollHeight()));
@@ -411,5 +411,82 @@ class BuilderWidgetsTest {
 
         assertEquals(List.of(BuilderWidgets.warning(0), BuilderWidgets.warning(1), BuilderWidgets.warning(2), BuilderWidgets.DELETE,
                 BuilderWidgets.BACK, BuilderWidgets.SAVE), children.subList(children.size() - 6, children.size()));
+    }
+
+    @Test
+    void theOverviewsTabsSitAboveTheSlotsStepsFirst() {
+        WidgetSpec steps = SPECS.get(BuilderWidgets.STEPS_TAB);
+        WidgetSpec reflexes = SPECS.get(BuilderWidgets.REFLEXES_TAB);
+
+        assertTrue(steps.x() + steps.width() < reflexes.x());
+        assertTrue(reflexes.y() + reflexes.height() <= SPECS.get(BuilderWidgets.SLOTS).y());
+    }
+
+    @Test
+    void eachTabHasAFrameTheServerLights() {
+        assertEquals(List.of(BuilderWidgets.OVERVIEW, BuilderWidgets.OVERVIEW),
+                List.of(SPECS.get(BuilderWidgets.STEPS_TAB_FRAME).parent(), SPECS.get(BuilderWidgets.REFLEXES_TAB_FRAME).parent()));
+    }
+
+    @Test
+    void theStatusLineSitsUnderTheSlotArea() {
+        WidgetSpec slots = SPECS.get(BuilderWidgets.SLOTS);
+
+        assertTrue(SPECS.get(BuilderWidgets.STATUS).y() >= slots.y() + slots.height());
+    }
+
+    @Test
+    void theReflexRowsTakeTheSlotAreasPlace() {
+        WidgetSpec slots = SPECS.get(BuilderWidgets.SLOTS);
+        WidgetSpec.Layer rows = layer(BuilderWidgets.REFLEX_ROWS);
+
+        assertEquals(List.of(slots.x(), slots.y(), slots.width(), slots.height(), BuilderWidgets.OVERVIEW),
+                List.of(rows.x(), rows.y(), rows.width(), rows.height(), rows.parent()));
+    }
+
+    @Test
+    void theReflexAreaHoldsEveryRowThenThePadlock() {
+        assertEquals(List.of(BuilderWidgets.reflexRow(0), BuilderWidgets.reflexRow(1), BuilderWidgets.reflexRow(2), BuilderWidgets.reflexRow(3)),
+                layer(BuilderWidgets.REFLEX_ROWS).children());
+    }
+
+    @Test
+    void reflexRowsAreARowAndAGapApart() {
+        assertEquals(BuilderWidgets.REFLEX_ROW_HEIGHT + BuilderWidgets.REFLEX_ROW_GAP, SPECS.get(BuilderWidgets.reflexRow(1)).y());
+    }
+
+    @Test
+    void aReflexRowShowsItsNumberPictureAndSentence() {
+        assertEquals(List.of(BuilderWidgets.reflexRowFace(0), BuilderWidgets.reflexRowFrame(0), BuilderWidgets.reflexRowNumber(0),
+                BuilderWidgets.reflexRowPicture(0), BuilderWidgets.reflexRowText(0)), layer(BuilderWidgets.reflexRow(0)).children());
+    }
+
+    @Test
+    void aReflexRowDroppedOnAnotherMovesToItsPlace() {
+        assertEquals(Optional.of(new TileDrag.Move(0, 2, BuilderWidgets.REFLEX_ROWS)),
+                new TileDrag(SPECS).drop(BuilderWidgets.reflexRowFace(0), BuilderWidgets.reflexRowText(2)));
+    }
+
+    @Test
+    void theReflexPadlockShowsTheKeysAndCannotBeDragged() {
+        assertEquals("keys", assertInstanceOf(WidgetSpec.Sprite.class, SPECS.get(BuilderWidgets.reflexLockedSprite(3))).name());
+        assertTrue(new TileDrag(SPECS).tileOf(BuilderWidgets.reflexRow(3) + 1).isEmpty());
+    }
+
+    @Test
+    void aFewReflexRowsShowWithoutScrolling() {
+        assertFalse(layer(BuilderWidgets.REFLEX_ROWS).scrolls());
+    }
+
+    @Test
+    void moreReflexRowsThanTheAreaHoldsScroll() {
+        WidgetSpec.Layer rows = assertInstanceOf(WidgetSpec.Layer.class, BuilderWidgets.specs(6, 9, BuilderWidgets.unplacedLists()).get(BuilderWidgets.REFLEX_ROWS));
+
+        assertEquals(10 * (BuilderWidgets.REFLEX_ROW_HEIGHT + BuilderWidgets.REFLEX_ROW_GAP) - BuilderWidgets.REFLEX_ROW_GAP, rows.scrollHeight());
+    }
+
+    @Test
+    void everyReflexRowWidgetStaysInsideItsStride() {
+        assertTrue(BuilderWidgets.reflexRowText(0) < BuilderWidgets.reflexRow(1));
     }
 }

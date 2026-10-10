@@ -32,7 +32,7 @@ class CacheSpritesInCacheTest {
     }
 
     static Stream<WidgetSpec.Sprite> spriteSpecs() {
-        return WidgetSpecs.of(0, 0).all().values().stream().filter(WidgetSpec.Sprite.class::isInstance).map(WidgetSpec.Sprite.class::cast);
+        return WidgetSpecs.of(0, 0, 0).all().values().stream().filter(WidgetSpec.Sprite.class::isInstance).map(WidgetSpec.Sprite.class::cast);
     }
 
     @ParameterizedTest

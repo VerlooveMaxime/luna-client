@@ -8,8 +8,8 @@ import java.util.Optional;
 
 /**
  * Every widget IdleRS defines in code: the Idle tab, the quest journal's stages, the widget gallery, the search
- * prompt's icons and the builder's screens, built for the number of step slots and saved-flow slots the player has,
- * which the server sends; the client builds them again when either changes.
+ * prompt's icons and the builder's screens, built for the number of step slots, reflex slots and saved-flow slots the
+ * player has, which the server sends; the client builds them again when any changes.
  */
 public final class WidgetSpecs {
 
@@ -19,15 +19,18 @@ public final class WidgetSpecs {
         this.all = all;
     }
 
-    /** The widgets for a player with {@code builderSlots} step slots and {@code savedSlots} saved-flow slots. */
-    public static WidgetSpecs of(int builderSlots, int savedSlots) {
-        return of(builderSlots, savedSlots, BuilderWidgets.unplacedLists());
+    /**
+     * The widgets for a player with {@code builderSlots} step slots, {@code savedSlots} saved-flow slots and
+     * {@code reflexSlots} reflex slots.
+     */
+    public static WidgetSpecs of(int builderSlots, int savedSlots, int reflexSlots) {
+        return of(builderSlots, savedSlots, reflexSlots, BuilderWidgets.unplacedLists());
     }
 
     /** The same, the builder's configure lists where the server last placed them ({@code lists}, one per list). */
-    public static WidgetSpecs of(int builderSlots, int savedSlots, List<BuilderWidgets.ListPlacement> lists) {
+    public static WidgetSpecs of(int builderSlots, int savedSlots, int reflexSlots, List<BuilderWidgets.ListPlacement> lists) {
         return new WidgetSpecs(merge(List.of(FlowWidgets.specs(savedSlots), QuestJournal.specs(), WidgetGallery.specs(),
-                SearchWidgets.specs(), BuilderWidgets.specs(builderSlots, lists))));
+                SearchWidgets.specs(), BuilderWidgets.specs(builderSlots, reflexSlots, lists))));
     }
 
     public Optional<WidgetSpec> spec(int id) {

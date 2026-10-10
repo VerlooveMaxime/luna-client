@@ -22,11 +22,12 @@ final class IdleWidgets {
 
     /**
      * Sub-opcodes of packet 108, the IdleRS packet: the builder's step slots, the Idle tab's saved-flow slots, where a
-     * configure list sits.
+     * configure list sits, the builder's reflex slots.
      */
     static final int BUILDER_SLOTS = 0;
     static final int SAVED_FLOW_SLOTS = 1;
     static final int LIST_PLACEMENT = 2;
+    static final int REFLEX_SLOTS = 3;
 
     /** Media types of picture widgets: an item's icon on a sprite widget, an npc's body on a model widget. */
     static final int ITEM_ICON = 4;
@@ -51,8 +52,9 @@ final class IdleWidgets {
     /** The widgets as built for the step and saved-flow slots the server last said the player has, and their drag rules. */
     private static int builderSlots;
     private static int savedFlowSlots;
+    private static int reflexSlots;
     private static List<BuilderWidgets.ListPlacement> lists = BuilderWidgets.unplacedLists();
-    private static WidgetSpecs specs = WidgetSpecs.of(builderSlots, savedFlowSlots, lists);
+    private static WidgetSpecs specs = WidgetSpecs.of(builderSlots, savedFlowSlots, reflexSlots, lists);
     private static TileDrag tileDrag = new TileDrag(specs.all());
 
     /** The tile being dragged, -1 for none, and its layer's children as they were before it was drawn on top. */
@@ -87,6 +89,10 @@ final class IdleWidgets {
             savedFlowSlots = slots;
             rebuild(FlowWidgets.TAB);
         }
+        if (sub == REFLEX_SLOTS && slots != reflexSlots) {
+            reflexSlots = slots;
+            rebuild(BuilderWidgets.ROOT);
+        }
     }
 
     /**
@@ -96,7 +102,7 @@ final class IdleWidgets {
     private static void placeList(int list, int firstRow, int rows, int lines) {
         BuilderWidgets.ListPlacement placement = BuilderWidgets.listPlacement(list, firstRow, rows, lines);
         lists = BuilderWidgets.placed(lists, list, placement);
-        specs = WidgetSpecs.of(builderSlots, savedFlowSlots, lists);
+        specs = WidgetSpecs.of(builderSlots, savedFlowSlots, reflexSlots, lists);
         int id = BuilderWidgets.list(list);
         JagInterface configure = JagInterface.interfaces[BuilderWidgets.CONFIGURE];
         if (configure != null)
@@ -114,7 +120,7 @@ final class IdleWidgets {
     /** The widgets built again for the counts the server last sent; the ones built before in {@code root}'s group are dropped. */
     private static void rebuild(int root) {
         WidgetSpecs old = specs;
-        specs = WidgetSpecs.of(builderSlots, savedFlowSlots, lists);
+        specs = WidgetSpecs.of(builderSlots, savedFlowSlots, reflexSlots, lists);
         tileDrag = new TileDrag(specs.all());
         JagInterface.grow(specs.capacity());
         old.all().keySet().stream().filter(id -> old.root(id) == root).forEach(id -> JagInterface.interfaces[id] = null);

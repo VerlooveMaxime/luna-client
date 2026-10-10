@@ -21,7 +21,7 @@ import static org.junit.jupiter.api.Assertions.assertTrue;
 class WidgetSpecsTest {
 
     /** Six step slots: two rows of slots, the padlock on the second; four saved flows, which scroll. */
-    private static final WidgetSpecs SPECS = WidgetSpecs.of(6, 4);
+    private static final WidgetSpecs SPECS = WidgetSpecs.of(6, 4, 3);
     private static final Map<Integer, WidgetSpec> ALL = SPECS.all();
 
     static Stream<WidgetSpec> specs() {
@@ -132,17 +132,22 @@ class WidgetSpecsTest {
 
     @Test
     void theCapacityIsOnePastTheHighestId() {
-        assertEquals(BuilderWidgets.lockedSprite(6) + 1, SPECS.capacity());
+        assertEquals(BuilderWidgets.reflexLockedSprite(3) + 1, SPECS.capacity());
     }
 
     @Test
-    void moreStepSlotsNeedMoreRoom() {
-        assertTrue(WidgetSpecs.of(40, 4).capacity() > SPECS.capacity());
+    void moreReflexSlotsNeedMoreRoom() {
+        assertTrue(WidgetSpecs.of(6, 4, 5).capacity() > SPECS.capacity());
+    }
+
+    @Test
+    void stepSlotsAreBuiltForTheCountGiven() {
+        assertTrue(WidgetSpecs.of(40, 4, 3).spec(BuilderWidgets.slot(39)).isPresent());
     }
 
     @Test
     void savedFlowSlotsAreBuiltForTheCountGiven() {
-        assertTrue(WidgetSpecs.of(6, 5).spec(FlowWidgets.row(4)).isPresent());
+        assertTrue(WidgetSpecs.of(6, 5, 3).spec(FlowWidgets.row(4)).isPresent());
     }
 
     @Test

@@ -13,10 +13,11 @@ import static idlers.WidgetSpecs.add;
 /**
  * The flow builder's screens (flow builder v2, S06): one root holding a layer per screen, which the server shows one
  * at a time (packet 82), so an open chatbox prompt survives the switch. The overview holds a slot per step slot the
- * player has, as many as the server says (packet 108; Maxime, 2026-10-09: no fixed most), then the padlock; the kind
- * picker a button per kind of step; the configure screen a header, two columns of setting rows the server fills or
- * hides, a warnings band and its buttons. The server mirrors these ids in {@code game.idle.ui.BuilderWidgets}; text
- * and pictures it changes start empty here.
+ * player has, as many as the server says (packet 108; Maxime, 2026-10-09: no fixed most), then the padlock, and on its
+ * Reflexes tab (S07c) a row per reflex the flow can hold, then the padlock; the kind picker a button per kind of step;
+ * the configure screen a header, two columns of setting rows the server fills or hides, a warnings band and its
+ * buttons. The server mirrors these ids in {@code game.idle.ui.BuilderWidgets}; text and pictures it changes start
+ * empty here.
  */
 public final class BuilderWidgets {
 
@@ -42,6 +43,11 @@ public final class BuilderWidgets {
     public static final int STOP = 30719;
     public static final int CLEAR = 30720;
     public static final int SAVE_FLOW = 30721;
+    /** The overview's tabs (S07c), each a frame the server lights and a button. */
+    public static final int STEPS_TAB = 30722;
+    public static final int STEPS_TAB_FRAME = 30723;
+    public static final int REFLEXES_TAB = 30724;
+    public static final int REFLEXES_TAB_FRAME = 30725;
 
     public static final int KINDS = 30730;
     public static final int KINDS_TITLE = 30731;
@@ -85,6 +91,11 @@ public final class BuilderWidgets {
     public static final int SLOT_STRIDE = 16;
     public static final int SLOT_LINES = 4;
 
+    /** The Reflexes tab's rows (S07c): a scrolling layer, then a row per reflex slot and the padlock. */
+    public static final int REFLEX_ROWS = 40000;
+    private static final int REFLEX_ROW_BASE = 40016;
+    private static final int REFLEX_ROW_STRIDE = 8;
+
     public static final int SCREEN_WIDTH = 512;
     public static final int SCREEN_HEIGHT = 334;
     /** Where each screen's layer sits in the root, under the title. */
@@ -99,8 +110,17 @@ public final class BuilderWidgets {
     public static final int SLOT_GAP = 5;
     public static final int COLUMNS = 4;
     public static final int SLOTS_X = 2;
-    public static final int SLOTS_Y = 2;
+    /** Under the tabs. */
+    public static final int SLOTS_Y = 22;
     public static final int SLOTS_HEIGHT = 216;
+    public static final int SLOTS_WIDTH = COLUMNS * SLOT_WIDTH + (COLUMNS - 1) * SLOT_GAP;
+    public static final int TAB_HEIGHT = 18;
+
+    /** A reflex row: its number, picture and sentence, the full width of the slots. */
+    public static final int REFLEX_ROW_HEIGHT = 24;
+    public static final int REFLEX_ROW_GAP = 3;
+    public static final int REFLEX_PICTURE = 20;
+    public static final int SENTENCE_X = 46;
     public static final int BIG_PICTURE = 34;
     public static final int CORNER_PICTURE = 16;
     public static final int KIND_PICTURE = 25;
@@ -227,6 +247,37 @@ public final class BuilderWidgets {
 
     public static int lockedSprite(int slots) {
         return slot(slots) + 3;
+    }
+
+    /** The layer of reflex row {@code row}; row {@code reflexSlots} is the padlock. */
+    public static int reflexRow(int row) {
+        return REFLEX_ROW_BASE + row * REFLEX_ROW_STRIDE;
+    }
+
+    /** The row's face, which opens its reflex and drags it onto another row (packet 123 names {@link #REFLEX_ROWS}). */
+    public static int reflexRowFace(int row) {
+        return reflexRow(row) + 1;
+    }
+
+    /** The row's frame, which the server colours: the tile's edge, red when the reflex cannot work. */
+    public static int reflexRowFrame(int row) {
+        return reflexRow(row) + 2;
+    }
+
+    public static int reflexRowNumber(int row) {
+        return reflexRow(row) + 3;
+    }
+
+    public static int reflexRowPicture(int row) {
+        return reflexRow(row) + 4;
+    }
+
+    public static int reflexRowText(int row) {
+        return reflexRow(row) + 5;
+    }
+
+    public static int reflexLockedSprite(int reflexSlots) {
+        return reflexRow(reflexSlots) + 3;
     }
 
     public static int warning(int line) {
@@ -420,8 +471,11 @@ public final class BuilderWidgets {
         return list * RIGHT_COLUMN + FIELD_X;
     }
 
-    /** The widgets for a player with {@code slots} step slots, the lists where the server last placed them. */
-    public static Map<Integer, WidgetSpec> specs(int slots, List<ListPlacement> lists) {
+    /**
+     * The widgets for a player with {@code slots} step slots and {@code reflexSlots} reflex slots, the lists where the
+     * server last placed them.
+     */
+    public static Map<Integer, WidgetSpec> specs(int slots, int reflexSlots, List<ListPlacement> lists) {
         Map<Integer, WidgetSpec> specs = new LinkedHashMap<>();
         List<Integer> children = new ArrayList<>();
         // The panel comes first so the rest draws over it.
@@ -429,7 +483,7 @@ public final class BuilderWidgets {
         add(specs, children, WidgetSpec.frame(FRAME, ROOT, 0, 0, SCREEN_WIDTH, SCREEN_HEIGHT, FlowWidgets.EDGE));
         add(specs, children, WidgetSpec.centredText(TITLE, ROOT, SCREEN_WIDTH / 2, 6, LINE, "Flow builder", FlowWidgets.ORANGE, FONT_BOLD));
         add(specs, children, button(CLOSE, ROOT, 460, 6, 42, "Close", "Close"));
-        add(specs, children, overview(specs, slots));
+        add(specs, children, overview(specs, slots, reflexSlots));
         add(specs, children, kinds(specs));
         add(specs, children, configure(specs, lists));
         specs.put(ROOT, WidgetSpec.layer(ROOT, -1, 0, 0, SCREEN_WIDTH, SCREEN_HEIGHT, children));
@@ -441,10 +495,15 @@ public final class BuilderWidgets {
         return slots / COLUMNS + 1;
     }
 
-    private static WidgetSpec overview(Map<Integer, WidgetSpec> specs, int slots) {
+    private static WidgetSpec overview(Map<Integer, WidgetSpec> specs, int slots, int reflexSlots) {
         List<Integer> children = new ArrayList<>();
+        add(specs, children, WidgetSpec.frame(STEPS_TAB_FRAME, OVERVIEW, 2, 0, 44, TAB_HEIGHT, FlowWidgets.EDGE));
+        add(specs, children, button(STEPS_TAB, OVERVIEW, 5, 2, 38, "Steps", "Show the steps"));
+        add(specs, children, WidgetSpec.frame(REFLEXES_TAB_FRAME, OVERVIEW, 50, 0, 62, TAB_HEIGHT, FlowWidgets.EDGE));
+        add(specs, children, button(REFLEXES_TAB, OVERVIEW, 53, 2, 56, "Reflexes", "Show the reflexes"));
         add(specs, children, slotArea(specs, slots));
-        add(specs, children, WidgetSpec.text(STATUS, OVERVIEW, 4, 224, 492, LINE, "", FlowWidgets.YELLOW, FONT_PLAIN));
+        add(specs, children, reflexArea(specs, reflexSlots));
+        add(specs, children, WidgetSpec.text(STATUS, OVERVIEW, 4, 242, 492, LINE, "", FlowWidgets.YELLOW, FONT_PLAIN));
         add(specs, children, WidgetSpec.text(LEVELS, OVERVIEW, 4, 284, 44, LINE, "Levels:", FlowWidgets.ORANGE, FONT_PLAIN));
         add(specs, children, WidgetSpec.frame(BASE_LEVELS_FRAME, OVERVIEW, 48, 282, 34, 18, FlowWidgets.EDGE));
         add(specs, children, button(BASE_LEVELS, OVERVIEW, 51, 284, 28, "Base", "Grey options on base levels"));
@@ -464,9 +523,44 @@ public final class BuilderWidgets {
             add(specs, children, slot(specs, slot));
         }
         add(specs, children, locked(specs, slots));
-        int width = COLUMNS * SLOT_WIDTH + (COLUMNS - 1) * SLOT_GAP;
         int content = slotRows(slots) * (SLOT_HEIGHT + SLOT_GAP) - SLOT_GAP;
-        return WidgetSpec.scrollLayer(SLOTS, OVERVIEW, SLOTS_X, SLOTS_Y, width, SLOTS_HEIGHT, Math.max(content, SLOTS_HEIGHT), children);
+        return WidgetSpec.scrollLayer(SLOTS, OVERVIEW, SLOTS_X, SLOTS_Y, SLOTS_WIDTH, SLOTS_HEIGHT, Math.max(content, SLOTS_HEIGHT), children);
+    }
+
+    /** The Reflexes tab's area, where the slots are: a row per reflex slot, then the padlock, scrolling past its height. */
+    private static WidgetSpec reflexArea(Map<Integer, WidgetSpec> specs, int reflexSlots) {
+        List<Integer> children = new ArrayList<>();
+        for (int row = 0; row < reflexSlots; row++) {
+            add(specs, children, reflexRow(specs, row));
+        }
+        add(specs, children, reflexLocked(specs, reflexSlots));
+        int content = (reflexSlots + 1) * (REFLEX_ROW_HEIGHT + REFLEX_ROW_GAP) - REFLEX_ROW_GAP;
+        return WidgetSpec.scrollLayer(REFLEX_ROWS, OVERVIEW, SLOTS_X, SLOTS_Y, SLOTS_WIDTH, SLOTS_HEIGHT, Math.max(content, SLOTS_HEIGHT), children);
+    }
+
+    private static int reflexRowY(int row) {
+        return row * (REFLEX_ROW_HEIGHT + REFLEX_ROW_GAP);
+    }
+
+    private static WidgetSpec reflexRow(Map<Integer, WidgetSpec> specs, int row) {
+        int id = reflexRow(row);
+        List<Integer> children = new ArrayList<>();
+        add(specs, children, new WidgetSpec.Tile(reflexRowFace(row), id, 0, 0, SLOTS_WIDTH, REFLEX_ROW_HEIGHT, TILE, TILE_HOVER, "Configure", true));
+        add(specs, children, WidgetSpec.frame(reflexRowFrame(row), id, 0, 0, SLOTS_WIDTH, REFLEX_ROW_HEIGHT, TILE_EDGE));
+        add(specs, children, WidgetSpec.centredText(reflexRowNumber(row), id, 10, 5, LINE, "", NUMBER, FONT_SMALL));
+        add(specs, children, picture(reflexRowPicture(row), id, 20, 2, REFLEX_PICTURE));
+        add(specs, children, WidgetSpec.text(reflexRowText(row), id, SENTENCE_X, 5, SLOTS_WIDTH - SENTENCE_X - 4, LINE, "", FlowWidgets.WHITE, FONT_SMALL));
+        return WidgetSpec.layer(id, REFLEX_ROWS, 0, reflexRowY(row), SLOTS_WIDTH, REFLEX_ROW_HEIGHT, children);
+    }
+
+    /** The padlock after the reflex rows, as after the step slots. */
+    private static WidgetSpec reflexLocked(Map<Integer, WidgetSpec> specs, int reflexSlots) {
+        int id = reflexRow(reflexSlots);
+        List<Integer> children = new ArrayList<>();
+        add(specs, children, WidgetSpec.box(id + 1, id, 0, 0, SLOTS_WIDTH, REFLEX_ROW_HEIGHT, LOCKED));
+        add(specs, children, WidgetSpec.frame(id + 2, id, 0, 0, SLOTS_WIDTH, REFLEX_ROW_HEIGHT, CORNER));
+        add(specs, children, new WidgetSpec.Sprite(reflexLockedSprite(reflexSlots), id, 20, 2, REFLEX_PICTURE, REFLEX_PICTURE, "keys", 0));
+        return WidgetSpec.layer(id, REFLEX_ROWS, 0, reflexRowY(reflexSlots), SLOTS_WIDTH, REFLEX_ROW_HEIGHT, children);
     }
 
     private static int slotX(int slot) {
@@ -546,9 +640,9 @@ public final class BuilderWidgets {
         for (int line = 0; line < WARNING_LINES; line++) {
             add(specs, children, WidgetSpec.text(warning(line), CONFIGURE, 4, 241 + 13 * line, 492, LINE, "", FlowWidgets.YELLOW, FONT_SMALL));
         }
-        add(specs, children, button(DELETE, CONFIGURE, 366, 284, 40, "Delete", "Delete the step"));
+        add(specs, children, button(DELETE, CONFIGURE, 366, 284, 40, "Delete", "Delete"));
         add(specs, children, button(BACK, CONFIGURE, 418, 284, 30, "Back", "Back without saving"));
-        add(specs, children, button(SAVE, CONFIGURE, 460, 284, 34, "Save", "Save the step"));
+        add(specs, children, button(SAVE, CONFIGURE, 460, 284, 34, "Save", "Save"));
         return WidgetSpec.layer(CONFIGURE, ROOT, LAYER_X, LAYER_Y, LAYER_WIDTH, LAYER_HEIGHT, children);
     }
 
