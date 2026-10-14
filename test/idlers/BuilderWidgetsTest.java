@@ -11,6 +11,7 @@ import java.util.Optional;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertFalse;
 import static org.junit.jupiter.api.Assertions.assertInstanceOf;
+import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 
 class BuilderWidgetsTest {
@@ -221,6 +222,33 @@ class BuilderWidgetsTest {
     }
 
     @Test
+    void fiveToggleButtonsMirrorTheServersIds() {
+        assertEquals(List.of(42000, 42016, 42029, 42030, 42031, 42176),
+                List.of(BuilderWidgets.toggles(0, 5), BuilderWidgets.toggles(1, 5), BuilderWidgets.toggleFace(1, 5, 4),
+                        BuilderWidgets.toggleFrame(1, 5, 4), BuilderWidgets.toggleText(1, 5, 4), BuilderWidgets.toggles(BuilderWidgets.ROWS - 1, 5)));
+    }
+
+    @Test
+    void everyFiveButtonWidgetStaysInsideItsStride() {
+        assertTrue(BuilderWidgets.toggleText(0, 5, 4) < BuilderWidgets.toggles(1, 5));
+    }
+
+    @Test
+    void theLastRowsFiveButtonsEndBeforeTheStopsRow() {
+        assertTrue(BuilderWidgets.toggleText(BuilderWidgets.ROWS - 1, 5, 4) < BuilderWidgets.STOPS);
+    }
+
+    @Test
+    void theFiveButtonSetsLiePastTheReflexesPagesLinesAtTheMostReflexes() {
+        assertTrue(BuilderWidgets.detachText(98) < BuilderWidgets.toggles(0, 5));
+    }
+
+    @Test
+    void aToggleOfAnotherSizeIsAMistake() {
+        assertThrows(IllegalArgumentException.class, () -> BuilderWidgets.toggles(0, 4));
+    }
+
+    @Test
     void configureRowsFillTheLeftColumnThenTheRight() {
         WidgetSpec sixth = SPECS.get(BuilderWidgets.row(5));
         WidgetSpec seventh = SPECS.get(BuilderWidgets.row(6));
@@ -239,7 +267,15 @@ class BuilderWidgetsTest {
     @Test
     void aConfigureRowHoldsItsLabelFieldButtonNoteAndToggles() {
         assertEquals(List.of(BuilderWidgets.rowLabel(2), BuilderWidgets.rowField(2), BuilderWidgets.rowButton(2), BuilderWidgets.rowNote(2),
-                BuilderWidgets.toggles(2, 2), BuilderWidgets.toggles(2, 3)), layer(BuilderWidgets.row(2)).children());
+                BuilderWidgets.toggles(2, 2), BuilderWidgets.toggles(2, 3), BuilderWidgets.toggles(2, 5)), layer(BuilderWidgets.row(2)).children());
+    }
+
+    @Test
+    void theFiveButtonsAreALayerOfTheirRowInTheFieldAndButtonsPlace() {
+        WidgetSpec.Layer toggles = layer(BuilderWidgets.toggles(3, 5));
+
+        assertEquals(List.of(BuilderWidgets.row(3), BuilderWidgets.FIELD_X, BuilderWidgets.TOGGLE_ROOM),
+                List.of(toggles.parent(), toggles.x(), toggles.width()));
     }
 
     @Test
@@ -254,6 +290,20 @@ class BuilderWidgetsTest {
         WidgetSpec third = SPECS.get(BuilderWidgets.toggleFace(0, 3, 2));
 
         assertEquals(List.of(57, 122), List.of(third.width(), third.x()));
+    }
+
+    @Test
+    void fiveToggleButtonsAreNarrowerStill() {
+        WidgetSpec fifth = SPECS.get(BuilderWidgets.toggleFace(0, 5, 4));
+
+        assertEquals(List.of(32, 144), List.of(fifth.width(), fifth.x()));
+    }
+
+    @Test
+    void aFiveButtonSetsButtonIsClickedAndNotDragged() {
+        WidgetSpec.Tile face = assertInstanceOf(WidgetSpec.Tile.class, SPECS.get(BuilderWidgets.toggleFace(7, 5, 2)));
+
+        assertEquals(List.of("Select", false), List.of(face.option(), face.draggable()));
     }
 
     @Test
@@ -293,10 +343,65 @@ class BuilderWidgetsTest {
     }
 
     @Test
-    void aLineHoldsItsBoxPictureNameAmountAndRemoveButton() {
+    void aLineHoldsItsBoxPictureNameAmountRemoveButtonThenItsStrike() {
         assertEquals(List.of(BuilderWidgets.lineBox(0, 3), BuilderWidgets.linePicture(0, 3), BuilderWidgets.lineName(0, 3),
-                BuilderWidgets.lineAmount(0, 3), BuilderWidgets.lineRemoveFace(0, 3), BuilderWidgets.lineRemoveText(0, 3)),
-                layer(BuilderWidgets.line(0, 3)).children());
+                BuilderWidgets.lineAmount(0, 3), BuilderWidgets.lineRemoveFace(0, 3), BuilderWidgets.lineRemoveText(0, 3),
+                BuilderWidgets.lineStrike(0, 3)), layer(BuilderWidgets.line(0, 3)).children());
+    }
+
+    @Test
+    void strikesMirrorTheServersIds() {
+        assertEquals(List.of(42300, 42301, 42354, 42356, 42411),
+                List.of(BuilderWidgets.lineStrike(0, 0), BuilderWidgets.lineStrikeBox(0, 0), BuilderWidgets.lineStrike(0, 27),
+                        BuilderWidgets.lineStrike(1, 0), BuilderWidgets.lineStrikeBox(1, 27)));
+    }
+
+    @Test
+    void aStrikeIsALayerOfItsLineHalfwayDownOverTheName() {
+        WidgetSpec.Layer strike = layer(BuilderWidgets.lineStrike(1, 2));
+
+        assertEquals(List.of(BuilderWidgets.line(1, 2), BuilderWidgets.NAME_X, 10, 61, 1, List.of(BuilderWidgets.lineStrikeBox(1, 2))),
+                List.of(strike.parent(), strike.x(), strike.y(), strike.width(), strike.height(), strike.children()));
+    }
+
+    @Test
+    void aStrikeEndsBeforeTheAmountBox() {
+        WidgetSpec strike = SPECS.get(BuilderWidgets.lineStrike(0, 0));
+
+        assertTrue(strike.x() + strike.width() < SPECS.get(BuilderWidgets.lineAmount(0, 0)).x());
+    }
+
+    @Test
+    void aStrikeIsAOnePixelMutedLineAtMostAsWideAsTheWithdrawalsNameRoom() {
+        WidgetSpec.Strike strike = assertInstanceOf(WidgetSpec.Strike.class, SPECS.get(BuilderWidgets.lineStrikeBox(0, 5)));
+
+        assertEquals(List.of(0, 0, BuilderWidgets.STRIKE_WIDTH, 1, BuilderWidgets.MUTED),
+                List.of(strike.x(), strike.y(), strike.width(), strike.height(), strike.colour()));
+    }
+
+    @Test
+    void aStrikeRunsThroughItsOwnLinesName() {
+        WidgetSpec.Strike strike = assertInstanceOf(WidgetSpec.Strike.class, SPECS.get(BuilderWidgets.lineStrikeBox(1, 4)));
+
+        assertEquals(BuilderWidgets.lineName(1, 4), strike.text());
+    }
+
+    @Test
+    void aStrikeStartsWhereTheNameStarts() {
+        WidgetSpec strike = SPECS.get(BuilderWidgets.lineStrike(0, 2));
+        WidgetSpec box = SPECS.get(BuilderWidgets.lineStrikeBox(0, 2));
+
+        assertEquals(SPECS.get(BuilderWidgets.lineName(0, 2)).x(), strike.x() + box.x());
+    }
+
+    @Test
+    void theReflexesPageHasNoStrikes() {
+        assertFalse(SPECS.containsKey(BuilderWidgets.lineStrike(BuilderWidgets.ATTACHED_LIST, 0)));
+    }
+
+    @Test
+    void theStrikesComeAfterTheStopsRow() {
+        assertTrue(BuilderWidgets.STOPS_AFTER_TEXT < BuilderWidgets.lineStrike(0, 0));
     }
 
     @Test
@@ -433,6 +538,143 @@ class BuilderWidgetsTest {
         WidgetSpec slots = SPECS.get(BuilderWidgets.SLOTS);
 
         assertTrue(SPECS.get(BuilderWidgets.STATUS).y() >= slots.y() + slots.height());
+    }
+
+    @Test
+    void theStopsRowMirrorsTheServersIds() {
+        assertEquals(List.of(42200, 42201, 42202, 42203, 42208, 42209, 42210, 42211, 42212, 42213),
+                List.of(BuilderWidgets.STOPS, BuilderWidgets.STOPS_LABEL, BuilderWidgets.stopFrame(0), BuilderWidgets.stopChoice(0),
+                        BuilderWidgets.stopFrame(BuilderWidgets.STOP_CHOICES - 1), BuilderWidgets.stopChoice(BuilderWidgets.STOP_CHOICES - 1),
+                        BuilderWidgets.STOPS_AFTER, BuilderWidgets.STOPS_AFTER_FACE, BuilderWidgets.STOPS_AFTER_FRAME,
+                        BuilderWidgets.STOPS_AFTER_TEXT));
+    }
+
+    @Test
+    void theStopsRowIsALayerOfTheOverviewAcrossItsWidth() {
+        WidgetSpec.Layer stops = layer(BuilderWidgets.STOPS);
+
+        assertEquals(List.of(BuilderWidgets.OVERVIEW, 4, 260, 492, 20), List.of(stops.parent(), stops.x(), stops.y(), stops.width(), stops.height()));
+    }
+
+    @Test
+    void theStopsRowSitsBetweenTheStatusLineAndLevels() {
+        WidgetSpec status = SPECS.get(BuilderWidgets.STATUS);
+        WidgetSpec stops = SPECS.get(BuilderWidgets.STOPS);
+
+        assertTrue(status.y() + status.height() < stops.y());
+        assertTrue(stops.y() + stops.height() < SPECS.get(BuilderWidgets.BASE_LEVELS_FRAME).y());
+    }
+
+    @Test
+    void theOverviewHoldsTheStopsRowAfterTheStatusLineAndBeforeLevels() {
+        List<Integer> children = layer(BuilderWidgets.OVERVIEW).children();
+
+        assertEquals(List.of(children.indexOf(BuilderWidgets.STATUS) + 1, children.indexOf(BuilderWidgets.STOPS) + 1),
+                List.of(children.indexOf(BuilderWidgets.STOPS), children.indexOf(BuilderWidgets.LEVELS)));
+    }
+
+    @Test
+    void theStopsRowHoldsItsLabelThenAFrameAndAButtonPerChoiceThenTheAfterField() {
+        assertEquals(List.of(BuilderWidgets.STOPS_LABEL, BuilderWidgets.stopFrame(0), BuilderWidgets.stopChoice(0), BuilderWidgets.stopFrame(1),
+                BuilderWidgets.stopChoice(1), BuilderWidgets.stopFrame(2), BuilderWidgets.stopChoice(2), BuilderWidgets.stopFrame(3),
+                BuilderWidgets.stopChoice(3), BuilderWidgets.STOPS_AFTER), layer(BuilderWidgets.STOPS).children());
+    }
+
+    @Test
+    void theStopsLabelIsWrittenAsTheLevelsLabel() {
+        WidgetSpec.Text label = assertInstanceOf(WidgetSpec.Text.class, SPECS.get(BuilderWidgets.STOPS_LABEL));
+        WidgetSpec.Text levels = assertInstanceOf(WidgetSpec.Text.class, SPECS.get(BuilderWidgets.LEVELS));
+
+        assertEquals(List.of("Flow stops:", 0, 2, 60, levels.height(), levels.colour(), levels.font()),
+                List.of(label.text(), label.x(), label.y(), label.width(), label.height(), label.colour(), label.font()));
+    }
+
+    @Test
+    void theStopChoicesFramesGoLeftToRight() {
+        List<WidgetSpec> frames = List.of(SPECS.get(BuilderWidgets.stopFrame(0)), SPECS.get(BuilderWidgets.stopFrame(1)),
+                SPECS.get(BuilderWidgets.stopFrame(2)), SPECS.get(BuilderWidgets.stopFrame(3)));
+
+        assertEquals(List.of(62, 40, 106, 66, 176, 68, 248, 136),
+                List.of(frames.get(0).x(), frames.get(0).width(), frames.get(1).x(), frames.get(1).width(), frames.get(2).x(), frames.get(2).width(),
+                        frames.get(3).x(), frames.get(3).width()));
+    }
+
+    @Test
+    void aStopChoicesFrameIsTheRowsHeightInTheTabsEdgeColour() {
+        WidgetSpec.Box frame = assertInstanceOf(WidgetSpec.Box.class, SPECS.get(BuilderWidgets.stopFrame(2)));
+
+        assertEquals(List.of(BuilderWidgets.STOPS, 0, 18, FlowWidgets.EDGE, false),
+                List.of(frame.parent(), frame.y(), frame.height(), frame.colour(), frame.filled()));
+    }
+
+    @Test
+    void aStopChoicesButtonSitsInsideItsFrame() {
+        WidgetSpec button = SPECS.get(BuilderWidgets.stopChoice(3));
+
+        assertEquals(List.of(BuilderWidgets.STOPS, 251, 2, 130), List.of(button.parent(), button.x(), button.y(), button.width()));
+    }
+
+    @Test
+    void theStopsRowsLayerReachesTwoRowsBelowItsFramesSoDescendersStayWhole() {
+        WidgetSpec stops = SPECS.get(BuilderWidgets.STOPS);
+        WidgetSpec frame = SPECS.get(BuilderWidgets.stopFrame(3));
+
+        assertEquals(frame.y() + frame.height() + 2, stops.height());
+    }
+
+    @Test
+    void theStopChoicesSayWhatTheyDo() {
+        List<WidgetSpec.Button> buttons = List.of(assertInstanceOf(WidgetSpec.Button.class, SPECS.get(BuilderWidgets.stopChoice(0))),
+                assertInstanceOf(WidgetSpec.Button.class, SPECS.get(BuilderWidgets.stopChoice(1))),
+                assertInstanceOf(WidgetSpec.Button.class, SPECS.get(BuilderWidgets.stopChoice(2))),
+                assertInstanceOf(WidgetSpec.Button.class, SPECS.get(BuilderWidgets.stopChoice(3))));
+
+        assertEquals(List.of("Never", "Never stop", "After laps", "Stop after a number of laps", "After time", "Stop after a number of minutes",
+                        "When all goals are met", "Stop once every step met its goal"),
+                List.of(buttons.get(0).text(), buttons.get(0).option(), buttons.get(1).text(), buttons.get(1).option(), buttons.get(2).text(),
+                        buttons.get(2).option(), buttons.get(3).text(), buttons.get(3).option()));
+    }
+
+    @Test
+    void theAfterFieldIsALayerRightOfTheLastChoiceSoItHides() {
+        WidgetSpec.Layer after = layer(BuilderWidgets.STOPS_AFTER);
+        WidgetSpec last = SPECS.get(BuilderWidgets.stopFrame(BuilderWidgets.STOP_CHOICES - 1));
+
+        assertEquals(List.of(BuilderWidgets.STOPS, 388, 0, 64, 18,
+                        List.of(BuilderWidgets.STOPS_AFTER_FACE, BuilderWidgets.STOPS_AFTER_FRAME, BuilderWidgets.STOPS_AFTER_TEXT)),
+                List.of(after.parent(), after.x(), after.y(), after.width(), after.height(), after.children()));
+        assertTrue(last.x() + last.width() < after.x());
+    }
+
+    @Test
+    void theAfterFieldEndsInsideTheStopsRow() {
+        WidgetSpec after = SPECS.get(BuilderWidgets.STOPS_AFTER);
+
+        assertTrue(after.x() + after.width() <= SPECS.get(BuilderWidgets.STOPS).width());
+    }
+
+    @Test
+    void theAfterFieldIsClickedToChangeAndNotDragged() {
+        WidgetSpec.Tile face = assertInstanceOf(WidgetSpec.Tile.class, SPECS.get(BuilderWidgets.STOPS_AFTER_FACE));
+
+        assertEquals(List.of("Change", false, BuilderWidgets.FIELD, BuilderWidgets.FIELD_HOVER, 64, 18),
+                List.of(face.option(), face.draggable(), face.colour(), face.hoverColour(), face.width(), face.height()));
+    }
+
+    @Test
+    void theAfterFieldsFrameIsTheTilesEdge() {
+        WidgetSpec.Box frame = assertInstanceOf(WidgetSpec.Box.class, SPECS.get(BuilderWidgets.STOPS_AFTER_FRAME));
+
+        assertEquals(List.of(0, 0, 64, 18, BuilderWidgets.TILE_EDGE, false),
+                List.of(frame.x(), frame.y(), frame.width(), frame.height(), frame.colour(), frame.filled()));
+    }
+
+    @Test
+    void theAfterFieldsTextIsCentredInIt() {
+        WidgetSpec.Text text = assertInstanceOf(WidgetSpec.Text.class, SPECS.get(BuilderWidgets.STOPS_AFTER_TEXT));
+
+        assertEquals(List.of(32, 3, "", FlowWidgets.WHITE, WidgetSpec.FONT_SMALL, true),
+                List.of(text.x(), text.y(), text.text(), text.colour(), text.font(), text.centred()));
     }
 
     @Test

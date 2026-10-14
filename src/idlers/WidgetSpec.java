@@ -61,6 +61,18 @@ public sealed interface WidgetSpec {
             boolean draggable) implements WidgetSpec {
     }
 
+    /**
+     * A filled line through the words of text widget {@code text}, as wide as they are drawn up to its own width: the
+     * client measures them each time it draws the line, so it follows whatever text the server sets.
+     */
+    record Strike(int id, int parent, int x, int y, int width, int height, int colour, int text) implements WidgetSpec {
+
+        /** The line's width through words drawn {@code textWidth} pixels wide. */
+        public int widthThrough(int textWidth) {
+            return Math.min(textWidth, width);
+        }
+    }
+
     /** An invisible area; after about two seconds of hover the client shows its text in a light-yellow box below it. */
     record Tooltip(int id, int parent, int x, int y, int width, int height, String text) implements WidgetSpec {
     }

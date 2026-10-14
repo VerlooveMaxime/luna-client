@@ -132,12 +132,12 @@ class WidgetSpecsTest {
 
     @Test
     void theCapacityIsOnePastTheHighestId() {
-        assertEquals(BuilderWidgets.detachText(2) + 1, SPECS.capacity());
+        assertEquals(BuilderWidgets.lineStrikeBox(BuilderWidgets.LISTS - 1, BuilderWidgets.LIST_LINES - 1) + 1, SPECS.capacity());
     }
 
     @Test
-    void moreReflexSlotsNeedMoreRoom() {
-        assertTrue(WidgetSpecs.of(6, 4, 5).capacity() > SPECS.capacity());
+    void theMostReflexSlotsBuildWithoutAClash() {
+        assertTrue(WidgetSpecs.of(6, 4, 99).spec(BuilderWidgets.detachText(98)).isPresent());
     }
 
     @Test

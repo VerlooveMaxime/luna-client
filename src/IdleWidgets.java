@@ -152,6 +152,7 @@ final class IdleWidgets {
                 }
             }
             case WidgetSpec.Box box -> box(inter, box.colour(), 0, box.filled());
+            case WidgetSpec.Strike strike -> box(inter, strike.colour(), 0, true);
             case WidgetSpec.Tile tile -> {
                 box(inter, tile.colour(), tile.hoverColour(), true);
                 inter.anInt289 = 1;
@@ -178,6 +179,17 @@ final class IdleWidgets {
             }
         }
         return inter;
+    }
+
+    /**
+     * Sizes a strike ({@link WidgetSpec.Strike}) to the words it runs through as the client measures them now, colour
+     * codes left out; any other box is left as it is.
+     */
+    static void fitStrike(JagInterface inter) {
+        if (specs.spec(inter.id).orElse(null) instanceof WidgetSpec.Strike strike) {
+            JagInterface text = JagInterface.forId(strike.text());
+            inter.anInt241 = strike.widthThrough(text.aClass50_Sub1_Sub1_Sub2_237.method472((byte) 35, text.aString230));
+        }
     }
 
     /**

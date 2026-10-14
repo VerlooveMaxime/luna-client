@@ -14,11 +14,11 @@ import static idlers.WidgetSpecs.add;
  * The flow builder's screens (flow builder v2, S06): one root holding a layer per screen, which the server shows one
  * at a time (packet 82), so an open chatbox prompt survives the switch. The overview holds a slot per step slot the
  * player has, as many as the server says (packet 108; Maxime, 2026-10-09: no fixed most), then the padlock, and on its
- * Reflexes tab (S07c) a row per reflex the flow can hold, then the padlock; the kind picker a button per kind of step;
- * the configure screen a header, two columns of setting rows the server fills or hides, a warnings band and its
- * buttons, and for a step (S07c2b) the Settings and Reflexes tabs, the Reflexes page a line per reflex the flow can
- * hold. The server mirrors these ids in {@code game.idle.ui.BuilderWidgets}; text and pictures it changes start empty
- * here.
+ * Reflexes tab (S07c) a row per reflex the flow can hold, then the padlock, and under them the flow's stop (S12); the
+ * kind picker a button per kind of step; the configure screen a header, two columns of setting rows the server fills
+ * or hides, a warnings band and its buttons, and for a step (S07c2b) the Settings and Reflexes tabs, the Reflexes page
+ * a line per reflex the flow can hold. The server mirrors these ids in {@code game.idle.ui.BuilderWidgets}; text and
+ * pictures it changes start empty here.
  */
 public final class BuilderWidgets {
 
@@ -52,6 +52,18 @@ public final class BuilderWidgets {
     /** The Steps tab's button that attaches every reflex to every step (S07c2b), in a layer the Reflexes tab hides. */
     public static final int ATTACH_ALL_REFLEXES_LAYER = 30726;
     public static final int ATTACH_ALL_REFLEXES = 30727;
+    /**
+     * The overview's "Flow stops" row (S12): a frame the server lights and a button per choice, then the laps or
+     * minutes in a layer the server hides for the other choices.
+     */
+    public static final int STOPS = 42200;
+    public static final int STOPS_LABEL = 42201;
+    public static final int STOP_CHOICES = 4;
+    private static final int STOP_BASE = 42202;
+    public static final int STOPS_AFTER = 42210;
+    public static final int STOPS_AFTER_FACE = 42211;
+    public static final int STOPS_AFTER_FRAME = 42212;
+    public static final int STOPS_AFTER_TEXT = 42213;
 
     public static final int KINDS = 30730;
     public static final int KINDS_TITLE = 30731;
@@ -85,9 +97,15 @@ public final class BuilderWidgets {
     public static final int ROWS = 2 * ROWS_PER_COLUMN;
     private static final int ROW_BASE = 30830;
     private static final int ROW_STRIDE = 30;
-    /** A toggle row's two sets of buttons, the server showing the one of its size. */
+    /**
+     * A toggle row's sets of buttons, the server showing the one of its size: two and three in the row's ids, five
+     * (S12) in a block of their own, the row's ids being full. The S12 blocks lie past the Reflexes page's lines at the
+     * most reflexes a flow can hold (99).
+     */
     private static final int TWO_BUTTONS = 13;
     private static final int THREE_BUTTONS = 20;
+    private static final int WIDE_TOGGLES = 42000;
+    private static final int WIDE_TOGGLE_STRIDE = 16;
 
     /** A scrolling list per column (S07a): a line that adds or removes, then a line per item. */
     public static final int LISTS = 2;
@@ -96,6 +114,8 @@ public final class BuilderWidgets {
     private static final int LIST_STRIDE = 400;
     private static final int LINE_BASE = 10;
     private static final int LINE_STRIDE = 12;
+    /** A line's strike over its name (S12), past the lines' full strides. */
+    private static final int STRIKE_BASE = 42300;
 
     /**
      * A step's Reflexes page (S07c2b): a list the server places as it places the columns' lists, under index
@@ -178,6 +198,8 @@ public final class BuilderWidgets {
     public static final int REMOVE_X = 148;
     public static final int REMOVE_WIDTH = 14;
     public static final int NAME_X = 21;
+    /** The strike runs through the name, at most up to a withdrawal's amount box. */
+    public static final int STRIKE_WIDTH = AMOUNT_X - NAME_X - 2;
     /** The Reflexes page spans the rows' area, the client's scrollbar right of it. */
     public static final int ATTACHED_WIDTH = LAYER_WIDTH - 16;
     public static final int ATTACH_ALL_WIDTH = 56;
@@ -190,6 +212,14 @@ public final class BuilderWidgets {
     public static final int STEP_TABS_WIDTH = SETTINGS_TAB_WIDTH + 6 + REFLEXES_TAB_WIDTH;
     public static final int ATTACH_ALL_REFLEXES_WIDTH = 116;
     public static final int HEADER_PICTURE_SIZE = 36;
+    private static final int STOPS_HEIGHT = 18;
+    /**
+     * The row's layer reaches two rows below its frames: a layer clips, and the client's glyph drawing drops the last
+     * row of the plain font's g, j and y where it ends on the clip's bottom edge (Maxime, 2026-10-15 live: "When all
+     * goals are met"; the same as S07a's search title).
+     */
+    private static final int STOPS_LAYER_HEIGHT = STOPS_HEIGHT + 2;
+    private static final int STOPS_AFTER_WIDTH = 64;
 
     public static final int KIND_WIDTH = 64;
     public static final int KIND_HEIGHT = 52;
@@ -350,6 +380,15 @@ public final class BuilderWidgets {
         return attachedLine(line) + 6;
     }
 
+    /** The frame around stop choice {@code choice}, which the server lights (packet 218). */
+    public static int stopFrame(int choice) {
+        return STOP_BASE + 2 * choice;
+    }
+
+    public static int stopChoice(int choice) {
+        return stopFrame(choice) + 1;
+    }
+
     public static int warning(int line) {
         return WARNING_BASE + line;
     }
@@ -412,9 +451,14 @@ public final class BuilderWidgets {
         return row(row) + 12;
     }
 
-    /** The layer of row {@code row}'s toggle buttons when it has {@code count} of them, two or three. */
+    /** The layer of row {@code row}'s toggle buttons when it has {@code count} of them: two, three or five. */
     public static int toggles(int row, int count) {
-        return row(row) + (count == 2 ? TWO_BUTTONS : THREE_BUTTONS);
+        return switch (count) {
+            case 2 -> row(row) + TWO_BUTTONS;
+            case 3 -> row(row) + THREE_BUTTONS;
+            case 5 -> WIDE_TOGGLES + row * WIDE_TOGGLE_STRIDE;
+            default -> throw new IllegalArgumentException("A toggle has two, three or five buttons, not " + count);
+        };
     }
 
     public static int toggleFace(int row, int count, int button) {
@@ -502,6 +546,15 @@ public final class BuilderWidgets {
         return line(list, line) + 11;
     }
 
+    /** The layer of the strike over the line's name, which the server shows on a withdrawal the running flow leaves out. */
+    public static int lineStrike(int list, int line) {
+        return STRIKE_BASE + (list * LIST_LINES + line) * 2;
+    }
+
+    public static int lineStrikeBox(int list, int line) {
+        return lineStrike(list, line) + 1;
+    }
+
     /**
      * Where list {@code list} sits once the server placed it (packet 108 sub-opcode 2): on its column's field area from
      * row {@code firstRow}, as tall as its {@code lines} lines up to {@code rows} rows, scrolling past that. Lines past
@@ -575,6 +628,7 @@ public final class BuilderWidgets {
         add(specs, children, slotArea(specs, slots));
         add(specs, children, reflexArea(specs, reflexSlots));
         add(specs, children, WidgetSpec.text(STATUS, OVERVIEW, 4, 242, 492, LINE, "", FlowWidgets.YELLOW, FONT_PLAIN));
+        add(specs, children, stops(specs));
         add(specs, children, WidgetSpec.text(LEVELS, OVERVIEW, 4, 284, 44, LINE, "Levels:", FlowWidgets.ORANGE, FONT_PLAIN));
         add(specs, children, WidgetSpec.frame(BASE_LEVELS_FRAME, OVERVIEW, 48, 282, 34, 18, FlowWidgets.EDGE));
         add(specs, children, button(BASE_LEVELS, OVERVIEW, 51, 284, 28, "Base", "Grey options on base levels"));
@@ -585,6 +639,34 @@ public final class BuilderWidgets {
         add(specs, children, button(STOP, OVERVIEW, 416, 284, 34, "Stop", "Stop the flow"));
         add(specs, children, button(CLEAR, OVERVIEW, 458, 284, 38, "Clear", "Clear the flow"));
         return WidgetSpec.layer(OVERVIEW, ROOT, LAYER_X, LAYER_Y, LAYER_WIDTH, LAYER_HEIGHT, children);
+    }
+
+    /** The "Flow stops" row, on the free row between the status line and Levels. */
+    private static WidgetSpec stops(Map<Integer, WidgetSpec> specs) {
+        List<Integer> children = new ArrayList<>();
+        add(specs, children, WidgetSpec.text(STOPS_LABEL, STOPS, 0, 2, 60, LINE, "Flow stops:", FlowWidgets.ORANGE, FONT_PLAIN));
+        addStopChoice(specs, children, 0, 62, 40, "Never", "Never stop");
+        addStopChoice(specs, children, 1, 106, 66, "After laps", "Stop after a number of laps");
+        addStopChoice(specs, children, 2, 176, 68, "After time", "Stop after a number of minutes");
+        addStopChoice(specs, children, 3, 248, 136, "When all goals are met", "Stop once every step met its goal");
+        add(specs, children, stopsAfter(specs));
+        return WidgetSpec.layer(STOPS, OVERVIEW, 4, 260, 492, STOPS_LAYER_HEIGHT, children);
+    }
+
+    /** A stop choice drawn as a tab: its frame, then its button inside it. */
+    private static void addStopChoice(Map<Integer, WidgetSpec> specs, List<Integer> children, int choice, int x, int width, String text,
+            String option) {
+        add(specs, children, WidgetSpec.frame(stopFrame(choice), STOPS, x, 0, width, STOPS_HEIGHT, FlowWidgets.EDGE));
+        add(specs, children, button(stopChoice(choice), STOPS, x + 3, 2, width - 6, text, option));
+    }
+
+    /** The laps or minutes the flow runs, a field typed on a click as a configure row's. */
+    private static WidgetSpec stopsAfter(Map<Integer, WidgetSpec> specs) {
+        List<Integer> children = new ArrayList<>();
+        add(specs, children, new WidgetSpec.Tile(STOPS_AFTER_FACE, STOPS_AFTER, 0, 0, STOPS_AFTER_WIDTH, STOPS_HEIGHT, FIELD, FIELD_HOVER, "Change", false));
+        add(specs, children, WidgetSpec.frame(STOPS_AFTER_FRAME, STOPS_AFTER, 0, 0, STOPS_AFTER_WIDTH, STOPS_HEIGHT, TILE_EDGE));
+        add(specs, children, WidgetSpec.centredText(STOPS_AFTER_TEXT, STOPS_AFTER, STOPS_AFTER_WIDTH / 2, 3, LINE, "", FlowWidgets.WHITE, FONT_SMALL));
+        return WidgetSpec.layer(STOPS_AFTER, STOPS, 388, 0, STOPS_AFTER_WIDTH, STOPS_HEIGHT, children);
     }
 
     /** The Steps tab's "Attach all reflexes", at the right of the tabs row (Maxime, 2026-10-10). */
@@ -805,6 +887,7 @@ public final class BuilderWidgets {
         add(specs, children, WidgetSpec.text(rowNote(row), id, FIELD_X, 4, RIGHT_COLUMN - FIELD_X - 4, LINE, "", FlowWidgets.WHITE, FONT_SMALL));
         add(specs, children, toggles(specs, row, 2));
         add(specs, children, toggles(specs, row, 3));
+        add(specs, children, toggles(specs, row, 5));
         return WidgetSpec.layer(id, CONFIGURE, x, y, RIGHT_COLUMN - 4, FIELD_HEIGHT + 1, children);
     }
 
@@ -846,7 +929,10 @@ public final class BuilderWidgets {
         return WidgetSpec.layer(id, list(list), 0, 0, LIST_WIDTH, LINE_HEIGHT, children);
     }
 
-    /** An item's line: its picture and name, a withdrawal's amount box and All button, and the x that takes it out. */
+    /**
+     * An item's line: its picture and name, a withdrawal's amount box and All button, the x that takes it out, and the
+     * strike over the name, last so it draws over it.
+     */
     private static WidgetSpec line(Map<Integer, WidgetSpec> specs, int list, int line) {
         int id = line(list, line);
         List<Integer> children = new ArrayList<>();
@@ -856,7 +942,16 @@ public final class BuilderWidgets {
         add(specs, children, amount(specs, list, line));
         add(specs, children, new WidgetSpec.Tile(lineRemoveFace(list, line), id, REMOVE_X, 3, REMOVE_WIDTH, LINE_HEIGHT - 6, BUTTON, BUTTON_HOVER, "Remove", false));
         add(specs, children, WidgetSpec.centredText(lineRemoveText(list, line), id, REMOVE_X + REMOVE_WIDTH / 2, 3, LINE, "x", FlowWidgets.ORANGE, FONT_SMALL));
+        add(specs, children, strike(specs, list, line));
         return WidgetSpec.layer(id, list(list), 0, (line + 1) * (LINE_HEIGHT + LINE_GAP), LIST_WIDTH, LINE_HEIGHT, children);
+    }
+
+    /** A one-pixel line through the name's words (Maxime, 2026-10-15: not past them), in a layer since only layers hide. */
+    private static WidgetSpec strike(Map<Integer, WidgetSpec> specs, int list, int line) {
+        int id = lineStrike(list, line);
+        List<Integer> children = new ArrayList<>();
+        add(specs, children, new WidgetSpec.Strike(lineStrikeBox(list, line), id, 0, 0, STRIKE_WIDTH, 1, MUTED, lineName(list, line)));
+        return WidgetSpec.layer(id, line(list, line), NAME_X, LINE_HEIGHT / 2, STRIKE_WIDTH, 1, children);
     }
 
     private static WidgetSpec amount(Map<Integer, WidgetSpec> specs, int list, int line) {
