@@ -40,21 +40,6 @@ class WidgetSpecTest {
     }
 
     @Test
-    void aStrikeIsAsWideAsTheWordsItRunsThrough() {
-        assertEquals(21, new WidgetSpec.Strike(1, -1, 0, 0, 61, 1, 0, 2).widthThrough(21));
-    }
-
-    @Test
-    void aStrikeStopsAtItsOwnWidth() {
-        assertEquals(61, new WidgetSpec.Strike(1, -1, 0, 0, 61, 1, 0, 2).widthThrough(90));
-    }
-
-    @Test
-    void aStrikeThroughNoWordsIsNotDrawn() {
-        assertEquals(0, new WidgetSpec.Strike(1, -1, 0, 0, 61, 1, 0, 2).widthThrough(0));
-    }
-
-    @Test
     void aCentredTextIsCentredOnItsXWithNoWidth() {
         WidgetSpec.Text text = WidgetSpec.centredText(1, -1, 256, 6, 14, "Title", 0, WidgetSpec.FONT_BOLD);
 

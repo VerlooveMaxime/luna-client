@@ -10528,7 +10528,6 @@ public class client extends JagApplet {
                     }
 
                 } else if (class13_1.anInt236 == 3) {
-                    IdleWidgets.fitStrike(class13_1); // IdleRS: a strike as wide as the words it runs through
                     boolean flag = false;
                     if (anInt1106 == class13_1.id || anInt1280 == class13_1.id
                             || anInt1302 == class13_1.id)

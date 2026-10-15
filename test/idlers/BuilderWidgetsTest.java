@@ -343,65 +343,10 @@ class BuilderWidgetsTest {
     }
 
     @Test
-    void aLineHoldsItsBoxPictureNameAmountRemoveButtonThenItsStrike() {
+    void aLineHoldsItsBoxPictureNameAmountAndRemoveButton() {
         assertEquals(List.of(BuilderWidgets.lineBox(0, 3), BuilderWidgets.linePicture(0, 3), BuilderWidgets.lineName(0, 3),
-                BuilderWidgets.lineAmount(0, 3), BuilderWidgets.lineRemoveFace(0, 3), BuilderWidgets.lineRemoveText(0, 3),
-                BuilderWidgets.lineStrike(0, 3)), layer(BuilderWidgets.line(0, 3)).children());
-    }
-
-    @Test
-    void strikesMirrorTheServersIds() {
-        assertEquals(List.of(42300, 42301, 42354, 42356, 42411),
-                List.of(BuilderWidgets.lineStrike(0, 0), BuilderWidgets.lineStrikeBox(0, 0), BuilderWidgets.lineStrike(0, 27),
-                        BuilderWidgets.lineStrike(1, 0), BuilderWidgets.lineStrikeBox(1, 27)));
-    }
-
-    @Test
-    void aStrikeIsALayerOfItsLineHalfwayDownOverTheName() {
-        WidgetSpec.Layer strike = layer(BuilderWidgets.lineStrike(1, 2));
-
-        assertEquals(List.of(BuilderWidgets.line(1, 2), BuilderWidgets.NAME_X, 10, 61, 1, List.of(BuilderWidgets.lineStrikeBox(1, 2))),
-                List.of(strike.parent(), strike.x(), strike.y(), strike.width(), strike.height(), strike.children()));
-    }
-
-    @Test
-    void aStrikeEndsBeforeTheAmountBox() {
-        WidgetSpec strike = SPECS.get(BuilderWidgets.lineStrike(0, 0));
-
-        assertTrue(strike.x() + strike.width() < SPECS.get(BuilderWidgets.lineAmount(0, 0)).x());
-    }
-
-    @Test
-    void aStrikeIsAOnePixelMutedLineAtMostAsWideAsTheWithdrawalsNameRoom() {
-        WidgetSpec.Strike strike = assertInstanceOf(WidgetSpec.Strike.class, SPECS.get(BuilderWidgets.lineStrikeBox(0, 5)));
-
-        assertEquals(List.of(0, 0, BuilderWidgets.STRIKE_WIDTH, 1, BuilderWidgets.MUTED),
-                List.of(strike.x(), strike.y(), strike.width(), strike.height(), strike.colour()));
-    }
-
-    @Test
-    void aStrikeRunsThroughItsOwnLinesName() {
-        WidgetSpec.Strike strike = assertInstanceOf(WidgetSpec.Strike.class, SPECS.get(BuilderWidgets.lineStrikeBox(1, 4)));
-
-        assertEquals(BuilderWidgets.lineName(1, 4), strike.text());
-    }
-
-    @Test
-    void aStrikeStartsWhereTheNameStarts() {
-        WidgetSpec strike = SPECS.get(BuilderWidgets.lineStrike(0, 2));
-        WidgetSpec box = SPECS.get(BuilderWidgets.lineStrikeBox(0, 2));
-
-        assertEquals(SPECS.get(BuilderWidgets.lineName(0, 2)).x(), strike.x() + box.x());
-    }
-
-    @Test
-    void theReflexesPageHasNoStrikes() {
-        assertFalse(SPECS.containsKey(BuilderWidgets.lineStrike(BuilderWidgets.ATTACHED_LIST, 0)));
-    }
-
-    @Test
-    void theStrikesComeAfterTheStopsRow() {
-        assertTrue(BuilderWidgets.STOPS_AFTER_TEXT < BuilderWidgets.lineStrike(0, 0));
+                BuilderWidgets.lineAmount(0, 3), BuilderWidgets.lineRemoveFace(0, 3), BuilderWidgets.lineRemoveText(0, 3)),
+                layer(BuilderWidgets.line(0, 3)).children());
     }
 
     @Test

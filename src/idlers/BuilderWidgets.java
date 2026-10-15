@@ -114,8 +114,6 @@ public final class BuilderWidgets {
     private static final int LIST_STRIDE = 400;
     private static final int LINE_BASE = 10;
     private static final int LINE_STRIDE = 12;
-    /** A line's strike over its name (S12), past the lines' full strides. */
-    private static final int STRIKE_BASE = 42300;
 
     /**
      * A step's Reflexes page (S07c2b): a list the server places as it places the columns' lists, under index
@@ -198,8 +196,6 @@ public final class BuilderWidgets {
     public static final int REMOVE_X = 148;
     public static final int REMOVE_WIDTH = 14;
     public static final int NAME_X = 21;
-    /** The strike runs through the name, at most up to a withdrawal's amount box. */
-    public static final int STRIKE_WIDTH = AMOUNT_X - NAME_X - 2;
     /** The Reflexes page spans the rows' area, the client's scrollbar right of it. */
     public static final int ATTACHED_WIDTH = LAYER_WIDTH - 16;
     public static final int ATTACH_ALL_WIDTH = 56;
@@ -544,15 +540,6 @@ public final class BuilderWidgets {
 
     public static int lineRemoveText(int list, int line) {
         return line(list, line) + 11;
-    }
-
-    /** The layer of the strike over the line's name, which the server shows on a withdrawal the running flow leaves out. */
-    public static int lineStrike(int list, int line) {
-        return STRIKE_BASE + (list * LIST_LINES + line) * 2;
-    }
-
-    public static int lineStrikeBox(int list, int line) {
-        return lineStrike(list, line) + 1;
     }
 
     /**
@@ -929,10 +916,7 @@ public final class BuilderWidgets {
         return WidgetSpec.layer(id, list(list), 0, 0, LIST_WIDTH, LINE_HEIGHT, children);
     }
 
-    /**
-     * An item's line: its picture and name, a withdrawal's amount box and All button, the x that takes it out, and the
-     * strike over the name, last so it draws over it.
-     */
+    /** An item's line: its picture and name, a withdrawal's amount box and All button, the x that takes it out. */
     private static WidgetSpec line(Map<Integer, WidgetSpec> specs, int list, int line) {
         int id = line(list, line);
         List<Integer> children = new ArrayList<>();
@@ -942,16 +926,7 @@ public final class BuilderWidgets {
         add(specs, children, amount(specs, list, line));
         add(specs, children, new WidgetSpec.Tile(lineRemoveFace(list, line), id, REMOVE_X, 3, REMOVE_WIDTH, LINE_HEIGHT - 6, BUTTON, BUTTON_HOVER, "Remove", false));
         add(specs, children, WidgetSpec.centredText(lineRemoveText(list, line), id, REMOVE_X + REMOVE_WIDTH / 2, 3, LINE, "x", FlowWidgets.ORANGE, FONT_SMALL));
-        add(specs, children, strike(specs, list, line));
         return WidgetSpec.layer(id, list(list), 0, (line + 1) * (LINE_HEIGHT + LINE_GAP), LIST_WIDTH, LINE_HEIGHT, children);
-    }
-
-    /** A one-pixel line through the name's words (Maxime, 2026-10-15: not past them), in a layer since only layers hide. */
-    private static WidgetSpec strike(Map<Integer, WidgetSpec> specs, int list, int line) {
-        int id = lineStrike(list, line);
-        List<Integer> children = new ArrayList<>();
-        add(specs, children, new WidgetSpec.Strike(lineStrikeBox(list, line), id, 0, 0, STRIKE_WIDTH, 1, MUTED, lineName(list, line)));
-        return WidgetSpec.layer(id, line(list, line), NAME_X, LINE_HEIGHT / 2, STRIKE_WIDTH, 1, children);
     }
 
     private static WidgetSpec amount(Map<Integer, WidgetSpec> specs, int list, int line) {
