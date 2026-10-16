@@ -2,6 +2,8 @@
 // Jad home page: http://www.kpdus.com/jad.html
 // Decompiler options: packimports(3) 
 
+import idlers.GameViewport;
+
 import javax.swing.*;
 import java.applet.Applet;
 import java.awt.Color;
@@ -9,6 +11,8 @@ import java.awt.Component;
 import java.awt.Font;
 import java.awt.FontMetrics;
 import java.awt.Graphics;
+import java.awt.Graphics2D;
+import java.awt.RenderingHints;
 import java.awt.event.*;
 import java.awt.image.BufferedImage;
 
@@ -26,6 +30,15 @@ public class JagApplet extends Applet implements Runnable, MouseListener, MouseM
 	 * The game thread reads these (see client.checkSize) so buffers are only rebuilt on the game thread.
 	 */
 	public volatile int resizedWidth = -1, resizedHeight = -1;
+
+	/**
+	 * IdleRS: true in the fixed mode, which draws the game at its classic size and scales it to fill the window (see
+	 * idlers.GameViewport); the resizable mode draws at the window's own size.
+	 */
+	public volatile boolean scaledToWindow = true;
+
+	/** IdleRS: where the back buffer was last put in the window; null when the window needs clearing first. */
+	private volatile GameViewport presented;
 
 	public int width;
 	public int height;
@@ -88,14 +101,16 @@ public class JagApplet extends Applet implements Runnable, MouseListener, MouseM
 	 * The width and height fields keep the classic game size (765x503), which the login screen is laid out for.
 	 */
 	public void rebuildFrame(int width, int height, boolean resizable) {
+		scaledToWindow = !resizable;
 		if (frame == null) {
 			frame = new JagFrame(width, height, this, resizable);
 			frame.addWindowListener(this);
 			installFrameResizeListener();
 			addInputListeners();
-		} else {
-			frame.setResizable(resizable);
+		} else if (resizable) {
 			frame.setContentSize(width, height);
+		} else {
+			frame.setFixedModeSize(this.width, this.height);
 		}
 		frame.setMinimumContentSize(MIN_CONTENT_WIDTH, MIN_CONTENT_HEIGHT);
 		// discard resize events from before this rebuild; the size we just set is the current one
@@ -113,8 +128,8 @@ public class JagApplet extends Applet implements Runnable, MouseListener, MouseM
 			if (screenGraphics == null) {
 				screenGraphics = getParentComponent().getGraphics();
 			}
-			int w = getContentWidth();
-			int h = getContentHeight();
+			int w = scaledToWindow ? width : getContentWidth();
+			int h = scaledToWindow ? height : getContentHeight();
 			if (w <= 0 || h <= 0) {
 				w = width;
 				h = height;
@@ -142,9 +157,27 @@ public class JagApplet extends Applet implements Runnable, MouseListener, MouseM
 			BufferedImage buffer = backBuffer;
 			Graphics screen = screenGraphics;
 			if (buffer != null && screen != null) {
-				screen.drawImage(buffer, 0, 0, null);
+				GameViewport viewport = viewport();
+				if (!viewport.equals(presented)) {
+					presented = viewport;
+					screen.setColor(Color.black);
+					screen.fillRect(0, 0, getContentWidth(), getContentHeight());
+				}
+				((Graphics2D) screen).setRenderingHint(RenderingHints.KEY_INTERPOLATION,
+						RenderingHints.VALUE_INTERPOLATION_NEAREST_NEIGHBOR);
+				screen.drawImage(buffer, viewport.offsetX(), viewport.offsetY(),
+						(int) Math.round(buffer.getWidth() * viewport.scale()),
+						(int) Math.round(buffer.getHeight() * viewport.scale()), null);
 			}
 		}
+	}
+
+	/** IdleRS: where the back buffer goes in the window's drawable area, scaled to fit it in the fixed mode. */
+	private GameViewport viewport() {
+		BufferedImage buffer = backBuffer;
+		if (!scaledToWindow || buffer == null)
+			return new GameViewport(1, 0, 0);
+		return GameViewport.fit(buffer.getWidth(), buffer.getHeight(), 0, 0, getContentWidth(), getContentHeight());
 	}
 
 	private void addInputListeners() {
@@ -165,6 +198,8 @@ public class JagApplet extends Applet implements Runnable, MouseListener, MouseM
 				screenGraphics = frame.getGraphics();
 				resizedWidth = frame.getContentWidth();
 				resizedHeight = frame.getContentHeight();
+				if (scaledToWindow) // IdleRS: the fixed mode reopens at this size
+					frame.saveFixedModeSize();
 				clearBackground = true;
 				needsUIRedraw();
 			}
@@ -355,6 +390,7 @@ public class JagApplet extends Applet implements Runnable, MouseListener, MouseM
 	public void update(Graphics g) {
 		if (screenGraphics == null)
 			screenGraphics = g;
+		presented = null; // IdleRS: the bars around the scaled fixed mode are drawn again
 		clearBackground = true;
 		needsUIRedraw();
 	}
@@ -363,6 +399,7 @@ public class JagApplet extends Applet implements Runnable, MouseListener, MouseM
 	public void paint(Graphics g) {
 		if (screenGraphics == null)
 			screenGraphics = g;
+		presented = null; // IdleRS: the bars around the scaled fixed mode are drawn again
 		clearBackground = true;
 		needsUIRedraw();
 	}
@@ -370,8 +407,9 @@ public class JagApplet extends Applet implements Runnable, MouseListener, MouseM
 	public void mousePressed(MouseEvent mouseevent) {
 		int i = mouseevent.getX();
 		int j = mouseevent.getY();
-		i -= insetLeft() + inputOffsetX();
-		j -= insetTop() + inputOffsetY();
+		GameViewport viewport = viewport(); // IdleRS: back from the scaled fixed mode to game pixels
+		i = viewport.toGameX(i - insetLeft()) - inputOffsetX();
+		j = viewport.toGameY(j - insetTop()) - inputOffsetY();
 		anInt20 = 0;
 		anInt25 = i;
 		anInt26 = j;
@@ -407,8 +445,9 @@ public class JagApplet extends Applet implements Runnable, MouseListener, MouseM
 	public void mouseDragged(MouseEvent mouseevent) {
 		int i = mouseevent.getX();
 		int j = mouseevent.getY();
-		i -= insetLeft() + inputOffsetX();
-		j -= insetTop() + inputOffsetY();
+		GameViewport viewport = viewport(); // IdleRS: back from the scaled fixed mode to game pixels
+		i = viewport.toGameX(i - insetLeft()) - inputOffsetX();
+		j = viewport.toGameY(j - insetTop()) - inputOffsetY();
 		anInt20 = 0;
 		mouseX = i;
 		mouseY = j;
@@ -417,8 +456,9 @@ public class JagApplet extends Applet implements Runnable, MouseListener, MouseM
 	public void mouseMoved(MouseEvent mouseevent) {
 		int i = mouseevent.getX();
 		int j = mouseevent.getY();
-		i -= insetLeft() + inputOffsetX();
-		j -= insetTop() + inputOffsetY();
+		GameViewport viewport = viewport(); // IdleRS: back from the scaled fixed mode to game pixels
+		i = viewport.toGameX(i - insetLeft()) - inputOffsetX();
+		j = viewport.toGameY(j - insetTop()) - inputOffsetY();
 		anInt20 = 0;
 		mouseX = i;
 		mouseY = j;
