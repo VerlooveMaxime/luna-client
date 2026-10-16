@@ -43,6 +43,10 @@ final class IdleWorldMap {
         window.resize(newArea.width, newArea.height);
     }
 
+    boolean isOpen() {
+        return window.isOpen();
+    }
+
     /** Whether the open map is over frame point (x, y), so the game view under it takes no hover. */
     boolean covers(int frameX, int frameY) {
         return window.isOpen() && area.contains(frameX, frameY);

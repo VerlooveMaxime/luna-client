@@ -1558,7 +1558,7 @@ public class client extends JagApplet {
             aBoolean1240 = true;
             super.anInt28 = 0;
         }
-        if (anInt1053 == -1 && worldMap.press(super.anInt28, super.anInt29, super.anInt30))
+        if (anInt1053 == -1 && !isContextMenuActive && worldMap.press(super.anInt28, super.anInt29, super.anInt30))
             super.anInt28 = 0;
         worldMap.tick(super.mouseX, super.mouseY, super.anInt21 == 1);
         PickedTile picked = worldMap.takePicked();
@@ -8605,12 +8605,13 @@ public class client extends JagApplet {
             fontChatboxButtons.method469(true, "Mem:" + j1 + "k", 0xffff00, c, k);
             k += 15;
         }
-        for (int line = 0; line < statusOverlay.lines().size(); line++) {
-            String text = statusOverlay.lines().get(line);
-            int x = StatusOverlay.right(Math.min(layout.viewport.width, layout.minimap.x - layout.viewport.x))
-                    - fontChatboxButtons.method472((byte) 35, text);
-            fontChatboxButtons.drawString(text, 0xffff00, x, StatusOverlay.lineY(line), true);
-        }
+        if (!worldMap.isOpen()) // IdleRS: the status lines hide under the map in both modes
+            for (int line = 0; line < statusOverlay.lines().size(); line++) {
+                String text = statusOverlay.lines().get(line);
+                int x = StatusOverlay.right(Math.min(layout.viewport.width, layout.minimap.x - layout.viewport.x))
+                        - fontChatboxButtons.method472((byte) 35, text);
+                fontChatboxButtons.drawString(text, 0xffff00, x, StatusOverlay.lineY(line), true);
+            }
         if (anInt1057 != 0) {
             int j = anInt1057 / 50;
             int l = j / 60;
@@ -8627,6 +8628,8 @@ public class client extends JagApplet {
             }
         }
         worldMap.draw(Drawable.pixels, Drawable.width, nextTopLeftTileX + (((Actor) (thisPlayer)).unitX >> 7), nextTopLeftTileY + (((Actor) (thisPlayer)).unitY >> 7));
+        if (isContextMenuActive && anInt1304 == 0 && worldMap.isOpen()) // IdleRS: a menu beside the map stays on top of it
+            drawContextMenu();
     }
 
     public int getFloorDrawHeight(int i, int j, int k) {
