@@ -111,4 +111,14 @@ class MapKeyTest {
             key.tick();
         }
     }
+
+    @Test
+    void aLongerPageStartsAtTheSameName() {
+        MapKey key = new MapKey(15);
+        key.nextPage();
+
+        key.resizePage(20);
+
+        assertEquals(List.of(20, 15, 34), List.of(key.rowsPerPage(), key.functionOnRow(0), key.functionOnRow(19)));
+    }
 }

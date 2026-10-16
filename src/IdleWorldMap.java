@@ -11,6 +11,7 @@ import idlers.worldmap.WorldMapWindow;
 import sign.signlink;
 
 import java.awt.GraphicsEnvironment;
+import java.awt.Rectangle;
 import java.io.IOException;
 import java.nio.file.Files;
 import java.nio.file.NoSuchFileException;
@@ -19,25 +20,32 @@ import java.util.Set;
 
 /**
  * IdleRS: the world map window over the game view ({@link WorldMapWindow}), fed with the 2006 applet's
- * {@code worldmap.jag} from the cache directory. Loading runs once, on a daemon thread, at the first open.
+ * {@code worldmap.jag} from the cache directory. Loading runs once, on a daemon thread, at the first open. It covers
+ * the part of the game view no panel covers, from the view's top-left corner: the whole 512 x 334 view in the fixed
+ * mode, more of a larger window in the resizable mode.
  */
 final class IdleWorldMap {
 
     static final String FILE_NAME = "worldmap.jag";
-    static final int VIEW_X = 4;
-    static final int VIEW_Y = 4;
-    static final int VIEW_WIDTH = 512;
-    static final int VIEW_HEIGHT = 334;
 
     private final WorldMapWindow window;
     private boolean loading;
+    private Rectangle area;
 
-    IdleWorldMap(JagFont uiFont) {
-        window = new WorldMapWindow(VIEW_WIDTH, VIEW_HEIGHT, copy(uiFont));
+    IdleWorldMap(JagFont uiFont, Rectangle area) {
+        this.area = area;
+        window = new WorldMapWindow(area.width, area.height, copy(uiFont));
     }
 
-    boolean isOpen() {
-        return window.isOpen();
+    /** Moves the map to a new area of the frame, a new layout's; it keeps where it looks and its zoom. */
+    void place(Rectangle newArea) {
+        area = newArea;
+        window.resize(newArea.width, newArea.height);
+    }
+
+    /** Whether the open map is over frame point (x, y), so the game view under it takes no hover. */
+    boolean covers(int frameX, int frameY) {
+        return window.isOpen() && area.contains(frameX, frameY);
     }
 
     void open(int worldX, int worldY) {
@@ -71,20 +79,20 @@ final class IdleWorldMap {
 
     /** A latched click in frame coordinates ({@code button} 1 left, 2 right); true when the map took it. */
     boolean press(int button, int frameX, int frameY) {
-        return button != 0 && window.press(frameX - VIEW_X, frameY - VIEW_Y, button == 1);
+        return button != 0 && window.press(frameX - area.x, frameY - area.y, button == 1);
     }
 
     void tick(int frameMouseX, int frameMouseY, boolean leftHeld) {
         if (window.isOpen()) {
-            window.mouse(frameMouseX - VIEW_X, frameMouseY - VIEW_Y, leftHeld);
+            window.mouse(frameMouseX - area.x, frameMouseY - area.y, leftHeld);
             window.tick();
         }
     }
 
-    /** Draws into the current game-view pixel buffer when open. */
-    void draw(int[] pixels, int width, int height, int playerWorldX, int playerWorldY) {
+    /** Draws into the top-left of the current game-view pixel buffer, {@code viewWidth} wide, when open. */
+    void draw(int[] pixels, int viewWidth, int playerWorldX, int playerWorldY) {
         if (window.isOpen()) {
-            window.draw(new Raster(pixels, width, height), playerWorldX, playerWorldY);
+            window.draw(new Raster(pixels, area.width, area.height, viewWidth), playerWorldX, playerWorldY);
         }
     }
 

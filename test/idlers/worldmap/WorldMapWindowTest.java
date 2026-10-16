@@ -731,4 +731,88 @@ class WorldMapWindowTest {
             window.tick();
         }
     }
+
+    @Test
+    void aResizedWindowKeepsWhereTheMapLooksAndItsZoom() {
+        WorldMapWindow window = opened();
+
+        window.resize(800, 500);
+
+        assertEquals(List.of(250, 249, ZoomLevel.P50.factor()), List.of(window.view().focusColumn(),
+                window.view().focusRow(), window.view().zoom()));
+    }
+
+    @Test
+    void aResizedWindowHasItsCloseButtonAtTheNewEdge() {
+        WorldMapWindow window = opened();
+
+        window.resize(800, 500);
+        window.press(760, 10, true);
+
+        assertFalse(window.isOpen());
+    }
+
+    @Test
+    void aWindowResizedBeforeTheMapArrivesGetsTheMapAtItsNewSize() {
+        WorldMapWindow window = window();
+        window.resize(800, 500);
+        window.loaded(loadedMap());
+        window.open(CENTRE_X, CENTRE_Y);
+
+        window.press(760, 10, true);
+
+        assertFalse(window.isOpen());
+    }
+
+    @Test
+    void aResizedWindowKeepsTheKeysPageWithMoreRows() {
+        WorldMapWindow window = opened();
+        window.press(10, 320, true);
+        window.press(10, 300, true);
+
+        window.resize(800, 500);
+
+        assertEquals(List.of(15, 25), List.of(window.key().firstRow(), window.key().rowsPerPage()));
+    }
+
+    @Test
+    void aResizedWindowRendersItsTilesAgain() {
+        WorldMapWindow window = opened();
+        window.renderTerrainIfMoved();
+
+        window.resize(800, 500);
+
+        assertTrue(window.renderTerrainIfMoved());
+    }
+
+    @Test
+    void aWindowGrownOnlyInHeightRendersItsTilesAgain() {
+        WorldMapWindow window = opened();
+        window.renderTerrainIfMoved();
+
+        window.resize(512, 500);
+
+        assertTrue(window.renderTerrainIfMoved());
+    }
+
+    @Test
+    void resizingToTheSameSizeKeepsTheRenderedTiles() {
+        WorldMapWindow window = opened();
+        window.renderTerrainIfMoved();
+
+        window.resize(512, 334);
+
+        assertFalse(window.renderTerrainIfMoved());
+    }
+
+    @Test
+    void aResizedWindowDrawsTheMapOverItsWholeView() {
+        WorldMapWindow window = opened();
+        window.resize(800, 500);
+        Raster raster = Raster.blank(800, 500);
+
+        window.draw(raster, OFF_MAP, OFF_MAP);
+
+        assertEquals(List.of(GROUND, WorldMapWindow.BUTTON_FILL), List.of(raster.pixel(600, 250), raster.pixel(760, 10)));
+    }
 }

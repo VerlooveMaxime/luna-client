@@ -38,8 +38,8 @@ public final class WorldMapWindow {
     /** How far the mouse may move between press and release for a pick, so a drag never picks. */
     private static final int CLICK_SLOP = 3;
 
-    private final int viewWidth;
-    private final int viewHeight;
+    private int viewWidth;
+    private int viewHeight;
     private final BitmapFont font;
     private volatile LoadedMap pending;
     private volatile String failure;
@@ -112,6 +112,22 @@ public final class WorldMapWindow {
         overviewDragging = false;
         if (view != null) {
             view.endDrag();
+        }
+    }
+
+    /** Fits the window to a view of a new size, keeping the map's focus and zoom, the Key's page and open panels. */
+    public void resize(int width, int height) {
+        if (width == viewWidth && height == viewHeight) {
+            return;
+        }
+        viewWidth = width;
+        viewHeight = height;
+        if (map != null) {
+            view.resize(width, height);
+            layout = WorldMapLayout.of(width, height, map.overview().width(), map.overview().height());
+            key.resizePage(layout.keyRows());
+            terrain = Raster.blank(width, height);
+            terrainBounds = null;
         }
     }
 

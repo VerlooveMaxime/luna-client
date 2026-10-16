@@ -59,4 +59,9 @@ class StatusOverlayTest {
         assertEquals(StatusOverlay.TOP, StatusOverlay.lineY(0));
         assertEquals(StatusOverlay.TOP + 2 * StatusOverlay.LINE_HEIGHT, StatusOverlay.lineY(2));
     }
+
+    @Test
+    void linesEndFivePixelsInFromTheVisibleEdgeOfTheView() {
+        assertEquals(List.of(507, 1023), List.of(StatusOverlay.right(512), StatusOverlay.right(1028)));
+    }
 }

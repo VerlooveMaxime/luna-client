@@ -622,6 +622,7 @@ public class client extends JagApplet {
      */
     private void updateGameArea() {
         layout = ClientLayout.create(clientSize == 1, clientWidth, clientHeight);
+        worldMap.place(worldMapArea()); // IdleRS: the map follows the free part of the view
         // the line offsets must match the width of the image that is drawn into
         ThreeDimensionalCanvas.init3D(clientWidth, clientHeight);
         clientEntireOffsets = ThreeDimensionalCanvas.lineOffsets;
@@ -5099,7 +5100,7 @@ public class client extends JagApplet {
             loginScreenFont = new JagFont(titleArchive, "b12_full", false);
             font_q9_full = new JagFont(titleArchive, "q8_full", true);
             IdleSearch.fonts(font_p11_full, fontChatboxButtons, loginScreenFont);
-            worldMap = new IdleWorldMap(loginScreenFont);
+            worldMap = new IdleWorldMap(loginScreenFont, worldMapArea());
             loadPixelsLoginScreen_139();
             prepareLoginScreen_52(false);
             Archive configArchive = loadArchive_61(archiveHashes[2], "config", 30, 2, "config");
@@ -7519,7 +7520,7 @@ public class client extends JagApplet {
         method111(anInt1178);
         anInt915 = 0;
         anInt1315 = 0;
-        if (layout.isInViewport(super.mouseX, super.mouseY) && !worldMap.isOpen()) {
+        if (layout.isInViewport(super.mouseX, super.mouseY) && !worldMap.covers(super.mouseX, super.mouseY)) {
             if (anInt1169 != -1) {
                 method66(layout.viewport.y, JagInterface.forId(anInt1169), 0, 0, layout.viewport.x, super.mouseX, 23658, super.mouseY);
             } else {
@@ -7578,7 +7579,7 @@ public class client extends JagApplet {
             aBoolean1240 = true;
             anInt1284 = anInt1315;
         }
-        if (CompassMenu.contains(super.mouseX, super.mouseY)) {
+        if (CompassMenu.contains(super.mouseX, super.mouseY, layout.minimap.x, layout.minimap.y)) {
             rightClickOptions[anInt1183] = CompassMenu.WORLD_MAP;
             anIntArray981[anInt1183] = CompassMenu.WORLD_MAP_ACTION;
             anInt1183++;
@@ -8552,11 +8553,11 @@ public class client extends JagApplet {
             anInt1307 = j;
             anInt1308 = 15 * anInt1183 + 22;
         }
-        if (CompassMenu.contains(super.anInt29, super.anInt30)) {
+        if (CompassMenu.contains(super.anInt29, super.anInt30, layout.minimap.x, layout.minimap.y)) {
             isContextMenuActive = true;
             anInt1304 = CompassMenu.MENU_AREA;
-            anInt1305 = CompassMenu.menuX(super.anInt29, j);
-            anInt1306 = CompassMenu.menuY(super.anInt30, i1);
+            anInt1305 = CompassMenu.menuX(super.anInt29, j, layout.minimap.x);
+            anInt1306 = CompassMenu.menuY(super.anInt30, i1, layout.minimap.y);
             anInt1307 = j;
             anInt1308 = 15 * anInt1183 + 22;
         }
@@ -8606,7 +8607,8 @@ public class client extends JagApplet {
         }
         for (int line = 0; line < statusOverlay.lines().size(); line++) {
             String text = statusOverlay.lines().get(line);
-            int x = StatusOverlay.RIGHT - fontChatboxButtons.method472((byte) 35, text);
+            int x = StatusOverlay.right(Math.min(layout.viewport.width, layout.minimap.x - layout.viewport.x))
+                    - fontChatboxButtons.method472((byte) 35, text);
             fontChatboxButtons.drawString(text, 0xffff00, x, StatusOverlay.lineY(line), true);
         }
         if (anInt1057 != 0) {
@@ -8624,7 +8626,7 @@ public class client extends JagApplet {
                 outBuffer.putInt(0);
             }
         }
-        worldMap.draw(Drawable.pixels, Drawable.width, Drawable.height, nextTopLeftTileX + (((Actor) (thisPlayer)).unitX >> 7), nextTopLeftTileY + (((Actor) (thisPlayer)).unitY >> 7));
+        worldMap.draw(Drawable.pixels, Drawable.width, nextTopLeftTileX + (((Actor) (thisPlayer)).unitX >> 7), nextTopLeftTileY + (((Actor) (thisPlayer)).unitY >> 7));
     }
 
     public int getFloorDrawHeight(int i, int j, int k) {
@@ -10349,11 +10351,18 @@ public class client extends JagApplet {
 
     /** IdleRS: the left edge of the area a context menu was opened in, the compass menu's included. */
     private int contextMenuAreaX(int area) {
-        return area == CompassMenu.MENU_AREA ? CompassMenu.AREA_X : layout.areaX(area);
+        return area == CompassMenu.MENU_AREA ? layout.minimap.x : layout.areaX(area);
     }
 
     private int contextMenuAreaY(int area) {
-        return area == CompassMenu.MENU_AREA ? CompassMenu.AREA_Y : layout.areaY(area);
+        return area == CompassMenu.MENU_AREA ? layout.minimap.y : layout.areaY(area);
+    }
+
+    /** IdleRS: the part of the game view no panel covers, where the world map opens. */
+    private Rectangle worldMapArea() {
+        return new Rectangle(layout.viewport.x, layout.viewport.y,
+                Math.min(layout.viewport.width, layout.inventoryBlock.x - layout.viewport.x),
+                Math.min(layout.viewport.height, layout.chatboxBlock.y - layout.viewport.y));
     }
 
     public void drawContextMenu() {
@@ -11576,7 +11585,8 @@ public class client extends JagApplet {
         if (super.anInt28 == 1) {
             int i = super.anInt29 - 25 - layout.minimap.x;
             int j = super.anInt30 - 5 - layout.minimap.y;
-            if (i >= 0 && j >= 0 && i < 146 && j < 151 && !CompassMenu.contains(super.anInt29, super.anInt30)) {
+            if (i >= 0 && j >= 0 && i < 146 && j < 151
+                    && !CompassMenu.contains(super.anInt29, super.anInt30, layout.minimap.x, layout.minimap.y)) {
                 i -= 73;
                 j -= 75;
                 int k = anInt1252 + anInt916 & 0x7ff;

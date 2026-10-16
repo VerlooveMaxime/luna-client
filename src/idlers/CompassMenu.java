@@ -2,15 +2,13 @@ package idlers;
 
 /**
  * The compass's right-click menu, which the 377 client never had: "Face North" (the left-click default) and "World
- * map". The menu opens in a fourth menu area drawn into the minimap image, whose top-left corner is at
- * ({@link #AREA_X}, {@link #AREA_Y}) in the 765 x 503 frame.
+ * map". The menu opens in a fourth menu area drawn into the minimap image, whose top-left corner the client's layout
+ * places: (550, 4) in the fixed mode, the window's top-right corner in the resizable mode.
  */
 public final class CompassMenu {
 
     /** Menu area id next to the client's 0 (game view), 1 (tab panel) and 2 (chatbox). */
     public static final int MENU_AREA = 3;
-    public static final int AREA_X = 550;
-    public static final int AREA_Y = 4;
     public static final int AREA_WIDTH = 172;
     public static final int AREA_HEIGHT = 156;
 
@@ -26,21 +24,21 @@ public final class CompassMenu {
     private CompassMenu() {
     }
 
-    /** Whether frame point (x, y) is on the compass disc. */
-    public static boolean contains(int x, int y) {
+    /** Whether frame point (x, y) is on the compass disc of a minimap image whose top-left is (areaX, areaY). */
+    public static boolean contains(int x, int y, int areaX, int areaY) {
         double radius = COMPASS_SIZE / 2.0;
-        double dx = x - (AREA_X + radius);
-        double dy = y - (AREA_Y + radius);
+        double dx = x - (areaX + radius);
+        double dy = y - (areaY + radius);
         return dx * dx + dy * dy <= radius * radius;
     }
 
-    /** The menu's left edge inside the minimap image: centred on the click, kept inside the image. */
-    public static int menuX(int clickX, int menuWidth) {
-        return Math.max(0, Math.min(AREA_WIDTH - menuWidth, clickX - AREA_X - menuWidth / 2));
+    /** The menu's left edge inside the minimap image at {@code areaX}: centred on the click, kept inside the image. */
+    public static int menuX(int clickX, int menuWidth, int areaX) {
+        return Math.max(0, Math.min(AREA_WIDTH - menuWidth, clickX - areaX - menuWidth / 2));
     }
 
-    /** The menu's top edge inside the minimap image: at the click, kept inside the image. */
-    public static int menuY(int clickY, int menuHeight) {
-        return Math.max(0, Math.min(AREA_HEIGHT - menuHeight, clickY - AREA_Y));
+    /** The menu's top edge inside the minimap image at {@code areaY}: at the click, kept inside the image. */
+    public static int menuY(int clickY, int menuHeight, int areaY) {
+        return Math.max(0, Math.min(AREA_HEIGHT - menuHeight, clickY - areaY));
     }
 }

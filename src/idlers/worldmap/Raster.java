@@ -1,19 +1,33 @@
 package idlers.worldmap;
 
-/** An RGB pixel buffer the world map draws into, with every primitive clipped to its bounds. */
+/**
+ * An RGB pixel buffer the world map draws into, with every primitive clipped to its bounds. It may be the top-left part
+ * of a wider buffer whose rows are {@code stride} pixels long, such as the resizable mode's game view.
+ */
 public final class Raster {
 
     private final int[] pixels;
     private final int width;
     private final int height;
+    private final int stride;
 
     public Raster(int[] pixels, int width, int height) {
-        if (pixels.length < width * height) {
-            throw new IllegalArgumentException("pixels hold " + pixels.length + ", need " + width * height);
+        this(pixels, width, height, width);
+    }
+
+    /** The top-left {@code width} x {@code height} of a buffer whose rows are {@code stride} pixels long. */
+    public Raster(int[] pixels, int width, int height, int stride) {
+        if (stride < width) {
+            throw new IllegalArgumentException("rows of " + stride + " cannot hold " + width);
+        }
+        int needed = stride * (height - 1) + width;
+        if (pixels.length < needed) {
+            throw new IllegalArgumentException("pixels hold " + pixels.length + ", need " + needed);
         }
         this.pixels = pixels;
         this.width = width;
         this.height = height;
+        this.stride = stride;
     }
 
     public static Raster blank(int width, int height) {
@@ -29,17 +43,17 @@ public final class Raster {
     }
 
     public int pixel(int x, int y) {
-        return pixels[y * width + x];
+        return pixels[y * stride + x];
     }
 
     public void plot(int x, int y, int rgb) {
         if (x >= 0 && y >= 0 && x < width && y < height) {
-            pixels[y * width + x] = rgb;
+            pixels[y * stride + x] = rgb;
         }
     }
 
     public void clear(int rgb) {
-        java.util.Arrays.fill(pixels, 0, width * height, rgb);
+        fillRect(0, 0, width, height, rgb);
     }
 
     public void fillRect(int x, int y, int w, int h, int rgb) {
@@ -48,7 +62,7 @@ public final class Raster {
         int top = Math.max(y, 0);
         int bottom = Math.min(y + h, height);
         for (int row = top; row < bottom; row++) {
-            java.util.Arrays.fill(pixels, row * width + left, row * width + Math.max(left, right), rgb);
+            java.util.Arrays.fill(pixels, row * stride + left, row * stride + Math.max(left, right), rgb);
         }
     }
 
@@ -60,7 +74,7 @@ public final class Raster {
         int bottom = Math.min(y + h, height);
         for (int row = top; row < bottom; row++) {
             for (int column = left; column < right; column++) {
-                int index = row * width + column;
+                int index = row * stride + column;
                 pixels[index] = blend(rgb, pixels[index], alpha);
             }
         }
@@ -126,7 +140,9 @@ public final class Raster {
             throw new IllegalArgumentException("size " + source.width + "x" + source.height + " is not " + width + "x"
                     + height);
         }
-        System.arraycopy(source.pixels, 0, pixels, 0, width * height);
+        for (int row = 0; row < height; row++) {
+            System.arraycopy(source.pixels, row * source.stride, pixels, row * stride, width);
+        }
     }
 
     static int blend(int rgb, int under, int alpha) {

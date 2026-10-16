@@ -12,8 +12,8 @@ public final class MapView {
 
     private final int mapWidth;
     private final int mapHeight;
-    private final int viewWidth;
-    private final int viewHeight;
+    private int viewWidth;
+    private int viewHeight;
     private int focusColumn;
     private int focusRow;
     private double zoom;
@@ -74,6 +74,13 @@ public final class MapView {
 
     private int halfSpan(int pixels) {
         return (int) (pixels / zoom);
+    }
+
+    /** A view of a new size around the same focus and zoom, clamped again. */
+    public void resize(int width, int height) {
+        viewWidth = width;
+        viewHeight = height;
+        clamp();
     }
 
     public void centreOn(int column, int row) {

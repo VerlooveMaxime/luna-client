@@ -151,4 +151,25 @@ class MapViewTest {
             view.tick();
         }
     }
+
+    @Test
+    void resizingKeepsTheFocusAndZoom() {
+        MapView view = view(ZoomLevel.P100);
+        view.centreOn(300, 200);
+
+        view.resize(800, 400);
+
+        assertEquals(List.of(300, 200, 8.0, 200, 400), List.of(view.focusColumn(), view.focusRow(), view.zoom(),
+                view.left(), view.right()));
+    }
+
+    @Test
+    void aViewGrownAgainstAnEdgeIsClampedToTheMargin() {
+        MapView view = view(ZoomLevel.P100);
+        view.centreOn(0, 0);
+
+        view.resize(800, 400);
+
+        assertEquals(List.of(MapView.MARGIN, MapView.MARGIN), List.of(view.left(), view.top()));
+    }
 }

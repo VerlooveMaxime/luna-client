@@ -24,7 +24,7 @@ public final class MapKey {
     private static final int FLASH_PERIOD = 10;
     private static final int FLASH_LIT = 5;
 
-    private final int rowsPerPage;
+    private int rowsPerPage;
     private int firstRow;
     private int selected = -1;
     private int flashTicks;
@@ -35,6 +35,11 @@ public final class MapKey {
 
     public int rowsPerPage() {
         return rowsPerPage;
+    }
+
+    /** A new page length for a window of a new size; the page shown starts at the same name. */
+    public void resizePage(int rows) {
+        rowsPerPage = rows;
     }
 
     public int firstRow() {

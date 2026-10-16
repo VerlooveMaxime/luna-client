@@ -14,10 +14,11 @@ public final class StatusOverlay {
     public static final char LINE_SEPARATOR = '|';
 
     /**
-     * Game-view coordinates (512 x 334): lines are right-aligned to {@link #RIGHT}, away from the hover text the client
-     * writes in the top-left corner; the FPS counter (developers only) uses the same edge.
+     * Game-view coordinates: lines are right-aligned {@link #MARGIN} pixels in from the right edge of the visible view,
+     * away from the hover text the client writes in the top-left corner. In the fixed mode that edge is the view's own
+     * (512 wide, so 507, where the FPS counter for developers also ends); in the resizable mode it is the minimap's left.
      */
-    public static final int RIGHT = 507;
+    public static final int MARGIN = 5;
     public static final int TOP = 20;
     public static final int LINE_HEIGHT = 15;
 
@@ -45,6 +46,11 @@ public final class StatusOverlay {
 
     public boolean isEmpty() {
         return lines.isEmpty();
+    }
+
+    /** Where lines end in a view whose visible part is {@code visibleWidth} wide. */
+    public static int right(int visibleWidth) {
+        return visibleWidth - MARGIN;
     }
 
     public static int lineY(int index) {

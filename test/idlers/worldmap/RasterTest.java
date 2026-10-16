@@ -2,6 +2,9 @@ package idlers.worldmap;
 
 import org.junit.jupiter.api.Test;
 
+import java.util.List;
+
+import static org.junit.jupiter.api.Assertions.assertArrayEquals;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertThrows;
 
@@ -172,5 +175,60 @@ class RasterTest {
         Raster target = Raster.blank(2, 1);
 
         assertThrows(IllegalArgumentException.class, () -> target.copyFrom(Raster.blank(2, 2)));
+    }
+
+    @Test
+    void rejectsRowsShorterThanTheWidth() {
+        assertThrows(IllegalArgumentException.class, () -> new Raster(new int[8], 3, 2, 2));
+    }
+
+    @Test
+    void rejectsARegionWhoseLastRowDoesNotFit() {
+        assertThrows(IllegalArgumentException.class, () -> new Raster(new int[5], 2, 2, 4));
+    }
+
+    @Test
+    void aRegionNeedsNoPixelsPastItsLastRow() {
+        assertEquals(2, new Raster(new int[6], 2, 2, 4).height());
+    }
+
+    @Test
+    void aRegionClearsOnlyItsPartOfTheWiderBuffer() {
+        int[] buffer = new int[8];
+
+        new Raster(buffer, 2, 2, 4).clear(5);
+
+        assertArrayEquals(new int[]{5, 5, 0, 0, 5, 5, 0, 0}, buffer);
+    }
+
+    @Test
+    void aRegionPlotsAndReadsAlongTheWiderRows() {
+        int[] buffer = new int[8];
+        Raster region = new Raster(buffer, 2, 2, 4);
+
+        region.plot(1, 1, 9);
+
+        assertEquals(List.of(9, 9), List.of(region.pixel(1, 1), buffer[5]));
+    }
+
+    @Test
+    void aRegionBlendsOnlyItsPart() {
+        int[] buffer = new int[8];
+
+        new Raster(buffer, 2, 2, 4).fillRectAlpha(0, 0, 4, 2, 0xffffff, 256);
+
+        assertArrayEquals(new int[]{0xffffff, 0xffffff, 0, 0, 0xffffff, 0xffffff, 0, 0}, buffer);
+    }
+
+    @Test
+    void aRegionCopiesItsSourceRowByRow() {
+        int[] buffer = new int[8];
+        Raster source = Raster.blank(2, 2);
+        source.plot(0, 0, 1);
+        source.plot(1, 1, 4);
+
+        new Raster(buffer, 2, 2, 4).copyFrom(source);
+
+        assertArrayEquals(new int[]{1, 0, 0, 0, 0, 4, 0, 0}, buffer);
     }
 }
