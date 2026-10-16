@@ -25,6 +25,7 @@ public class JagFrame extends Frame {
 		setResizable(true); // IdleRS: the fixed mode scales the game to fill the window, so it resizes too
 		// create the native peer first so the real window insets are known
 		addNotify();
+		setMinimumContentSize(JagApplet.MIN_CONTENT_WIDTH, JagApplet.MIN_CONTENT_HEIGHT); // IdleRS: never below the game
 		if (resizable)
 			setContentSize(width, height);
 		else

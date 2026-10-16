@@ -388,7 +388,9 @@ public class JagApplet extends Applet implements Runnable, MouseListener, MouseM
 
 	@Override
 	public void update(Graphics g) {
-		if (screenGraphics == null)
+		if (frame != null) // IdleRS: the real window borders can arrive late, without a resize event
+			screenGraphics = frame.getGraphics();
+		else if (screenGraphics == null)
 			screenGraphics = g;
 		presented = null; // IdleRS: the bars around the scaled fixed mode are drawn again
 		clearBackground = true;
@@ -397,7 +399,9 @@ public class JagApplet extends Applet implements Runnable, MouseListener, MouseM
 
 	@Override
 	public void paint(Graphics g) {
-		if (screenGraphics == null)
+		if (frame != null) // IdleRS: the real window borders can arrive late, without a resize event
+			screenGraphics = frame.getGraphics();
+		else if (screenGraphics == null)
 			screenGraphics = g;
 		presented = null; // IdleRS: the bars around the scaled fixed mode are drawn again
 		clearBackground = true;
