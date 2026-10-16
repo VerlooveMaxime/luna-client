@@ -178,6 +178,16 @@ class RasterTest {
     }
 
     @Test
+    void aRectRightOfTheLastRowDrawsNothing() {
+        Raster raster = Raster.blank(2, 2);
+
+        raster.fillRect(5, 1, 2, 1, 7);
+
+        assertArrayEquals(new int[]{0, 0, 0, 0}, new int[]{raster.pixel(0, 0), raster.pixel(1, 0), raster.pixel(0, 1),
+                raster.pixel(1, 1)});
+    }
+
+    @Test
     void rejectsRowsShorterThanTheWidth() {
         assertThrows(IllegalArgumentException.class, () -> new Raster(new int[8], 3, 2, 2));
     }

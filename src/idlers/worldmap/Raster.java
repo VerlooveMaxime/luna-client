@@ -61,8 +61,11 @@ public final class Raster {
         int right = Math.min(x + w, width);
         int top = Math.max(y, 0);
         int bottom = Math.min(y + h, height);
+        if (left >= right) {
+            return;
+        }
         for (int row = top; row < bottom; row++) {
-            java.util.Arrays.fill(pixels, row * stride + left, row * stride + Math.max(left, right), rgb);
+            java.util.Arrays.fill(pixels, row * stride + left, row * stride + right, rgb);
         }
     }
 
