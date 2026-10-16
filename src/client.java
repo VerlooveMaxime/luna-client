@@ -488,6 +488,7 @@ public class client extends JagApplet {
     public int walkableInterfaceId;
     public IdleWorldMap worldMap;
     public RgbSprite idleTabIcon;
+    private boolean compassMenuDrawn;
     // IdleRS: autopilot status drawn over the game view, fed by packet 100 (see StatusOverlay).
     public final StatusOverlay statusOverlay = new StatusOverlay();
     public int anInt1280;
@@ -7253,6 +7254,10 @@ public class client extends JagApplet {
 
     public void method87(int i) {
         aClass18_1157.pushPixels();
+        if (compassMenuDrawn) { // IdleRS: the frame is only drawn once, so a closed compass menu is wiped off it here
+            mapback_1186.drawSprite(0, 0);
+            compassMenuDrawn = false;
+        }
         if (minimapState == 2) {
             byte abyte0[] = mapback_1186.pixels_1516;
             int ai[] = Drawable.pixels;
@@ -7371,8 +7376,10 @@ public class client extends JagApplet {
             method130(i5, true, aClass50_Sub1_Sub1_Sub1_1036, k2);
         }
         Drawable.drawFullRect(97, 78, 3, 3, 0xffffff);
-        if (isContextMenuActive && anInt1304 == CompassMenu.MENU_AREA)
+        if (isContextMenuActive && anInt1304 == CompassMenu.MENU_AREA) {
             drawContextMenu();
+            compassMenuDrawn = true;
+        }
         gameViewportImage.pushPixels();
         ThreeDimensionalCanvas.lineOffsets = gameViewportOffsets;
     }
