@@ -245,7 +245,7 @@ class BuilderWidgetsTest {
 
     @Test
     void aToggleOfAnotherSizeIsAMistake() {
-        assertThrows(IllegalArgumentException.class, () -> BuilderWidgets.toggles(0, 4));
+        assertThrows(IllegalArgumentException.class, () -> BuilderWidgets.toggles(0, 6));
     }
 
     @Test
@@ -267,7 +267,7 @@ class BuilderWidgetsTest {
     @Test
     void aConfigureRowHoldsItsLabelFieldButtonNoteAndToggles() {
         assertEquals(List.of(BuilderWidgets.rowLabel(2), BuilderWidgets.rowField(2), BuilderWidgets.rowButton(2), BuilderWidgets.rowNote(2),
-                BuilderWidgets.toggles(2, 2), BuilderWidgets.toggles(2, 3), BuilderWidgets.toggles(2, 5)), layer(BuilderWidgets.row(2)).children());
+                BuilderWidgets.toggles(2, 1), BuilderWidgets.toggles(2, 2), BuilderWidgets.toggles(2, 3), BuilderWidgets.toggles(2, 4), BuilderWidgets.toggles(2, 5)), layer(BuilderWidgets.row(2)).children());
     }
 
     @Test
@@ -793,4 +793,26 @@ class BuilderWidgetsTest {
     void theReflexesPageLiesPastTheMostReflexRows() {
         assertTrue(BuilderWidgets.reflexLockedSprite(99) < BuilderWidgets.ATTACHED);
     }
+
+    @Test
+    void oneAndFourButtonSetsMirrorTheServerWithoutOverlapping() {
+        assertEquals(List.of(42300, 42344, 42400, 42543, 42555), List.of(BuilderWidgets.toggles(0, 1), BuilderWidgets.toggles(11, 1), BuilderWidgets.toggles(0, 4), BuilderWidgets.toggles(11, 4), BuilderWidgets.toggleText(11, 4, 3)));
+        assertTrue(BuilderWidgets.STOPS_AFTER_TEXT < BuilderWidgets.toggles(0, 1));
+        assertTrue(BuilderWidgets.toggleText(11, 1, 0) < BuilderWidgets.toggles(0, 4));
+    }
+
+    @Test
+    void aSingleToggleFillsTheAvailableWidth() {
+        WidgetSpec face = SPECS.get(BuilderWidgets.toggleFace(1, 1, 0));
+
+        assertEquals(List.of(0, BuilderWidgets.TOGGLE_ROOM), List.of(face.x(), face.width()));
+    }
+
+    @Test
+    void fourTogglesDivideTheAvailableWidthWithGaps() {
+        WidgetSpec last = SPECS.get(BuilderWidgets.toggleFace(6, 4, 3));
+
+        assertEquals(List.of(42, 138, BuilderWidgets.TOGGLE_ROOM), List.of(last.width(), last.x(), last.x() + last.width()));
+    }
+
 }

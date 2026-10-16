@@ -98,12 +98,16 @@ public final class BuilderWidgets {
     private static final int ROW_BASE = 30830;
     private static final int ROW_STRIDE = 30;
     /**
-     * A toggle row's sets of buttons, the server showing the one of its size: two and three in the row's ids, five
+     * A toggle row's sets of buttons, the server showing the one of its size: two and three in the row's ids, the others
      * (S12) in a block of their own, the row's ids being full. The S12 blocks lie past the Reflexes page's lines at the
      * most reflexes a flow can hold (99).
      */
     private static final int TWO_BUTTONS = 13;
     private static final int THREE_BUTTONS = 20;
+    private static final int SINGLE_TOGGLES = 42300;
+    private static final int FOUR_TOGGLES = 42400;
+    private static final int SINGLE_TOGGLE_STRIDE = 4;
+    private static final int FOUR_TOGGLE_STRIDE = 13;
     private static final int WIDE_TOGGLES = 42000;
     private static final int WIDE_TOGGLE_STRIDE = 16;
 
@@ -447,13 +451,15 @@ public final class BuilderWidgets {
         return row(row) + 12;
     }
 
-    /** The layer of row {@code row}'s toggle buttons when it has {@code count} of them: two, three or five. */
+    /** The layer of row {@code row}'s toggle buttons when it has {@code count} of them: one to five. */
     public static int toggles(int row, int count) {
         return switch (count) {
+            case 1 -> SINGLE_TOGGLES + row * SINGLE_TOGGLE_STRIDE;
+            case 4 -> FOUR_TOGGLES + row * FOUR_TOGGLE_STRIDE;
             case 2 -> row(row) + TWO_BUTTONS;
             case 3 -> row(row) + THREE_BUTTONS;
             case 5 -> WIDE_TOGGLES + row * WIDE_TOGGLE_STRIDE;
-            default -> throw new IllegalArgumentException("A toggle has two, three or five buttons, not " + count);
+            default -> throw new IllegalArgumentException("A toggle has one to five buttons, not " + count);
         };
     }
 
@@ -872,8 +878,10 @@ public final class BuilderWidgets {
         add(specs, children, field(specs, row));
         add(specs, children, rowButton(specs, row));
         add(specs, children, WidgetSpec.text(rowNote(row), id, FIELD_X, 4, RIGHT_COLUMN - FIELD_X - 4, LINE, "", FlowWidgets.WHITE, FONT_SMALL));
+        add(specs, children, toggles(specs, row, 1));
         add(specs, children, toggles(specs, row, 2));
         add(specs, children, toggles(specs, row, 3));
+        add(specs, children, toggles(specs, row, 4));
         add(specs, children, toggles(specs, row, 5));
         return WidgetSpec.layer(id, CONFIGURE, x, y, RIGHT_COLUMN - 4, FIELD_HEIGHT + 1, children);
     }
