@@ -93,9 +93,9 @@ final class IdleSearch {
 
     /** The name mode, drawn where and as the 377 draws "Enter amount:". */
     static void drawName(String typed) {
-        bold.method470(239, 452, SearchWidgets.NAME_TITLE_Y, SearchWidgets.TITLE, PROMPT.title());
-        bold.method470(239, 452, SearchWidgets.NAME_TYPED_Y, SearchWidgets.NAME_TYPED, typed + "*");
-        small.method470(239, 452, SearchWidgets.NAME_HINT_Y, SearchWidgets.HINT_COLOUR, SearchWidgets.NAME_HINT);
+        bold.drawHorizontallyCenteredString(239, SearchWidgets.NAME_TITLE_Y, SearchWidgets.TITLE, PROMPT.title());
+        bold.drawHorizontallyCenteredString(239, SearchWidgets.NAME_TYPED_Y, SearchWidgets.NAME_TYPED, typed + "*");
+        small.drawHorizontallyCenteredString(239, SearchWidgets.NAME_HINT_Y, SearchWidgets.HINT_COLOUR, SearchWidgets.NAME_HINT);
     }
 
     /** True when the page starts new results, which show from the top. */
@@ -140,32 +140,32 @@ final class IdleSearch {
     static JagInterface draw(String typed, int scroll) {
         drawTitle();
         SearchGrid grid = PROMPT.grid();
-        Drawable.method446(SearchGrid.TOP, 0, SearchGrid.TOP + SearchGrid.HEIGHT, SearchGrid.WIDTH, true);
+        Drawable.recalcEdges(SearchGrid.TOP, 0, SearchGrid.TOP + SearchGrid.HEIGHT, SearchGrid.WIDTH, true);
         for (int place : grid.visible(scroll)) {
             SearchGrid.Cell cell = grid.cell(place, scroll);
             PROMPT.row(place).ifPresent(row -> drawCell(row, cell, grid.cellWidth(), place == hovered));
         }
-        Drawable.method445();
-        PROMPT.message().ifPresent(line -> bold.method470(239, 452, SearchWidgets.MESSAGE_Y, SearchWidgets.MESSAGE, line));
-        plain.method474(2245, SearchWidgets.TYPED_X, SearchWidgets.TYPED, SearchWidgets.TYPED_Y, typed + "*");
-        small.method474(2245, SearchWidgets.HINT_RIGHT - small.method473(SearchWidgets.HINT, (byte) -53),
-                SearchWidgets.HINT_COLOUR, SearchWidgets.TYPED_Y, SearchWidgets.HINT);
+        Drawable.recalcSize();
+        PROMPT.message().ifPresent(line -> bold.drawHorizontallyCenteredString(239, SearchWidgets.MESSAGE_Y, SearchWidgets.MESSAGE, line));
+        plain.drawString_474(typed + "*", 2245, SearchWidgets.TYPED_X, SearchWidgets.TYPED, SearchWidgets.TYPED_Y);
+        small.drawString_474(SearchWidgets.HINT, 2245, SearchWidgets.HINT_RIGHT - small.method473(SearchWidgets.HINT, (byte) -53),
+                SearchWidgets.HINT_COLOUR, SearchWidgets.TYPED_Y);
         return placeIcons(grid, scroll);
     }
 
     /** The title over the rows; drawn again after the icons, which the client's models let rise into it. */
     static void drawTitle() {
-        bold.method470(239, 452, SearchWidgets.TITLE_Y, SearchWidgets.TITLE, PROMPT.title());
+        bold.drawHorizontallyCenteredString(239, SearchWidgets.TITLE_Y, SearchWidgets.TITLE, PROMPT.title());
     }
 
     private static void drawCell(SearchRow row, SearchGrid.Cell cell, int width, boolean hovered) {
         if (hovered)
-            Drawable.method448(false, SearchWidgets.HOVER, cell.y(), width, SearchGrid.CELL_HEIGHT, SearchWidgets.HOVER_OPACITY,
-                    cell.x());
-        small.method474(2245, cell.textX(), row.greyed() ? SearchWidgets.GREYED_LABEL : SearchWidgets.LABEL,
-                cell.y() + SearchWidgets.LABEL_Y, row.label());
-        small.method474(2245, cell.textX(), row.greyed() ? SearchWidgets.GREYED_REASON : row.chosen() ? SearchWidgets.CHOSEN_NOTE : SearchWidgets.NOTE,
-                cell.y() + SearchWidgets.NOTE_Y, row.note());
+            Drawable.drawTransparentFullRect(cell.x(), cell.y(), width, SearchGrid.CELL_HEIGHT, SearchWidgets.HOVER,
+                    SearchWidgets.HOVER_OPACITY);
+        small.drawString_474(row.label(), 2245, cell.textX(), row.greyed() ? SearchWidgets.GREYED_LABEL : SearchWidgets.LABEL,
+                cell.y() + SearchWidgets.LABEL_Y);
+        small.drawString_474(row.note(), 2245, cell.textX(), row.greyed() ? SearchWidgets.GREYED_REASON : row.chosen() ? SearchWidgets.CHOSEN_NOTE : SearchWidgets.NOTE,
+                cell.y() + SearchWidgets.NOTE_Y);
     }
 
     private static JagInterface placeIcons(SearchGrid grid, int scroll) {

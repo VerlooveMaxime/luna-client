@@ -108,10 +108,10 @@ final class IdleWorldMap {
     }
 
     private static BitmapFont copy(JagFont font) {
-        BitmapFont.Glyph[] glyphs = new BitmapFont.Glyph[font.aByteArrayArray1500.length];
+        BitmapFont.Glyph[] glyphs = new BitmapFont.Glyph[font.glyphData.length];
         for (int c = 0; c < glyphs.length; c++) {
-            glyphs[c] = new BitmapFont.Glyph(font.aByteArrayArray1500[c], font.anIntArray1501[c],
-                    font.anIntArray1502[c], font.anIntArray1503[c], font.anIntArray1504[c] - font.anInt1506,
+            glyphs[c] = new BitmapFont.Glyph(font.glyphData[c], font.glyphWidth[c],
+                    font.glyphHeight[c], font.glyphAttribute1_1503[c], font.glyphAttribute2_1504[c] - font.anInt1506,
                     font.anIntArray1505[c]);
         }
         return new BitmapFont(glyphs, font.anInt1506, font.anInt1506 + 3);

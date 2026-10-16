@@ -111,7 +111,7 @@ final class IdleWidgets {
                     configure.childY[i] = placement.y();
         JagInterface layer = JagInterface.interfaces[id];
         if (layer != null) {
-            layer.anInt238 = placement.height();
+            layer.height = placement.height();
             layer.anInt285 = placement.scrollHeight();
             layer.anInt231 = placement.clampedScroll(layer.anInt231);
         }
@@ -134,11 +134,11 @@ final class IdleWidgets {
         inter.id = id;
         inter.anInt248 = specs.root(id);
         inter.anInt254 = -1;
-        inter.anInt241 = spec.width();
-        inter.anInt238 = spec.height();
+        inter.width = spec.width();
+        inter.height = spec.height();
         switch (spec) {
             case WidgetSpec.Layer layer -> {
-                inter.anInt236 = 0;
+                inter.type = 0;
                 inter.anInt285 = layer.scrollHeight();
                 int count = layer.children().size();
                 inter.childIds = new int[count];
@@ -164,15 +164,15 @@ final class IdleWidgets {
                 inter.tooltip = button.option();
             }
             case WidgetSpec.Tooltip tooltip -> {
-                inter.anInt236 = 8;
+                inter.type = 8;
                 inter.aString230 = tooltip.text();
             }
             case WidgetSpec.Sprite sprite -> {
-                inter.anInt236 = 5;
+                inter.type = 5;
                 inter.sprite = rgbSprite(sprites.fitted(sprite));
             }
             case WidgetSpec.Picture picture -> {
-                inter.anInt236 = 5;
+                inter.type = 5;
                 inter.modelPitch = picture.pitch();
                 inter.modelYaw = picture.yaw();
             }
@@ -213,20 +213,20 @@ final class IdleWidgets {
 
     /** Makes picture widget {@code inter} show {@code picture}, from the next draw on. */
     static void show(JagInterface inter, WidgetPicture picture) {
-        inter.anInt236 = 5;
+        inter.type = 5;
         inter.sprite = null;
         inter.mediaType = 0;
         switch (picture) {
             case WidgetPicture.None none -> {
             }
             case WidgetPicture.Media media ->
-                    inter.sprite = rgbSprite(sprites.fitted(media.name(), media.index(), inter.anInt241, inter.anInt238));
+                    inter.sprite = rgbSprite(sprites.fitted(media.name(), media.index(), inter.width, inter.height));
             case WidgetPicture.Item item -> {
                 inter.mediaType = ITEM_ICON;
                 inter.mediaId = item.id();
             }
             case WidgetPicture.NpcBody npc -> {
-                inter.anInt236 = 6;
+                inter.type = 6;
                 inter.mediaType = NPC_BODY;
                 inter.mediaId = npc.id();
                 inter.modelZoom = 0;
@@ -242,8 +242,8 @@ final class IdleWidgets {
         RgbSprite icon = ItemDefinition.method221((byte) -33, 0, 1, inter.mediaId);
         if (icon == null)
             return;
-        inter.sprite = rgbSprite(SpriteFit.fit(SpriteFit.clientSprite(icon.anIntArray1489, ITEM_ICON_SIZE, ITEM_ICON_SIZE),
-                inter.anInt241, inter.anInt238));
+        inter.sprite = rgbSprite(SpriteFit.fit(SpriteFit.clientSprite(icon.pixels_1489, ITEM_ICON_SIZE, ITEM_ICON_SIZE),
+                inter.width, inter.height));
         inter.mediaType = 0;
     }
 
@@ -258,7 +258,7 @@ final class IdleWidgets {
             return;
         ModelFit.Vertices framed = framed(posed(body, inter.mediaId));
         inter.modelZoom = ModelFit.zoom(framed.xs(), framed.ys(), framed.zs(), framed.count(), inter.modelPitch, inter.modelYaw,
-                inter.anInt241, inter.anInt238);
+                inter.width, inter.height);
     }
 
     /** {@code JagInterface.method197}'s model for an npc body, centred; null until its models arrive. */
@@ -351,8 +351,8 @@ final class IdleWidgets {
     }
 
     private static void box(JagInterface inter, int colour, int hoverColour, boolean filled) {
-        inter.anInt236 = 3;
-        inter.aBoolean239 = filled;
+        inter.type = 3;
+        inter.visible = filled;
         inter.anInt240 = colour;
         inter.anInt260 = colour;
         inter.anInt261 = hoverColour;
@@ -360,7 +360,7 @@ final class IdleWidgets {
     }
 
     private static void text(JagInterface inter, String text, int colour, int hoverColour, int font, boolean centred) {
-        inter.anInt236 = 4;
+        inter.type = 4;
         inter.aBoolean272 = centred;
         inter.aClass50_Sub1_Sub1_Sub2_237 = JagInterface.aClass50_Sub1_Sub1_Sub2Array223[font];
         inter.aBoolean247 = true;
@@ -388,7 +388,7 @@ final class IdleWidgets {
 
     private static RgbSprite rgbSprite(SpriteFit.Fitted fitted) {
         RgbSprite sprite = new RgbSprite(fitted.width(), fitted.height());
-        System.arraycopy(fitted.pixels(), 0, sprite.anIntArray1489, 0, fitted.pixels().length);
+        System.arraycopy(fitted.pixels(), 0, sprite.pixels_1489, 0, fitted.pixels().length);
         return sprite;
     }
 }

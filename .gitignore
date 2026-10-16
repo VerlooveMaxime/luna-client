@@ -2,4 +2,7 @@
 /build/
 /.gradle/
 /cache/
+/cacheModded/
 /client-window.txt
+/.claude/
+/.idea/
