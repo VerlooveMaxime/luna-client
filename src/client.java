@@ -10004,7 +10004,7 @@ public class client extends JagApplet {
                     anIntArray945[anInt939] = ((Actor) (obj)).anInt1583;
                     anIntArray946[anInt939] = ((Actor) (obj)).anInt1593;
                     anIntArray947[anInt939] = ((Actor) (obj)).forcedChatTicks;
-                    aStringArray948[anInt939++] = ((Actor) (obj)).forcedChatMessage;
+                    aStringArray948[anInt939] = ((Actor) (obj)).forcedChatMessage;
                     if (anInt998 == 0 && ((Actor) (obj)).anInt1593 >= 1 && ((Actor) (obj)).anInt1593 <= 3) {
                         anIntArray943[anInt939] += 10;
                         anIntArray942[anInt939] += 5;
@@ -10013,6 +10013,7 @@ public class client extends JagApplet {
                         anIntArray944[anInt939] = 60;
                     if (anInt998 == 0 && ((Actor) (obj)).anInt1593 == 5)
                         anIntArray943[anInt939] += 5;
+                    anInt939++;
                 }
             }
             if (((Actor) (obj)).lastHitCycle > pulseCycle) {
