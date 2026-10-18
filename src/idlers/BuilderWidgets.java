@@ -14,7 +14,8 @@ import static idlers.WidgetSpecs.add;
  * The flow builder's screens (flow builder v2, S06): one root holding a layer per screen, which the server shows one
  * at a time (packet 82), so an open chatbox prompt survives the switch. The overview holds a slot per step slot the
  * player has, as many as the server says (packet 108; Maxime, 2026-10-09: no fixed most), then the padlock, and on its
- * Reflexes tab (S07c) a row per reflex the flow can hold, then the padlock, and under them the flow's stop (S12); the
+ * Reflexes tab (S07c) a row per reflex the flow can hold, then the padlock, on its Travel tab (Part 3b) a row per
+ * thing trips may spend, and under them the flow's stop (S12); the
  * kind picker a button per kind of step; the configure screen a header, two columns of setting rows the server fills
  * or hides, a warnings band and its buttons, and for a step (S07c2b) the Settings and Reflexes tabs, the Reflexes page
  * a line per reflex the flow can hold. The server mirrors these ids in {@code game.idle.ui.BuilderWidgets}; text and
@@ -52,6 +53,9 @@ public final class BuilderWidgets {
     /** The Steps tab's button that attaches every reflex to every step (S07c2b), in a layer the Reflexes tab hides. */
     public static final int ATTACH_ALL_REFLEXES_LAYER = 30726;
     public static final int ATTACH_ALL_REFLEXES = 30727;
+    /** The overview's third tab (web-walker movement Part 3b): what the flow's trips may spend. */
+    public static final int TRAVEL_TAB = 30728;
+    public static final int TRAVEL_TAB_FRAME = 30729;
     /**
      * The overview's "Flow stops" row (S12): a frame the server lights and a button per choice, then the laps or
      * minutes in a layer the server hides for the other choices.
@@ -64,6 +68,17 @@ public final class BuilderWidgets {
     public static final int STOPS_AFTER_FACE = 42211;
     public static final int STOPS_AFTER_FRAME = 42212;
     public static final int STOPS_AFTER_TEXT = 42213;
+    /**
+     * The Travel tab's page (Part 3b), in the slots' place: a row per Travel choice, its name, a frame the server lights
+     * and a button for No and for Yes, then lines the server fills; last, the line on what is always used. Past the
+     * one- and four-button toggle blocks.
+     */
+    public static final int TRAVEL = 42600;
+    public static final int TRAVEL_ALWAYS = 42601;
+    public static final int TRAVEL_ROWS = 3;
+    public static final int TRAVEL_LINES = 3;
+    private static final int TRAVEL_ROW_BASE = 42610;
+    private static final int TRAVEL_ROW_STRIDE = 10;
 
     public static final int KINDS = 30730;
     public static final int KINDS_TITLE = 30731;
@@ -220,6 +235,18 @@ public final class BuilderWidgets {
      */
     private static final int STOPS_LAYER_HEIGHT = STOPS_HEIGHT + 2;
     private static final int STOPS_AFTER_WIDTH = 64;
+    /** A Travel row: its name, its No and Yes buttons, then its lines; each row as tall as a third of the slots. */
+    public static final int TRAVEL_TAB_X = 116;
+    public static final int TRAVEL_TAB_WIDTH = 50;
+    public static final int TRAVEL_ROW_HEIGHT = 64;
+    public static final int TRAVEL_LABEL_WIDTH = 120;
+    public static final int TRAVEL_NO_X = 128;
+    public static final int TRAVEL_NO_WIDTH = 36;
+    public static final int TRAVEL_YES_X = TRAVEL_NO_X + TRAVEL_NO_WIDTH + 4;
+    public static final int TRAVEL_YES_WIDTH = 84;
+    public static final int TRAVEL_LINE_X = 12;
+    public static final int TRAVEL_LINES_Y = 22;
+    public static final int TRAVEL_LINE_HEIGHT = 13;
 
     public static final int KIND_WIDTH = 64;
     public static final int KIND_HEIGHT = 52;
@@ -378,6 +405,33 @@ public final class BuilderWidgets {
 
     public static int detachText(int line) {
         return attachedLine(line) + 6;
+    }
+
+    /** The name of Travel row {@code row}, which the server sends. */
+    public static int travelLabel(int row) {
+        return TRAVEL_ROW_BASE + row * TRAVEL_ROW_STRIDE;
+    }
+
+    /** The frame around the row's No, which the server lights (packet 218). */
+    public static int travelNoFrame(int row) {
+        return travelLabel(row) + 1;
+    }
+
+    public static int travelNo(int row) {
+        return travelLabel(row) + 2;
+    }
+
+    public static int travelYesFrame(int row) {
+        return travelLabel(row) + 3;
+    }
+
+    public static int travelYes(int row) {
+        return travelLabel(row) + 4;
+    }
+
+    /** The row's lines: its grey note, then what the flow's teleport reflexes keep back, in white. */
+    public static int travelLine(int row, int line) {
+        return travelLabel(row) + 5 + line;
     }
 
     /** The frame around stop choice {@code choice}, which the server lights (packet 218). */
@@ -617,9 +671,12 @@ public final class BuilderWidgets {
         add(specs, children, button(STEPS_TAB, OVERVIEW, 5, 2, 38, "Steps", "Show the steps"));
         add(specs, children, WidgetSpec.frame(REFLEXES_TAB_FRAME, OVERVIEW, 50, 0, 62, TAB_HEIGHT, FlowWidgets.EDGE));
         add(specs, children, button(REFLEXES_TAB, OVERVIEW, 53, 2, 56, "Reflexes", "Show the reflexes"));
+        add(specs, children, WidgetSpec.frame(TRAVEL_TAB_FRAME, OVERVIEW, TRAVEL_TAB_X, 0, TRAVEL_TAB_WIDTH, TAB_HEIGHT, FlowWidgets.EDGE));
+        add(specs, children, button(TRAVEL_TAB, OVERVIEW, TRAVEL_TAB_X + 3, 2, TRAVEL_TAB_WIDTH - 6, "Travel", "Show what trips may spend"));
         add(specs, children, attachAllReflexes(specs));
         add(specs, children, slotArea(specs, slots));
         add(specs, children, reflexArea(specs, reflexSlots));
+        add(specs, children, travelPage(specs));
         add(specs, children, WidgetSpec.text(STATUS, OVERVIEW, 4, 242, 492, LINE, "", FlowWidgets.YELLOW, FONT_PLAIN));
         add(specs, children, stops(specs));
         add(specs, children, WidgetSpec.text(LEVELS, OVERVIEW, 4, 284, 44, LINE, "Levels:", FlowWidgets.ORANGE, FONT_PLAIN));
@@ -632,6 +689,30 @@ public final class BuilderWidgets {
         add(specs, children, button(STOP, OVERVIEW, 416, 284, 34, "Stop", "Stop the flow"));
         add(specs, children, button(CLEAR, OVERVIEW, 458, 284, 38, "Clear", "Clear the flow"));
         return WidgetSpec.layer(OVERVIEW, ROOT, LAYER_X, LAYER_Y, LAYER_WIDTH, LAYER_HEIGHT, children);
+    }
+
+    /** The Travel tab's page, where the slots are: a row per Travel choice, then the always-used line. */
+    private static WidgetSpec travelPage(Map<Integer, WidgetSpec> specs) {
+        List<Integer> children = new ArrayList<>();
+        for (int row = 0; row < TRAVEL_ROWS; row++) {
+            addTravelRow(specs, children, row, row * TRAVEL_ROW_HEIGHT);
+        }
+        add(specs, children, WidgetSpec.text(TRAVEL_ALWAYS, TRAVEL, 4, TRAVEL_ROWS * TRAVEL_ROW_HEIGHT + 2, SLOTS_WIDTH - 8, LINE, "",
+                FlowWidgets.WHITE, FONT_SMALL));
+        return WidgetSpec.layer(TRAVEL, OVERVIEW, SLOTS_X, SLOTS_Y, SLOTS_WIDTH, SLOTS_HEIGHT, children);
+    }
+
+    /** A Travel row at {@code y}: its name, its No and Yes drawn as the stop choices are, then its lines. */
+    private static void addTravelRow(Map<Integer, WidgetSpec> specs, List<Integer> children, int row, int y) {
+        add(specs, children, WidgetSpec.text(travelLabel(row), TRAVEL, 4, y + 2, TRAVEL_LABEL_WIDTH, LINE, "", FlowWidgets.ORANGE, FONT_PLAIN));
+        add(specs, children, WidgetSpec.frame(travelNoFrame(row), TRAVEL, TRAVEL_NO_X, y, TRAVEL_NO_WIDTH, STOPS_HEIGHT, FlowWidgets.EDGE));
+        add(specs, children, button(travelNo(row), TRAVEL, TRAVEL_NO_X + 3, y + 2, TRAVEL_NO_WIDTH - 6, "No", "Spend nothing on this"));
+        add(specs, children, WidgetSpec.frame(travelYesFrame(row), TRAVEL, TRAVEL_YES_X, y, TRAVEL_YES_WIDTH, STOPS_HEIGHT, FlowWidgets.EDGE));
+        add(specs, children, button(travelYes(row), TRAVEL, TRAVEL_YES_X + 3, y + 2, TRAVEL_YES_WIDTH - 6, "", "Allow this"));
+        for (int line = 0; line < TRAVEL_LINES; line++) {
+            add(specs, children, WidgetSpec.text(travelLine(row, line), TRAVEL, TRAVEL_LINE_X, y + TRAVEL_LINES_Y + TRAVEL_LINE_HEIGHT * line,
+                    SLOTS_WIDTH - TRAVEL_LINE_X - 4, LINE, "", FlowWidgets.WHITE, FONT_SMALL));
+        }
     }
 
     /** The "Flow stops" row, on the free row between the status line and Levels. */

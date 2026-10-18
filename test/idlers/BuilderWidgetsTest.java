@@ -479,6 +479,139 @@ class BuilderWidgetsTest {
     }
 
     @Test
+    void theTravelTabSitsRightOfReflexesInItsOwnFrame() {
+        WidgetSpec reflexes = SPECS.get(BuilderWidgets.REFLEXES_TAB_FRAME);
+        WidgetSpec frame = SPECS.get(BuilderWidgets.TRAVEL_TAB_FRAME);
+        WidgetSpec.Button travel = assertInstanceOf(WidgetSpec.Button.class, SPECS.get(BuilderWidgets.TRAVEL_TAB));
+
+        assertEquals(List.of(BuilderWidgets.OVERVIEW, BuilderWidgets.OVERVIEW, "Travel", "Show what trips may spend", frame.x() + 3, frame.width() - 6),
+                List.of(frame.parent(), travel.parent(), travel.text(), travel.option(), travel.x(), travel.width()));
+        assertTrue(reflexes.x() + reflexes.width() < frame.x());
+    }
+
+    @Test
+    void theTravelTabEndsBeforeAttachAllReflexes() {
+        WidgetSpec frame = SPECS.get(BuilderWidgets.TRAVEL_TAB_FRAME);
+
+        assertTrue(frame.x() + frame.width() < SPECS.get(BuilderWidgets.ATTACH_ALL_REFLEXES_LAYER).x());
+    }
+
+    @Test
+    void theTravelPageMirrorsTheServersIds() {
+        assertEquals(List.of(30728, 30729, 42600, 42601, 42610, 42611, 42612, 42613, 42614, 42615, 42617, 42620, 42637),
+                List.of(BuilderWidgets.TRAVEL_TAB, BuilderWidgets.TRAVEL_TAB_FRAME, BuilderWidgets.TRAVEL, BuilderWidgets.TRAVEL_ALWAYS,
+                        BuilderWidgets.travelLabel(0), BuilderWidgets.travelNoFrame(0), BuilderWidgets.travelNo(0), BuilderWidgets.travelYesFrame(0),
+                        BuilderWidgets.travelYes(0), BuilderWidgets.travelLine(0, 0), BuilderWidgets.travelLine(0, 2), BuilderWidgets.travelLabel(1),
+                        BuilderWidgets.travelLine(2, 2)));
+    }
+
+    @Test
+    void theTravelPageLiesPastTheFourButtonToggles() {
+        assertTrue(BuilderWidgets.toggleText(BuilderWidgets.ROWS - 1, 4, 3) < BuilderWidgets.TRAVEL);
+    }
+
+    @Test
+    void theTravelPageTakesTheSlotsPlace() {
+        WidgetSpec.Layer travel = layer(BuilderWidgets.TRAVEL);
+        WidgetSpec slots = SPECS.get(BuilderWidgets.SLOTS);
+
+        assertEquals(List.of(BuilderWidgets.OVERVIEW, slots.x(), slots.y(), slots.width(), slots.height()),
+                List.of(travel.parent(), travel.x(), travel.y(), travel.width(), travel.height()));
+    }
+
+    @Test
+    void theOverviewHoldsTheTravelPageAfterTheReflexArea() {
+        List<Integer> children = layer(BuilderWidgets.OVERVIEW).children();
+
+        assertEquals(children.indexOf(BuilderWidgets.REFLEX_ROWS) + 1, children.indexOf(BuilderWidgets.TRAVEL));
+    }
+
+    @Test
+    void theTravelPageHoldsItsRowsThenTheAlwaysUsedLine() {
+        List<Integer> children = layer(BuilderWidgets.TRAVEL).children();
+
+        assertEquals(List.of(BuilderWidgets.travelLabel(0), BuilderWidgets.travelNoFrame(0), BuilderWidgets.travelNo(0), BuilderWidgets.travelYesFrame(0),
+                        BuilderWidgets.travelYes(0), BuilderWidgets.travelLine(0, 0), BuilderWidgets.travelLine(0, 1), BuilderWidgets.travelLine(0, 2),
+                        BuilderWidgets.travelLabel(1)),
+                children.subList(0, 9));
+        assertEquals(List.of(3 * 8 + 1, BuilderWidgets.TRAVEL_ALWAYS), List.of(children.size(), children.get(children.size() - 1)));
+    }
+
+    @Test
+    void aTravelRowIsNamedInTheLevelsLabelsFont() {
+        WidgetSpec.Text label = assertInstanceOf(WidgetSpec.Text.class, SPECS.get(BuilderWidgets.travelLabel(1)));
+        WidgetSpec.Text levels = assertInstanceOf(WidgetSpec.Text.class, SPECS.get(BuilderWidgets.LEVELS));
+
+        assertEquals(List.of("", 4, 66, levels.colour(), levels.font()), List.of(label.text(), label.x(), label.y(), label.colour(), label.font()));
+    }
+
+    @Test
+    void aTravelRowsButtonsSitInsideTheirFramesNoFirst() {
+        WidgetSpec noFrame = SPECS.get(BuilderWidgets.travelNoFrame(1));
+        WidgetSpec no = SPECS.get(BuilderWidgets.travelNo(1));
+        WidgetSpec yesFrame = SPECS.get(BuilderWidgets.travelYesFrame(1));
+        WidgetSpec yes = SPECS.get(BuilderWidgets.travelYes(1));
+
+        assertEquals(List.of(noFrame.x() + 3, noFrame.y() + 2, noFrame.width() - 6, yesFrame.x() + 3, yesFrame.y() + 2, yesFrame.width() - 6),
+                List.of(no.x(), no.y(), no.width(), yes.x(), yes.y(), yes.width()));
+        assertTrue(noFrame.x() + noFrame.width() < yesFrame.x());
+    }
+
+    @Test
+    void aTravelRowsButtonsStartRightOfItsName() {
+        WidgetSpec label = SPECS.get(BuilderWidgets.travelLabel(0));
+
+        assertTrue(label.x() + label.width() <= SPECS.get(BuilderWidgets.travelNoFrame(0)).x());
+    }
+
+    @Test
+    void aTravelChoicesFrameIsAStopChoicesInTheTabsEdgeColour() {
+        WidgetSpec.Box frame = assertInstanceOf(WidgetSpec.Box.class, SPECS.get(BuilderWidgets.travelYesFrame(2)));
+
+        assertEquals(List.of(BuilderWidgets.TRAVEL, 128, 18, FlowWidgets.EDGE, false), List.of(frame.parent(), frame.y(), frame.height(), frame.colour(), frame.filled()));
+    }
+
+    @Test
+    void aTravelRowsButtonsSayWhatTheyDo() {
+        WidgetSpec.Button no = assertInstanceOf(WidgetSpec.Button.class, SPECS.get(BuilderWidgets.travelNo(0)));
+        WidgetSpec.Button yes = assertInstanceOf(WidgetSpec.Button.class, SPECS.get(BuilderWidgets.travelYes(0)));
+
+        assertEquals(List.of("No", "Spend nothing on this", "", "Allow this"), List.of(no.text(), no.option(), yes.text(), yes.option()));
+    }
+
+    @Test
+    void aTravelRowsLinesGoOneUnderAnotherBelowItsButtons() {
+        WidgetSpec frame = SPECS.get(BuilderWidgets.travelNoFrame(0));
+        List<WidgetSpec> lines = List.of(SPECS.get(BuilderWidgets.travelLine(0, 0)), SPECS.get(BuilderWidgets.travelLine(0, 1)),
+                SPECS.get(BuilderWidgets.travelLine(0, 2)));
+
+        assertEquals(List.of(frame.y() + 22, frame.y() + 35, frame.y() + 48), List.of(lines.get(0).y(), lines.get(1).y(), lines.get(2).y()));
+    }
+
+    @Test
+    void aTravelLineIsSmallWhiteTextTheServerColours() {
+        WidgetSpec.Text line = assertInstanceOf(WidgetSpec.Text.class, SPECS.get(BuilderWidgets.travelLine(1, 2)));
+
+        assertEquals(List.of(12, 463, "", FlowWidgets.WHITE, WidgetSpec.FONT_SMALL), List.of(line.x(), line.width(), line.text(), line.colour(), line.font()));
+    }
+
+    @Test
+    void theLastRowsLinesEndAboveTheAlwaysUsedLineWhichEndsInsideThePage() {
+        WidgetSpec last = SPECS.get(BuilderWidgets.travelLine(2, 2));
+        WidgetSpec always = SPECS.get(BuilderWidgets.TRAVEL_ALWAYS);
+
+        assertTrue(last.y() + 13 <= always.y());
+        assertTrue(always.y() + always.height() <= SPECS.get(BuilderWidgets.TRAVEL).height());
+    }
+
+    @Test
+    void theAlwaysUsedLineSpansThePage() {
+        WidgetSpec.Text always = assertInstanceOf(WidgetSpec.Text.class, SPECS.get(BuilderWidgets.TRAVEL_ALWAYS));
+
+        assertEquals(List.of(4, 471, WidgetSpec.FONT_SMALL), List.of(always.x(), always.width(), always.font()));
+    }
+
+    @Test
     void theStatusLineSitsUnderTheSlotArea() {
         WidgetSpec slots = SPECS.get(BuilderWidgets.SLOTS);
 
