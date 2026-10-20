@@ -4984,7 +4984,7 @@ public class client extends JagApplet {
                         vec.getBytesAdded(aClass50_Sub1_Sub2_1131.buffer, 0, length);
                         aClass50_Sub1_Sub2_1131.position = 0;
                         String s = ChatCompressor.decompress(aClass50_Sub1_Sub2_1131, length);
-                        s = ChatFilter.applyCensor((byte) 0, s);
+                        //s = ChatFilter. applyCensor((byte) 0, s);
                         plr.forcedChatMessage = s;
                         plr.anInt1583 = i2 >> 8;
                         plr.anInt1593 = i2 & 0xff;
