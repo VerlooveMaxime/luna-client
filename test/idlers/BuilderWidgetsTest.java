@@ -498,11 +498,11 @@ class BuilderWidgetsTest {
 
     @Test
     void theTravelPageMirrorsTheServersIds() {
-        assertEquals(List.of(30728, 30729, 42600, 42601, 42610, 42611, 42612, 42613, 42614, 42615, 42617, 42620, 42637),
+        assertEquals(List.of(30728, 30729, 42600, 42601, 42610, 42611, 42612, 42613, 42614, 42615, 42617, 42620, 42637, 42647),
                 List.of(BuilderWidgets.TRAVEL_TAB, BuilderWidgets.TRAVEL_TAB_FRAME, BuilderWidgets.TRAVEL, BuilderWidgets.TRAVEL_ALWAYS,
                         BuilderWidgets.travelLabel(0), BuilderWidgets.travelNoFrame(0), BuilderWidgets.travelNo(0), BuilderWidgets.travelYesFrame(0),
                         BuilderWidgets.travelYes(0), BuilderWidgets.travelLine(0, 0), BuilderWidgets.travelLine(0, 2), BuilderWidgets.travelLabel(1),
-                        BuilderWidgets.travelLine(2, 2)));
+                        BuilderWidgets.travelLine(2, 2), BuilderWidgets.travelLine(3, 2)));
     }
 
     @Test
@@ -534,7 +534,7 @@ class BuilderWidgetsTest {
                         BuilderWidgets.travelYes(0), BuilderWidgets.travelLine(0, 0), BuilderWidgets.travelLine(0, 1), BuilderWidgets.travelLine(0, 2),
                         BuilderWidgets.travelLabel(1)),
                 children.subList(0, 9));
-        assertEquals(List.of(3 * 8 + 1, BuilderWidgets.TRAVEL_ALWAYS), List.of(children.size(), children.get(children.size() - 1)));
+        assertEquals(List.of(4 * 8 + 1, BuilderWidgets.TRAVEL_ALWAYS), List.of(children.size(), children.get(children.size() - 1)));
     }
 
     @Test
@@ -596,12 +596,17 @@ class BuilderWidgetsTest {
     }
 
     @Test
-    void theLastRowsLinesEndAboveTheAlwaysUsedLineWhichEndsInsideThePage() {
-        WidgetSpec last = SPECS.get(BuilderWidgets.travelLine(2, 2));
+    void theLastRowsLinesEndAboveTheAlwaysUsedLineWhichEndsTheScrolledPage() {
+        WidgetSpec last = SPECS.get(BuilderWidgets.travelLine(3, 2));
         WidgetSpec always = SPECS.get(BuilderWidgets.TRAVEL_ALWAYS);
 
         assertTrue(last.y() + 13 <= always.y());
-        assertTrue(always.y() + always.height() <= SPECS.get(BuilderWidgets.TRAVEL).height());
+        assertEquals(always.y() + always.height(), layer(BuilderWidgets.TRAVEL).scrollHeight());
+    }
+
+    @Test
+    void theTravelPageScrollsToItsFourthRow() {
+        assertTrue(layer(BuilderWidgets.TRAVEL).scrolls());
     }
 
     @Test

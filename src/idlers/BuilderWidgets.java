@@ -75,7 +75,7 @@ public final class BuilderWidgets {
      */
     public static final int TRAVEL = 42600;
     public static final int TRAVEL_ALWAYS = 42601;
-    public static final int TRAVEL_ROWS = 3;
+    public static final int TRAVEL_ROWS = 4;
     public static final int TRAVEL_LINES = 3;
     private static final int TRAVEL_ROW_BASE = 42610;
     private static final int TRAVEL_ROW_STRIDE = 10;
@@ -235,7 +235,10 @@ public final class BuilderWidgets {
      */
     private static final int STOPS_LAYER_HEIGHT = STOPS_HEIGHT + 2;
     private static final int STOPS_AFTER_WIDTH = 64;
-    /** A Travel row: its name, its No and Yes buttons, then its lines; each row as tall as a third of the slots. */
+    /**
+     * A Travel row: its name, its No and Yes buttons, then its lines; each row as tall as a third of the slots, so the
+     * fourth (bank stops, Maxime 2026-10-20) and the always-used line scroll into view.
+     */
     public static final int TRAVEL_TAB_X = 116;
     public static final int TRAVEL_TAB_WIDTH = 50;
     public static final int TRAVEL_ROW_HEIGHT = 64;
@@ -691,15 +694,15 @@ public final class BuilderWidgets {
         return WidgetSpec.layer(OVERVIEW, ROOT, LAYER_X, LAYER_Y, LAYER_WIDTH, LAYER_HEIGHT, children);
     }
 
-    /** The Travel tab's page, where the slots are: a row per Travel choice, then the always-used line. */
+    /** The Travel tab's page, where the slots are: a row per Travel choice, then the always-used line, scrolling as the slots do. */
     private static WidgetSpec travelPage(Map<Integer, WidgetSpec> specs) {
         List<Integer> children = new ArrayList<>();
         for (int row = 0; row < TRAVEL_ROWS; row++) {
             addTravelRow(specs, children, row, row * TRAVEL_ROW_HEIGHT);
         }
-        add(specs, children, WidgetSpec.text(TRAVEL_ALWAYS, TRAVEL, 4, TRAVEL_ROWS * TRAVEL_ROW_HEIGHT + 2, SLOTS_WIDTH - 8, LINE, "",
-                FlowWidgets.WHITE, FONT_SMALL));
-        return WidgetSpec.layer(TRAVEL, OVERVIEW, SLOTS_X, SLOTS_Y, SLOTS_WIDTH, SLOTS_HEIGHT, children);
+        int always = TRAVEL_ROWS * TRAVEL_ROW_HEIGHT + 2;
+        add(specs, children, WidgetSpec.text(TRAVEL_ALWAYS, TRAVEL, 4, always, SLOTS_WIDTH - 8, LINE, "", FlowWidgets.WHITE, FONT_SMALL));
+        return WidgetSpec.scrollLayer(TRAVEL, OVERVIEW, SLOTS_X, SLOTS_Y, SLOTS_WIDTH, SLOTS_HEIGHT, Math.max(always + LINE, SLOTS_HEIGHT), children);
     }
 
     /** A Travel row at {@code y}: its name, its No and Yes drawn as the stop choices are, then its lines. */
